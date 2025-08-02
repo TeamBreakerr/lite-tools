@@ -53,7 +53,7 @@ manifest_json.repository.release.tag = `v${lite_tools.version}`;
 fs.writeFileSync("./manifest.json", JSON.stringify(manifest_json, null, 2));
 
 // 生成更新日志
-if (!isDev && !isPush) {
+if (!isDev) {
   console.log("更新日志");
   updateChangeLog();
 }
