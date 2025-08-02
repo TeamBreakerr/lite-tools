@@ -134,28 +134,28 @@ contextBridge.exposeInMainWorld("lite_tools", {
     let resolve;
     if (awaitCallback) {
       resolve = new Promise((res) => {
-        function onEvent(event, ...args) {
+        function onEvent(...args) {
           if (typeof awaitCallback === "boolean") {
-            if (args[0]?.callbackId === callbackId) {
+            if (args[1]?.callbackId === callbackId) {
               ipcRenderer.off(`RM_IPCFROM_MAIN${webContentId}`, onEvent);
-              res(args[1]);
+              res(args[2]);
             }
           } else if (Array.isArray(awaitCallback)) {
             if (awaitCallback.includes(args?.[1]?.cmdName)) {
               ipcRenderer.off(`RM_IPCFROM_MAIN${webContentId}`, onEvent);
-              res(args[1]);
+              res(args[2]);
             }
           } else {
-            if (args?.[1]?.cmdName === awaitCallback) {
+            if (args?.[2]?.cmdName === awaitCallback) {
               ipcRenderer.off(`RM_IPCFROM_MAIN${webContentId}`, onEvent);
-              res(args[1]);
+              res(args[2]);
             }
           }
         }
         ipcRenderer.on(`RM_IPCFROM_MAIN${webContentId}`, onEvent);
       });
     } else {
-      resolve = Promise.resolve(true);
+      resolve = Promise.resolve(null);
     }
     ipcRenderer.send(
       `RM_IPCFROM_RENDERER${webContentId}`,

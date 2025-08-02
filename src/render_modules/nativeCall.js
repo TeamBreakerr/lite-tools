@@ -25,65 +25,125 @@ async function convertMessage(message) {
       };
     case "image": {
       const path = message.path;
-      const type = await lite_tools.nativeCall("ns-FsApi", "getFileType", [path], webContentId, true, false);
-      const md5 = await lite_tools.nativeCall("ns-FsApi", "getFileMd5", [path], webContentId, true, false);
-      const fileName = `${md5}.${type.ext}`;
-      const filePath = await lite_tools.nativeCall(
-        "ns-ntApi",
-        "nodeIKernelMsgService/getRichMediaFilePathForGuild",
-        [
-          {
-            path_info: {
-              downloadType: 1,
-              elementSubType: message.picSubType,
-              elementType: 2,
-              fileName: fileName,
-              file_uuid: "",
-              md5HexStr: md5,
-              needCreate: true,
-              thumbSize: 0,
-            },
-          },
-        ],
-        webContentId,
+      await lite_tools.nativeCall(
+        {
+          type: "request",
+          eventName: "FileApi",
+        },
+        {
+          cmdName: "getFileType",
+          cmdType: "invoke",
+          payload: [path],
+        },
         true,
-        false,
       );
-      const fileExist = await lite_tools.nativeCall("ns-FsApi", "isFileExist", [filePath], webContentId, true, false);
-      log("文件是否存在", fileExist, message);
-      if (!fileExist) {
-        await lite_tools.nativeCall("ns-FsApi", "copyFile", [{ fromPath: path, toPath: filePath }], webContentId, true, false);
-      }
-      const imageSize = await lite_tools.nativeCall("ns-FsApi", "getImageSizeFromPath", [path], webContentId, true, false);
-      const fileSize = await lite_tools.nativeCall("ns-FsApi", "getFileSize", [path], webContentId, true, false);
+      const copyFile = await lite_tools.nativeCall(
+        {
+          type: "request",
+          eventName: "ntApi",
+        },
+        {
+          cmdName: "nodeIKernelMsgService/copyFileWithDelExifInfo",
+          cmdType: "invoke",
+          payload: [
+            {
+              sourcePath: path,
+              elementSubType: 1,
+            },
+            null,
+          ],
+        },
+        true,
+      );
+      log("复制路径", copyFile);
+      const fileType = await lite_tools.nativeCall(
+        {
+          type: "request",
+          eventName: "FileApi",
+        },
+        {
+          cmdName: "getFileType",
+          cmdType: "invoke",
+          payload: [copyFile.newPath],
+        },
+        true,
+      );
+      const imageSize = await lite_tools.nativeCall(
+        {
+          type: "request",
+          eventName: "FileApi",
+        },
+        {
+          cmdName: "getImageSizeFromPath",
+          cmdType: "invoke",
+          payload: [copyFile.newPath],
+        },
+        true,
+      );
+      lite_tools.nativeCall(
+        {
+          type: "request",
+          eventName: "FileApi",
+        },
+        {
+          cmdName: "getFileMd5",
+          cmdType: "invoke",
+          payload: [copyFile.newPath],
+        },
+      );
+      const fileSize = await lite_tools.nativeCall(
+        {
+          type: "request",
+          eventName: "FileApi",
+        },
+        {
+          cmdName: "getFileSize",
+          cmdType: "invoke",
+          payload: [copyFile.newPath],
+        },
+        true,
+      );
+
       const picElement = {
-        md5HexStr: md5,
-        fileSize: fileSize,
+        md5HexStr: copyFile.md5,
         picWidth: imageSize.width,
         picHeight: imageSize.height,
-        fileName: fileName,
-        sourcePath: filePath,
+        fileName: getFileName(copyFile.newPath),
+        fileSize: fileSize,
         original: true,
-        picType: message.picSubType ? 1002 : 1001,
+        picType: fileType.ext === "gif" ? 2000 : 1000,
         picSubType: message.picSubType,
+        sourcePath: copyFile.newPath,
         fileUuid: "",
         fileSubId: "",
         thumbFileSize: 0,
+        thumbPath: undefined,
         summary: "",
       };
       const messageChannel = {
         elementType: 2,
         elementId: "",
+        extBufForUI: new Uint8Array(),
         picElement,
       };
-      if (message.picSubType) {
-        messageChannel.extBufForUI = "";
-      }
       return messageChannel;
     }
     default:
       return null;
   }
+}
+
+function getFileName(path) {
+  if (typeof path !== "string") return "";
+  // 去掉末尾的斜杠或反斜杠
+  const trimmed = path.replace(/[\/\\]+$/, "");
+  if (trimmed === "") return "";
+  // 找最后一个分隔符的位置
+  const idx = Math.max(trimmed.lastIndexOf("/"), trimmed.lastIndexOf("\\"));
+  const name = idx === -1 ? trimmed : trimmed.slice(idx + 1);
+  // Windows 驱动器根如 "C:" 也不是文件名
+  if (/^[A-Za-z]:$/.test(name)) return "";
+  return name;
 }
 
 /**
