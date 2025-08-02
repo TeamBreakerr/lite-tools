@@ -1,6 +1,6 @@
 import { buildSync } from "esbuild";
 import * as sass from "sass";
-import { getAllRelease } from "./createChangeLog.mjs";
+import { updateChangeLog } from "./updateChangeLog.mjs";
 import fs from "fs";
 let thisTime = new Date().getTime();
 const lite_tools = JSON.parse(fs.readFileSync("./package.json", "utf-8"));
@@ -54,10 +54,8 @@ fs.writeFileSync("./manifest.json", JSON.stringify(manifest_json, null, 2));
 
 // 生成更新日志
 if (!isDev && !isPush) {
-  console.log("生成更新日志...");
-  await getAllRelease();
-} else {
-  console.log("跳过生成更新日志");
+  console.log("更新日志");
+  updateChangeLog();
 }
 
 console.log("构建完成");
