@@ -1,6 +1,6 @@
 import { Logs } from "./logs.js";
 const log = new Logs("QQ通信模块");
-const webContentId = lite_tools.getWebContentId() || 2;
+const webContentId = lite_tools.getWebContentId() || 3;
 
 log("获取到当前窗口Id", webContentId);
 
@@ -94,45 +94,23 @@ async function convertMessage(message) {
 async function sendMessage(peer, messages) {
   log("发送消息", peer, messages);
   lite_tools.nativeCall(
-    "ns-ntApi",
-    "nodeIKernelMsgService/sendMsg",
-    [
-      {
-        msgId: "0",
-        peer: peer,
-        msgElements: await Promise.all(messages.map((message) => convertMessage(message))),
-        msgAttributeInfos: new Map(),
-      },
-      null,
-    ],
-    webContentId,
-    false,
-    false,
-  );
-}
-
-/**
- *
- * @param {Peer} peer peer对象
- * @param {msgElements[]} message 原始消息数组
- */
-function sendRawMessage(peer, messages) {
-  log("发送Raw消息", peer, messages);
-  lite_tools.nativeCall(
-    "ns-ntApi",
-    "nodeIKernelMsgService/sendMsg",
-    [
-      {
-        msgId: "0",
-        peer: peer,
-        msgElements: messages,
-        msgAttributeInfos: new Map(),
-      },
-      null,
-    ],
-    webContentId,
-    false,
-    false,
+    {
+      eventName: "ntApi",
+      type: "request",
+    },
+    {
+      cmdName: "nodeIKernelMsgService/sendMsg",
+      cmdType: "invoke",
+      payload: [
+        {
+          msgId: "0",
+          peer,
+          msgElements: await Promise.all(messages.map((message) => convertMessage(message))),
+          msgAttributeInfos: new Map(),
+        },
+        null,
+      ],
+    },
   );
 }
 
@@ -145,21 +123,24 @@ function sendRawMessage(peer, messages) {
 function forwardMessage(srcpeer, dstpeer, msgIds) {
   log("转发消息", srcpeer, dstpeer, msgIds);
   lite_tools.nativeCall(
-    "ns-ntApi",
-    "nodeIKernelMsgService/forwardMsgWithComment",
-    [
-      {
-        msgIds,
-        msgAttributeInfos: new Map(),
-        srcContact: srcpeer,
-        dstContacts: [dstpeer],
-        commentElements: [],
-      },
-      null,
-    ],
-    webContentId,
-    false,
-    false,
+    {
+      type: "request",
+      eventName: "ntApi",
+    },
+    {
+      cmdName: "nodeIKernelMsgService/forwardMsgWithComment",
+      cmdType: "ntApi",
+      payload: [
+        {
+          commentElements: [],
+          dstContacts: [dstpeer],
+          msgAttributeInfos: new Map(),
+          msgIds,
+          srcContact: srcpeer,
+        },
+        null,
+      ],
+    },
   );
 }
 
@@ -170,12 +151,24 @@ function forwardMessage(srcpeer, dstpeer, msgIds) {
  */
 function getUserInfo(uid) {
   return lite_tools.nativeCall(
-    "ns-ntApi",
-    "nodeIKernelProfileService/getUserDetailInfo",
-    [{ uid: uid }, undefined],
-    webContentId,
+    {
+      type: "request",
+      eventName: "ntApi",
+    },
+    {
+      cmdName: "nodeIKernelProfileService/fetchUserDetailInfo",
+      cmdType: "invoke",
+      payload: [
+        {
+          callFrom: "BuddyProfileStore",
+          uid,
+          bizList: [0],
+          source: 0,
+        },
+        null,
+      ],
+    },
     ["nodeIKernelProfileListener/onProfileDetailInfoChanged", "nodeIKernelProfileListener/onProfileSimpleChanged"],
-    false,
   );
 }
 
@@ -185,12 +178,21 @@ function getUserInfo(uid) {
  */
 function getMembersAvatar(uids) {
   return lite_tools.nativeCall(
-    "ns-ntApi",
-    "nodeIKernelAvatarService/getMembersAvatarPath",
-    [{ clarity: 0, uids }],
-    webContentId,
+    {
+      type: "request",
+      eventName: "ntApi",
+    },
+    {
+      cmdName: "nodeIKernelAvatarService/getMembersAvatarPath",
+      cmdType: "invoke",
+      payload: [
+        {
+          uids,
+          clarity: 1,
+        },
+      ],
+    },
     true,
-    false,
   );
 }
 
@@ -200,12 +202,21 @@ function getMembersAvatar(uids) {
  */
 function getGroupsAvatar(groupCodes) {
   return lite_tools.nativeCall(
-    "ns-ntApi",
-    "nodeIKernelAvatarService/getGroupsAvatarPath",
-    [{ clarity: 0, groupCodes }],
-    webContentId,
+    {
+      type: "request",
+      eventName: "ntApi",
+    },
+    {
+      cmdName: "nodeIKernelAvatarService/getConfGroupsAvatarPath",
+      cmdType: "invoke",
+      payload: [
+        {
+          groupCodes,
+          clarity: 1,
+        },
+      ],
+    },
     true,
-    false,
   );
 }
 
@@ -216,24 +227,27 @@ function getGroupsAvatar(groupCodes) {
  */
 function goMainWindowScene(sceneData) {
   return lite_tools.nativeCall(
-    "ns-WindowApi",
-    "goMainWindowScene",
-    [
-      {
-        scene: sceneData.scene,
-        sceneParams: {
-          peerUid: sceneData.peerUid,
-          chatType: sceneData.chatType,
-          type: sceneData.type,
-          params: {
-            msgId: sceneData.msgId,
+    {
+      type: "request",
+      eventName: "WindowApi",
+    },
+    {
+      cmdName: "nodeIKernelAvatarService/getConfGroupsAvatarPath",
+      cmdType: "invoke",
+      payload: [
+        {
+          scene: sceneData.scene,
+          sceneParams: {
+            peerUid: sceneData.peerUid,
+            chatType: sceneData.chatType,
+            type: sceneData.type,
+            params: {
+              msgId: sceneData.msgId,
+            },
           },
         },
-      },
-    ],
-    webContentId,
-    false,
-    false,
+      ],
+    },
   );
 }
 
@@ -242,73 +256,23 @@ function goMainWindowScene(sceneData) {
  * @param {String} uid 获取群组信息
  * @returns Object
  */
-function getGroupInfo(uid) {
+function getGroupInfo(groupCode) {
   return lite_tools.nativeCall(
-    "ns-ntApi",
-    "nodeIKernelGroupService/getGroupDetailInfo",
-    [{ groupCode: uid, source: 4 }, undefined],
-    webContentId,
-    "nodeIKernelGroupListener/onGroupDetailInfoChange",
-    false,
-  );
-}
-
-/**
- * 获取群组列表
- * @param {Boolean} forced 是否强制刷新列表
- */
-function getGroupsList(forced = false) {
-  return lite_tools.nativeCall(
-    "ns-ntApi",
-    "nodeIKernelGroupService/getGroupList",
-    [{ forceFetch: forced }],
-    webContentId,
-    "nodeIKernelGroupListener/onGroupListUpdate",
-    false,
-  );
-}
-/**
- * 搜索好友/群
- * @param {String} keyword 搜索内容
- */
-function openExternalWindow(keyword = "") {
-  lite_tools.nativeCall(
-    "ns-WindowApi",
-    "openExternalWindow",
-    [
-      "SearchWindow",
-      {
-        keyword,
-        type: "networkAll",
-        windowType: 1,
-        source: 3,
-      },
-    ],
-    webContentId,
-    false,
-    false,
-  );
-}
-
-/**
- * 打开频道窗口
- */
-function openGuidMainWindow() {
-  lite_tools.nativeCall(
-    "ns-WindowApi",
-    "openExternalWindow",
-    [
-      "GuildMainWindow",
-      {
-        guildId: "2",
-        id: 3,
-        title: "频道",
-        windowName: "GuildMainWindow",
-      },
-    ],
-    webContentId,
-    false,
-    false,
+    {
+      type: "request",
+      eventName: "ntApi",
+    },
+    {
+      cmdName: "nodeIKernelGroupService/getGroupDetailInfo",
+      cmdType: "invoke",
+      payload: [
+        {
+          groupCode,
+          source: 4,
+        },
+        null,
+      ],
+    },
   );
 }
 
@@ -317,39 +281,21 @@ function openGuidMainWindow() {
  */
 function activeChatAndReturnPreview(peer) {
   return lite_tools.nativeCall(
-    "ns-ntApi",
-    "nodeIKernelMsgService/getAioFirstViewLatestMsgsAndAddActiveChat",
-    [
-      {
-        peer,
-        cnt: 10,
-      },
-      null,
-    ],
-    webContentId,
-    false,
-    false,
-  );
-}
-
-/**
- * 激活聊天窗口，并返回历史消息
- */
-function activeChatAndReturnHistory(peer) {
-  return lite_tools.nativeCall(
-    "ns-ntApi",
-    "nodeIKernelMsgService/getMsgsIncludeSelfAndAddActiveChat",
-    [
-      {
-        peer,
-        msgId: "0",
-        cnt: 10,
-        queryOrder: false,
-      },
-    ],
-    webContentId,
-    false,
-    false,
+    {
+      type: "request",
+      eventName: "ntApi",
+    },
+    {
+      cmdName: "nodeIKernelMsgService/getAioFirstViewLatestMsgsAndAddActiveChat",
+      cmdType: "invoke",
+      payload: [
+        {
+          peer,
+          cnt: 10,
+        },
+        null,
+      ],
+    },
   );
 }
 
@@ -357,52 +303,70 @@ function activeChatAndReturnHistory(peer) {
  * 获取记录的账号 - 登录界面选择账号列表
  */
 function getLoginList() {
-  return lite_tools.nativeCall("ns-ntApi", "nodeIKernelLoginService/getLoginList", [], webContentId, true, false);
+  return lite_tools.nativeCall(
+    {
+      type: "request",
+      eventName: "ntApi",
+    },
+    {
+      cmdName: "nodeIKernelLoginService/getLoginList",
+      cmdType: "invoke",
+      payload: [null, null],
+    },
+  );
 }
 
 /**
  * 获取当前登录账号信息
  */
 function getAuthData() {
-  return lite_tools.nativeCall("ns-GlobalDataApi", "fetchAuthData", [], webContentId, true, false);
+  return lite_tools.nativeCall(
+    {
+      type: "request",
+      eventName: "GlobalDataApi",
+    },
+    {
+      cmdName: "fetchAuthData",
+      cmdType: "invoke",
+      payload: [],
+    },
+  );
 }
 
 /**
  * 移除账号登录信息
  * @param {String} uin 账号uin
- * @returns 
+ * @returns
  */
 function resetLoginInfo(uin) {
   return lite_tools.nativeCall(
-    "ns-ntApi",
-    "nodeIKernelLoginService/resetLoginInfo",
-    [
-      {
-        uin: uin,
-      },
-      null,
-    ],
-    webContentId,
-    true,
-    false,
+    {
+      type: "request",
+      eventName: "ntApi",
+    },
+    {
+      cmdName: "nodeIKernelLoginService/deleteLoginInfo",
+      cmdType: "invoke",
+      payload: [
+        {
+          uin,
+        },
+        null,
+      ],
+    },
   );
 }
 
 export {
   sendMessage,
-  sendRawMessage,
   forwardMessage,
   goMainWindowScene,
-  openGuidMainWindow,
   getUserInfo,
   getMembersAvatar,
   getGroupsAvatar,
   getGroupInfo,
-  getGroupsList,
   getAuthData,
-  openExternalWindow,
   activeChatAndReturnPreview,
-  activeChatAndReturnHistory,
   getLoginList,
   resetLoginInfo,
 };

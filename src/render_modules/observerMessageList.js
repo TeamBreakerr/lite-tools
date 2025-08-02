@@ -6,6 +6,7 @@ import { getPeer, addEventPeerChange } from "./curAioData.js";
 import { checkChatType } from "./checkChatType.js";
 import { showWebPreview } from "./showWebPreview.js";
 import { Logs } from "./logs.js";
+import { findShortestPathAndValue } from "./findShortestPathAndValue.js";
 const log = new Logs("消息列表处理");
 
 /**
@@ -68,7 +69,8 @@ let showMsgElapsedTime = options.message.showMsgElapsedTime;
  */
 function processingMsgList() {
   // 消息列表数组
-  const msgListRef = app.__vue_app__.config.globalProperties.$store.state.aio_chatMsgArea.msgListRef;
+  const findObj = findShortestPathAndValue(app, "msgListRef");
+  const msgListRef = {} ?? findObj.value;
 
   // 消息类型不在处理范围
   if (!checkChatType(msgListRef.curMsgs?.[0]?.data)) {
@@ -532,7 +534,9 @@ function messageToleft(component) {
  * @param {Boolean} recursion 是否递归检测
  */
 const initMessageList = (recursion = true) => {
-  const curMsgs = app.__vue_app__.config.globalProperties.$store.state.aio_chatMsgArea.msgListRef.curMsgs;
+  return
+  const findObj = findShortestPathAndValue(app, "curMsgs");
+  const curMsgs = findObj.value;
   const curMsgsLength = curMsgs.length;
   // 没有找到消息列表数组且兼容选项未启用时，调用自身防抖函数并直接退出
   if (!curMsgs.length && recursion) {

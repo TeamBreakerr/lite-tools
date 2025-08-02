@@ -1,4 +1,4 @@
-import { findEventIndex } from "./findEventIndex.js";
+import { findEvent } from "./findEvent.js";
 import { checkChatType } from "./checkChatType.js";
 import { mainMessage } from "./captureWindow.js";
 import { config } from "./config.js";
@@ -11,11 +11,9 @@ import { config } from "./config.js";
  */
 function keywordReminder(args) {
   if (config.keywordReminder.enabled) {
-    const onRecvMsg = findEventIndex(args, `nodeIKernelMsgListener/onRecvMsg`);
-    const onRecvActiveMsg = findEventIndex(args, `nodeIKernelMsgListener/onRecvActiveMsg`);
-    const events = onRecvMsg !== -1 ? onRecvMsg : onRecvActiveMsg;
-    if (checkChatType(args?.[2]?.[events]?.payload?.msgList?.[0])) {
-      args[2][events].payload.msgList.forEach((msgData) => {
+    const onRecvMsg = findEvent(args, [`nodeIKernelMsgListener/onRecvMsg`, `nodeIKernelMsgListener/onRecvActiveMsg`]);
+    if (onRecvMsg && checkChatType(args?.[2]?.payload?.msgList?.[0])) {
+      args[2].payload.msgList.forEach((msgData) => {
         msgData.elements.forEach((msgElements) => {
           if (msgElements?.textElement) {
             if (config.keywordReminder.keyList.some((key) => msgElements?.textElement?.content?.includes(key))) {

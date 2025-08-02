@@ -12,11 +12,11 @@ const log = new Logs("消息后缀");
 function addMsgTail(args) {
   // 消息发送事件
   if (config?.tail?.enabled) {
-    if (args[3]?.[1]?.[0] === "nodeIKernelMsgService/sendMsg") {
+    if (args[3]?.[1]?.cmdName === "nodeIKernelMsgService/sendMsg") {
       log("消息发送事件", args);
-      if (checkChatType(args[3][1][1].peer)) {
-        if (args[3][1][1] && args[3][1][1].msgElements) {
-          const peerUid = args[3][1][1]?.peer?.peerUid;
+      if (checkChatType(args[3][1]?.payload?.[0]?.peer)) {
+        if (args[3][1]?.payload?.[0]?.msgElements) {
+          const peerUid = args[3][1].payload[0]?.peer?.peerUid;
           const tail = config.tail.list.find((tail) => {
             if (tail.filter.length === 1 && tail.filter[0] === "") {
               return true;
@@ -29,7 +29,7 @@ function addMsgTail(args) {
           if (peerUid && tail && !tail.disabled) {
             const tailContext = tail.content;
             const newLine = tail.newLine;
-            args[3][1][1].msgElements.forEach((el) => {
+            args[3][1].payload[0].msgElements.forEach((el) => {
               if (el.textElement && el.textElement?.content?.length !== 0) {
                 if (newLine) {
                   el.textElement.content += "\n";

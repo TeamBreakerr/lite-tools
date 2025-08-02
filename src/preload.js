@@ -127,53 +127,44 @@ contextBridge.exposeInMainWorld("lite_tools", {
   windowOnload: () => ipcRenderer.send("LiteLoader.lite_tools.windowOnload"),
   // 清除所有提示
   clearToast: (callback) => ipcRenderer.on("LiteLoader.lite_tools.clearToast", callback),
-  /**
-   *
-   * @param {String} sendEventName 发送事件名称
-   * @param {String} cmdName 命令名称
-   * @param {Array} args 参数数组
-   * @param {Null | Boolean | String | String[]} awaitCallback 是否需要等待回调，如果传入为字符串，则将回调监听事件改为该字符串
-   * @param {Boolean} register 注册事件监听回调用，只在启动QQ时使用，基本不会用到
-   * @returns
-   */
-  nativeCall: (sendEventName, cmdName, args, webContentId = 2, awaitCallback = false, register = false) => {
+
+  nativeCall: (event, payload, awaitCallback) => {
     const callbackId = crypto.randomUUID();
-    const eventName = `${sendEventName}-${webContentId}${register ? "-register" : ""}`;
+    const webContentId = ipcRenderer.sendSync("LiteLoader.lite_tools.getWebContentId");
     let resolve;
     if (awaitCallback) {
       resolve = new Promise((res) => {
         function onEvent(event, ...args) {
           if (typeof awaitCallback === "boolean") {
             if (args[0]?.callbackId === callbackId) {
-              ipcRenderer.off(`IPC_DOWN_${webContentId}`, onEvent);
+              ipcRenderer.off(`RM_IPCFROM_MAIN${webContentId}`, onEvent);
               res(args[1]);
             }
           } else if (Array.isArray(awaitCallback)) {
-            if (awaitCallback.includes(args?.[1]?.[0]?.cmdName)) {
-              ipcRenderer.off(`IPC_DOWN_${webContentId}`, onEvent);
+            if (awaitCallback.includes(args?.[1]?.cmdName)) {
+              ipcRenderer.off(`RM_IPCFROM_MAIN${webContentId}`, onEvent);
               res(args[1]);
             }
           } else {
-            if (args?.[1]?.[0]?.cmdName === awaitCallback) {
-              ipcRenderer.off(`IPC_DOWN_${webContentId}`, onEvent);
+            if (args?.[1]?.cmdName === awaitCallback) {
+              ipcRenderer.off(`RM_IPCFROM_MAIN${webContentId}`, onEvent);
               res(args[1]);
             }
           }
         }
-        ipcRenderer.on(`IPC_DOWN_${webContentId}`, onEvent);
+        ipcRenderer.on(`RM_IPCFROM_MAIN${webContentId}`, onEvent);
       });
     } else {
       resolve = Promise.resolve(true);
     }
-    // 发送事件
     ipcRenderer.send(
-      `IPC_UP_${webContentId}`,
+      `RM_IPCFROM_RENDERER${webContentId}`,
       {
-        type: "request",
+        peerId: webContentId,
         callbackId,
-        eventName,
+        ...event,
       },
-      [cmdName, ...args],
+      payload,
     );
     return resolve;
   },

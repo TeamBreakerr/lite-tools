@@ -45,11 +45,11 @@ export async function createSticker(config) {
   let userNameColor = "#999999";
   let msgBoxColor = "#ffffff";
   let contextColor = "#333333";
-  if (app.__vue_app__.config.globalProperties.$store.state.common_AppearanceModeSetting.isDark) {
-    userNameColor = "#808080";
-    msgBoxColor = "#262626";
-    contextColor = "#f2f2f2";
-  }
+  // if (app.__vue_app__.config.globalProperties.$store.state.common_AppearanceModeSetting.isDark) {
+  //   userNameColor = "#808080";
+  //   msgBoxColor = "#262626";
+  //   contextColor = "#f2f2f2";
+  // }
 
   // 测量用户id长度
   ctx.save();

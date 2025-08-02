@@ -1,4 +1,5 @@
 import { Logs } from "./logs.js";
+import { findShortestPathAndValue } from "./findShortestPathAndValue.js";
 const log = new Logs("peer管理模块");
 
 let curAioData = null;
@@ -10,13 +11,15 @@ const eventList = [];
  * @returns {void}
  */
 function initCurAioData() {
-  if (!app?.__vue_app__?.config?.globalProperties?.$store?.state?.common_Aio?.curAioData) {
+  const findObj = findShortestPathAndValue(app, "curAioData");
+  if (!findObj?.value?.chatType) {
     setTimeout(initCurAioData, 500);
     log("等待数据初始化");
     return;
   }
-  curAioData = app.__vue_app__.config.globalProperties.$store.state.common_Aio.curAioData;
-  Object.defineProperty(app.__vue_app__.config.globalProperties.$store.state.common_Aio, "curAioData", {
+  log("获取到curAioData", findObj);
+  curAioData = findObj.value;
+  Object.defineProperty(findObj.parent, "curAioData", {
     enumerable: true,
     configurable: true,
     get() {
@@ -28,7 +31,6 @@ function initCurAioData() {
       emitEvent();
     },
   });
-  log("捕获到 curAioData 对象，触发一次更新事件");
   emitEvent();
 }
 

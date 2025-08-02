@@ -97,10 +97,15 @@ function proxySend(window) {
       }
     } else {
       try {
-        if (args?.[2]?.[0]?.cmdName === "nodeIKernelSessionListener/onSessionInitComplete") {
+        if (args?.[2]?.uid) {
           loadUserConfig(args?.[2]?.payload?.uid);
           initMain();
-          log("成功读取配置文件");
+          log("成功读取配置文件-newVersion");
+          init = true;
+        } else if (args?.[2]?.[0]?.cmdName === "nodeIKernelSessionListener/onSessionInitComplete") {
+          loadUserConfig(args?.[2]?.payload?.uid);
+          initMain();
+          log("成功读取配置文件-old");
           init = true;
         }
       } catch (err) {

@@ -7,7 +7,7 @@ import { settingWindow } from "./captureWindow.js";
 import { MessageRecallList } from "./MessageRecallList.js";
 import { globalBroadcast } from "./globalBroadcast.js";
 import { checkChatType } from "./checkChatType.js";
-import { findEventIndex } from "./findEventIndex.js";
+import { findEvent } from "./findEvent.js";
 import { LimitedMap } from "./LimitedMap.js";
 import { processPic } from "./processPic.js";
 import { Logs } from "./logs.js";
@@ -108,18 +108,16 @@ function messageRecall(args) {
     }
 
     // 最近联系人列表更新事件 - 选项>阻止撤回>拦截所有撤回
-    const findRecentListIndex = findEventIndex(args, "nodeIKernelRecentContactListener/onRecentContactListChangedVer2");
-    if (config.preventMessageRecall.blockAllRetractions && findRecentListIndex !== -1) {
-      activeAllChat(args?.[2]?.[findRecentListIndex]);
+    const findRecentListIndex = findEvent(args, "nodeIKernelRecentContactListener/onRecentContactListChangedVer2");
+    if (config.preventMessageRecall.blockAllRetractions && findRecentListIndex) {
+      activeAllChat(args?.[2]);
       return;
     }
 
     // 接收到的新消息
-    const onRecvMsg = findEventIndex(args, `nodeIKernelMsgListener/onRecvMsg`);
-    const onRecvActiveMsg = findEventIndex(args, `nodeIKernelMsgListener/onRecvActiveMsg`);
-    const recvMsgUpdate = onRecvMsg !== -1 ? onRecvMsg : onRecvActiveMsg;
-    if (checkChatType(args?.[2]?.[recvMsgUpdate]?.payload?.msgList?.[0])) {
-      const msgList = args[2][recvMsgUpdate].payload.msgList;
+    const onRecvMsg = findEvent(args, [`nodeIKernelMsgListener/onRecvMsg`, `nodeIKernelMsgListener/onRecvActiveMsg`]);
+    if (onRecvMsg && checkChatType(args?.[2]?.payload?.msgList?.[0])) {
+      const msgList = args[2].payload.msgList;
       for (let i = 0; i < msgList.length; i++) {
         const msgItem = msgList[i];
         if (msgItem?.elements?.length) {
@@ -130,11 +128,12 @@ function messageRecall(args) {
     }
 
     // 消息列表更新
-    const onMsgInfoListUpdate = findEventIndex(args, "nodeIKernelMsgListener/onMsgInfoListUpdate");
-    const onActiveMsgInfoUpdate = findEventIndex(args, "nodeIKernelMsgListener/onActiveMsgInfoUpdate");
-    const msgInfoListUpdate = onMsgInfoListUpdate !== -1 ? onMsgInfoListUpdate : onActiveMsgInfoUpdate;
-    if (checkChatType(args?.[2]?.[msgInfoListUpdate]?.payload?.msgList?.[0])) {
-      const msgList = args[2][msgInfoListUpdate].payload.msgList;
+    const onMsgInfoListUpdate = findEvent(args, [
+      `nodeIKernelMsgListener/onMsgInfoListUpdate`,
+      `nodeIKernelMsgListener/onActiveMsgInfoUpdate`,
+    ]);
+    if (onMsgInfoListUpdate && checkChatType(args?.[2]?.payload?.msgList?.[0])) {
+      const msgList = args[2].payload.msgList;
       for (let i = 0; i < msgList.length; i++) {
         const msgItem = msgList[i];
         /**
@@ -162,7 +161,7 @@ function messageRecall(args) {
             }
             processPic(findInCatch);
             if (!config.preventMessageRecall.stealthMode) {
-              args[2][msgInfoListUpdate].payload.msgList.splice(i, 1);
+              args[2].payload.msgList.splice(i, 1);
             }
             log("成功阻止实时撤回");
           } else {
@@ -200,14 +199,22 @@ function activeAllChat(recentContactList) {
             }
             log("激活聊天", activeMessageList.size, peer);
             activeMessageList.add(peer.peerUid);
-            ipcMain.emit("IPC_UP_2", {}, { type: "request", callbackId: randomUUID(), eventName: "ns-ntApi-2" }, [
-              "nodeIKernelMsgService/getAioFirstViewLatestMsgsAndAddActiveChat",
+            ipcMain.emit(
+              "RM_IPCFROM_RENDERER3",
+              {},
+              { type: "request", callbackId: randomUUID(), eventName: "ntApi", peerId: 3 },
               {
-                peer,
-                cnt: 10,
+                cmdName: "nodeIKernelMsgService/getAioFirstViewLatestMsgsAndAddActiveChat",
+                cmdType: "invoke",
+                payload: [
+                  {
+                    peer,
+                    cnt: 10,
+                  },
+                  null,
+                ],
               },
-              null,
-            ]);
+            );
           }
         }
       }
