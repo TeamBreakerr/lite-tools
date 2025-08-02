@@ -98,7 +98,7 @@ function proxySend(window) {
     } else {
       try {
         if (args?.[2]?.[0]?.cmdName === "nodeIKernelSessionListener/onSessionInitComplete") {
-          loadUserConfig(args?.[2]?.[0]?.payload?.uid);
+          loadUserConfig(args?.[2]?.payload?.uid);
           initMain();
           log("成功读取配置文件");
           init = true;
