@@ -13,6 +13,8 @@ declare module "*.html" {
 interface Window {
   navigation: any;
   qwqnt: any;
+  lt_logs: () => void;
+  lt_errors: () => void;
 }
 
 // RendererEvents
