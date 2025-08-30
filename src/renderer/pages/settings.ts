@@ -27,7 +27,20 @@ function initSettingView(view: HTMLDivElement) {
 }
 
 async function initSettings(view: HTMLDivElement) {
-  // 列表展开功能
+  // 显示插件版本信息
+  const versionLink = view.querySelector(".version .link") as HTMLElement;
+  versionLink.innerText = packageJson.version;
+  // 初始化折叠
+  initWrap(view);
+  // 初始化switch按钮
+  initSwitchButton(view);
+  // 初始化下拉菜单
+  initSelectMenu(view);
+  log("初始化设置页面完成");
+}
+
+// 初始化折叠
+function initWrap(view: HTMLDivElement) {
   view.querySelectorAll(".wrap .vertical-list-item.title").forEach((el) => {
     el.addEventListener("click", () => {
       const wrap = el.parentElement!;
@@ -35,13 +48,15 @@ async function initSettings(view: HTMLDivElement) {
       wrap.querySelector("ul")!.classList.toggle("hidden");
     });
   });
-  // 初始化switch功能
+}
+
+// 初始化switch按钮
+function initSwitchButton(view: HTMLDivElement) {
   view.querySelectorAll(".q-switch").forEach((el) => {
     const configPath = el.getAttribute("data-config");
     if (configPath) {
       const configValue = getValueByPath(options, configPath);
       if (configValue !== undefined) {
-
         el.classList.toggle("is-active", configValue);
         // 初始化时触发一次事件
         const event = new CustomEvent(configPath, { detail: configValue });
@@ -62,12 +77,52 @@ async function initSettings(view: HTMLDivElement) {
         el.classList.add("error-switch");
         el.setAttribute("title", "配置项不存在");
       }
-    } else if (options.debug.isDev) {
-      el.classList.add("error-switch");
-      el.setAttribute("title", "未填写配置项");
     }
   });
-  log("初始化设置页面完成");
+}
+
+// 初始化下拉菜单
+function initSelectMenu(view: HTMLDivElement) {
+  view.addEventListener("click", function (event) {
+    const target = event.target as HTMLElement;
+    if (!target.closest(".setting-select")) {
+      view.querySelectorAll(".setting-option")!.forEach((item) => {
+        item.classList.remove("show");
+      });
+    }
+  });
+  view.querySelectorAll(".setting-select").forEach((el) => {
+    const item = el as HTMLElement;
+    const configPath = item.getAttribute("data-config");
+    if (configPath) {
+      item.addEventListener("click", function (event) {
+        const target = event.target as HTMLElement;
+        log("点击下拉菜单", target.classList);
+        if (target.classList.contains("setting-item")) {
+          const newValue = target.getAttribute("data-value");
+          const showVlaue = target.innerText;
+          setValueByPath(options, configPath, newValue);
+          log("更新配置项", item, configPath, newValue);
+          // 通知主进程配置被修改
+          // lite_tools.setOptions(options);
+          item.querySelector("input.setting-input")?.setAttribute("value", showVlaue);
+          item.querySelector("div.setting-view")?.setAttribute("data-value", showVlaue);
+        }
+        view.querySelectorAll(".setting-select")!.forEach((item) => {
+          if (item === el) return;
+          item.querySelector(".setting-option")!.classList.remove("show");
+        });
+        item.querySelector(".setting-option")!.classList.toggle("show");
+      });
+      const configValue = getValueByPath(options, configPath);
+      const findEl = Array.from(item.querySelectorAll(".setting-item")).find(
+        (item) => item.getAttribute("data-value") === configValue
+      ) as HTMLElement;
+      const showVlaue = findEl?.innerText ?? configValue;
+      item.querySelector("input.setting-input")?.setAttribute("value", showVlaue);
+      item.querySelector("div.setting-view")?.setAttribute("data-value", showVlaue);
+    }
+  });
 }
 
 export default initSettingView;
