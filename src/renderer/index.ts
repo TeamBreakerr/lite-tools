@@ -1,4 +1,3 @@
-import a from "./scss/main.scss";
 import settingsHTML from "./html/settings.html";
 import getHash from "./utils/getHash";
 
