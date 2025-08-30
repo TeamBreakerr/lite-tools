@@ -1,0 +1,37 @@
+{
+  "$schema": "https://raw.githubusercontent.com/QwQ-002/types/main/plugin.schema.json",
+  "name": "lite_tools",
+  "version": "4.0.0",
+  "description": "轻量 · 优雅 · 高效",
+  "type": "commonjs",
+  "qwqnt": {
+    "name": "轻量工具箱",
+    "settings": "lite_tools",
+    "inject": {
+      "renderer": "./dist/renderer/index.qwq.js",
+      "preload": "./preload.js"
+    },
+    "dependencies": {
+      "ipc_interceptor": "^0.0.1",
+      "qwqnt-plugin_settings": "^1.2.5"
+    }
+  },
+  "author": "xiyue",
+  "license": "AGPL-3.0-only",
+  "main": "./dist/main/index.js",
+  "scripts": {
+    "build": "ts-node -P ./tsconfig.json scripts/build.ts",
+    "dev": "ts-node -P ./tsconfig.json scripts/build.ts --watch"
+  },
+  "keywords": [],
+  "packageManager": "pnpm@10.13.1",
+  "devDependencies": {
+    "@types/node": "20.11.20",
+    "electron": "^37.2.5",
+    "esbuild": "^0.25.8",
+    "esbuild-sass-plugin": "^3.3.1",
+    "sass": "^1.89.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  }
+}
