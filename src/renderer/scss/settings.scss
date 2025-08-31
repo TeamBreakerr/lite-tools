@@ -332,11 +332,13 @@
   .error-switch {
     .q-switch,
     &.q-switch {
-      &:active {
-        .q-switch__handle {
-          width: 10px !important;
-        }
-      }
+      cursor: not-allowed;
+      background-color: var(--lt-btn-danger-bg) !important;
+    }
+  }
+  .error-select {
+    .setting-select,
+    &.setting-select {
       cursor: not-allowed;
       background-color: var(--lt-btn-danger-bg) !important;
     }
