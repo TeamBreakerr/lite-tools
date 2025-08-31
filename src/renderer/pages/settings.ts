@@ -39,6 +39,11 @@ async function initSettings(view: HTMLDivElement) {
   log("初始化设置页面完成");
 }
 
+function dispatchEvent(el: HTMLElement, configPath: string, detail: any) {
+  const event = new CustomEvent(configPath, { detail });
+  el.dispatchEvent(event);
+}
+
 // 初始化折叠
 function initWrap(view: HTMLDivElement) {
   view.querySelectorAll(".wrap .vertical-list-item.title").forEach((el) => {
@@ -59,21 +64,19 @@ function initSwitchButton(view: HTMLDivElement) {
       if (configValue !== undefined) {
         el.classList.toggle("is-active", configValue);
         // 初始化时触发一次事件
-        const event = new CustomEvent(configPath, { detail: configValue });
-        view.dispatchEvent(event);
+        dispatchEvent(view, configPath, configValue);
         // 添加事件
         el.addEventListener("click", function () {
           const newValue = el.classList.toggle("is-active");
           log("更新配置项", configPath, newValue);
           setValueByPath(options, configPath, newValue);
-          const event = new CustomEvent(configPath, { detail: newValue });
-          view.dispatchEvent(event);
           // 通知主进程配置被修改
           // lite_tools.setOptions(options);
+          dispatchEvent(view, configPath, newValue);
           // 彩蛋触发函数
           // switchButtons();
         });
-      } else if (options.debug.isDev) {
+      } else {
         el.classList.add("error-switch");
         el.setAttribute("title", "配置项不存在");
       }
@@ -83,6 +86,7 @@ function initSwitchButton(view: HTMLDivElement) {
 
 // 初始化下拉菜单
 function initSelectMenu(view: HTMLDivElement) {
+  // 全局点击事件，关闭下拉菜单
   view.addEventListener("click", function (event) {
     const target = event.target as HTMLElement;
     if (!target.closest(".setting-select")) {
@@ -95,32 +99,42 @@ function initSelectMenu(view: HTMLDivElement) {
     const item = el as HTMLElement;
     const configPath = item.getAttribute("data-config");
     if (configPath) {
-      item.addEventListener("click", function (event) {
-        const target = event.target as HTMLElement;
-        log("点击下拉菜单", target.classList);
-        if (target.classList.contains("setting-item")) {
-          const newValue = target.getAttribute("data-value");
-          const showVlaue = target.innerText;
-          setValueByPath(options, configPath, newValue);
-          log("更新配置项", item, configPath, newValue);
-          // 通知主进程配置被修改
-          // lite_tools.setOptions(options);
-          item.querySelector("input.setting-input")?.setAttribute("value", showVlaue);
-          item.querySelector("div.setting-view")?.setAttribute("data-value", showVlaue);
-        }
-        view.querySelectorAll(".setting-select")!.forEach((item) => {
-          if (item === el) return;
-          item.querySelector(".setting-option")!.classList.remove("show");
-        });
-        item.querySelector(".setting-option")!.classList.toggle("show");
-      });
+      // 初始化选项
       const configValue = getValueByPath(options, configPath);
-      const findEl = Array.from(item.querySelectorAll(".setting-item")).find(
-        (item) => item.getAttribute("data-value") === configValue
-      ) as HTMLElement;
-      const showVlaue = findEl?.innerText ?? configValue;
-      item.querySelector("input.setting-input")?.setAttribute("value", showVlaue);
-      item.querySelector("div.setting-view")?.setAttribute("data-value", showVlaue);
+      if (configValue !== undefined) {
+        const findEl = Array.from(item.querySelectorAll(".setting-item")).find(
+          (item) => item.getAttribute("data-value") === configValue
+        ) as HTMLElement;
+        const showVlaue = findEl?.innerText ?? configValue;
+        item.querySelector("input.setting-input")!.setAttribute("value", showVlaue);
+        item.querySelector("div.setting-view")!.setAttribute("data-value", showVlaue);
+        // 初始化时触发一次事件
+        dispatchEvent(view, configPath, configValue);
+        // 添加监听
+        item.addEventListener("click", function (event) {
+          const target = event.target as HTMLElement;
+          log("点击下拉菜单", target.classList);
+          if (target.classList.contains("setting-item")) {
+            const newValue = target.getAttribute("data-value");
+            const showVlaue = target.innerText;
+            setValueByPath(options, configPath, newValue);
+            log("更新配置项", item, configPath, newValue);
+            // 通知主进程配置被修改
+            // lite_tools.setOptions(options);
+            item.querySelector("input.setting-input")?.setAttribute("value", showVlaue);
+            item.querySelector("div.setting-view")?.setAttribute("data-value", showVlaue);
+            dispatchEvent(view, configPath, newValue);
+          }
+          view.querySelectorAll(".setting-select")!.forEach((item) => {
+            if (item === el) return;
+            item.querySelector(".setting-option")!.classList.remove("show");
+          });
+          item.querySelector(".setting-option")!.classList.toggle("show");
+        });
+      } else {
+        el.classList.add("error-switch");
+        el.setAttribute("title", "配置项不存在");
+      }
     }
   });
 }
