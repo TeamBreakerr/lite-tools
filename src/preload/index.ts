@@ -2,10 +2,10 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { Config } from "@common/types";
 
 const exposeFunctions = {
-  updateConfig: (config: Config) => ipcRenderer.invoke("lite_tools.updateConfig", config),
-  getConfig: (): Config => ipcRenderer.sendSync("lite_tools.getConfig"),
+  updateConfig: (config: Config) => ipcRenderer.send("lite_tools.updateConfig", config),
+  getConfig: async (): Promise<Config> => ipcRenderer.invoke("lite_tools.getConfig"),
   onConfigChange: (callback: (config: Config) => void) =>
-    ipcRenderer.on("lite_tools.onConfigChange", (_, config) => callback(config)),
+    ipcRenderer.on("lite_tools.configChanged", (_, config: Config) => callback(config)),
 };
 
 contextBridge.exposeInMainWorld("lite_tools", exposeFunctions);
