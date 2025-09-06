@@ -3,10 +3,15 @@ import settingsHTML from "@renderer/html/settings.html";
 import settingsCss from "@renderer/scss/settings.scss";
 import createLogger from "@renderer/utils/logs";
 import { getValueByPath, setValueByPath } from "@renderer/utils/objectHandler";
-import { options } from "@renderer/utils/options";
+import configStore from "@renderer/utils/config";
 import { isQwQ } from "@renderer/utils/loaderInspector";
 
 const log = createLogger("settings");
+const config = configStore.config;
+
+configStore.onChange((config) => {
+  console.log("配置更新", config);
+});
 
 document.head.appendChild(document.createElement("style")).appendChild(document.createTextNode(settingsCss));
 
@@ -60,7 +65,7 @@ function initSwitchButton(view: HTMLDivElement) {
   view.querySelectorAll(".q-switch").forEach((el) => {
     const configPath = el.getAttribute("data-config");
     if (configPath) {
-      const configValue = getValueByPath(options, configPath);
+      const configValue = getValueByPath(config, configPath);
       if (configValue !== undefined) {
         el.classList.toggle("is-active", configValue);
         // 初始化时触发一次事件
@@ -69,9 +74,8 @@ function initSwitchButton(view: HTMLDivElement) {
         el.addEventListener("click", function () {
           const newValue = el.classList.toggle("is-active");
           log("更新配置项", configPath, newValue);
-          setValueByPath(options, configPath, newValue);
-          // 通知主进程配置被修改
-          // lite_tools.setOptions(options);
+          setValueByPath(config, configPath, newValue);
+          configStore.setConfig(config);
           dispatchEvent(view, configPath, newValue);
           // 彩蛋触发函数
           // switchButtons();
@@ -100,7 +104,7 @@ function initSelectMenu(view: HTMLDivElement) {
     const configPath = item.getAttribute("data-config");
     if (configPath) {
       // 初始化选项
-      const configValue = getValueByPath(options, configPath);
+      const configValue = getValueByPath(config, configPath);
       if (configValue !== undefined) {
         const findEl = Array.from(item.querySelectorAll(".setting-item")).find(
           (item) => item.getAttribute("data-value") === configValue
@@ -117,10 +121,9 @@ function initSelectMenu(view: HTMLDivElement) {
           if (target.classList.contains("setting-item")) {
             const newValue = target.getAttribute("data-value");
             const showVlaue = target.innerText;
-            setValueByPath(options, configPath, newValue);
-            log("更新配置项", item, configPath, newValue);
-            // 通知主进程配置被修改
-            // lite_tools.setOptions(options);
+            log("更新下拉配置项", item, configPath, newValue);
+            setValueByPath(config, configPath, newValue);
+            configStore.setConfig(config);
             item.querySelector("input.setting-input")?.setAttribute("value", showVlaue);
             item.querySelector("div.setting-view")?.setAttribute("data-value", showVlaue);
             dispatchEvent(view, configPath, newValue);

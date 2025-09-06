@@ -1,33 +1,42 @@
-import { Config } from "@common/types";
+import type { Config } from "@common/types";
+import type { LiteTools } from "@preload/index";
 
-let _config: Config;
+declare const lite_tools: LiteTools;
+type ConfigListener = (config: Config) => void;
 
-// 更新配置
-function updateConfig(config: Config) {
-  lite_tools.updateConfig(config);
+class ConfigStore {
+  private listeners: Set<ConfigListener> = new Set();
+
+  config: Config;
+
+  setConfig(update: Config) {
+    Object.assign(this.config, update);
+    lite_tools.updateConfig(this.config);
+  }
+
+  onChange(listener: ConfigListener) {
+    if (!this.listeners.has(listener)) {
+      this.listeners.add(listener);
+    }
+  }
+
+  offChange(listener: ConfigListener) {
+    if (this.listeners.has(listener)) {
+      this.listeners.delete(listener);
+    }
+  }
+
+  private notify() {
+    this.listeners.forEach((listener) => listener(this.config));
+  }
+
+  constructor() {
+    this.config = lite_tools.getConfig();
+    lite_tools.onConfigChange((config: Config) => {
+      Object.assign(this.config, config);
+      this.notify();
+    });
+  }
 }
 
-// 获取配置
-function getConfig(): Readonly<Config> {
-  return JSON.parse(JSON.stringify(_config));
-}
-
-// 通知渲染进程配置变化
-function dispatchConfigChange(config: Config) {
-  const event = new CustomEvent("lt_configChange", { detail: config });
-  document.dispatchEvent(event);
-}
-
-// 初始化配置
-async function setupConfig() {
-  _config = await lite_tools.getConfig();
-  lite_tools.onConfigChange((config: Config) => {
-    _config = config;
-    dispatchConfigChange(JSON.parse(JSON.stringify(config)));
-  });
-}
-
-// 初始化
-setupConfig();
-
-export { getConfig, updateConfig };
+export default new ConfigStore();

@@ -1,6 +1,13 @@
-const { contextBridge, ipcRenderer } = require("electron");
+import { contextBridge, ipcRenderer } from "electron";
+import type { Config } from "@common/types";
 
-// 在window对象下导出只读对象
-contextBridge.exposeInMainWorld("lite_tools", {
-  
-})
+const exposeFunctions = {
+  updateConfig: (config: Config) => ipcRenderer.invoke("lite_tools.updateConfig", config),
+  getConfig: (): Config => ipcRenderer.sendSync("lite_tools.getConfig"),
+  onConfigChange: (callback: (config: Config) => void) =>
+    ipcRenderer.on("lite_tools.onConfigChange", (_, config) => callback(config)),
+};
+
+contextBridge.exposeInMainWorld("lite_tools", exposeFunctions);
+
+export type LiteTools = typeof exposeFunctions;
