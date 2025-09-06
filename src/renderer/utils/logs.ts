@@ -1,15 +1,13 @@
+import configStore from "./config";
+
 const logList: { name: string; log: any }[] = [];
 const errorList: { type: string; msg: any }[] = [];
 
 // 临时参数
-const options = {
-  debug: {
-    console: true,
-  },
-};
+const config = configStore.config;
 
 window.lt_logs = () => {
-  if (options.debug.console) {
+  if (config.debug.console) {
     logList.forEach((el) => {
       console.log(`[${el.name}]`, ...el.log);
     });
@@ -20,7 +18,7 @@ window.lt_logs = () => {
 };
 
 window.lt_errors = () => {
-  if (options.debug.console) {
+  if (config.debug.console) {
     errorList.forEach((el) => {
       console.log(`[${el.type}]`, ...el.msg);
     });
@@ -65,7 +63,7 @@ class Logs {
   }
 
   logToConsole = (...args: any[]) => {
-    if (options.debug.console) {
+    if (config.debug.console) {
       console.log(`[${this.moduleName}]`, ...args);
       this.saveToLogList(args);
     }
