@@ -1,5 +1,5 @@
 import { setupConfig } from "./modules/config";
-import createLogger from "./utils/createLogger";
+import { createLogger } from "./utils/createLogger";
 import type { BrowserWindow } from "electron";
 
 if (!("IpcInterceptor" in globalThis)) {

@@ -1,4 +1,4 @@
-export default function createLogger(moduleName: string) {
+export function createLogger(moduleName: string) {
   let log = (...args: any) => {
     console.log(`[${moduleName}]`, ...args);
   };
