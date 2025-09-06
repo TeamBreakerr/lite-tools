@@ -24,8 +24,9 @@
     "dev": "ts-node -P ./tsconfig.json scripts/build.ts --watch"
   },
   "keywords": [],
-  "packageManager": "pnpm@10.13.1",
+  "packageManager": "pnpm@10.15.1",
   "devDependencies": {
+    "@qwqnt/types": "github:QwQ-002/types",
     "@types/node": "20.11.20",
     "electron": "^37.2.5",
     "esbuild": "^0.25.8",
