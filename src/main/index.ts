@@ -2,10 +2,6 @@ import { setupConfig } from "./modules/config";
 import { createLogger } from "./utils/createLogger";
 import type { BrowserWindow } from "electron";
 
-if (!("IpcInterceptor" in globalThis)) {
-  throw new Error("请安装前置插件 ipc_interceptor");
-}
-
 const log = createLogger("lt_main");
 
 log("插件启动");
