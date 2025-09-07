@@ -1,5 +1,5 @@
-import initSettingView from "./pages/settings";
-import main from "./index";
+import { initSettingView } from "./pages/settings";
+import { main } from "./index";
 
 main();
 

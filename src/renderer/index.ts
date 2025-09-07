@@ -1,9 +1,6 @@
-import settingsHTML from "./html/settings.html";
 import getHash from "./utils/getHash";
 
-console.log(settingsHTML)
-
-export default async function main() {
+export async function main() {
   const hash = await getHash();
   switch (hash) {
     case "#/main/message":
