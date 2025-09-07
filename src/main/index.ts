@@ -22,4 +22,4 @@ process.on("uncaughtException", (e) => {
   log("主进程出错", e, e?.stack);
 });
 
-export default { onBrowserWindowCreated };
+module.exports = { onBrowserWindowCreated };
