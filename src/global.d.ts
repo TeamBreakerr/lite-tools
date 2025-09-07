@@ -1,5 +1,3 @@
-/// <reference types="./src/types/qwqnt-framework/main.d.ts" />
-
 declare module "*.scss" {
   const content: string;
   export default content;
