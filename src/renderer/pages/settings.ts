@@ -3,19 +3,23 @@ import settingsHTML from "@renderer/html/settings.html";
 import settingsCss from "@renderer/scss/settings.scss";
 import { createLogger } from "@renderer/utils/logs";
 import { getValueByPath, setValueByPath } from "@renderer/utils/objectHandler";
-import configStore from "@renderer/utils/config";
+import { configStore } from "@renderer/utils/config";
 import { isQwQ } from "@renderer/utils/loaderInspector";
+import type { Config } from "@common/types";
 
 const log = createLogger("settings");
-const config = configStore.config;
 
 configStore.onChange((config) => {
-  console.log("配置更新", config);
+  log("配置更新", config);
 });
 
 document.head.appendChild(document.createElement("style")).appendChild(document.createTextNode(settingsCss));
 
-function initSettingView(view: HTMLDivElement) {
+async function initSettingView(view: HTMLDivElement) {
+  await configStore.ready();
+  const config = configStore.config;
+  log("获取到配置数据", config);
+
   const devInfo: HTMLDivElement = document.createElement("div");
   devInfo.className = "wrap";
   devInfo.innerHTML = `
@@ -28,19 +32,19 @@ function initSettingView(view: HTMLDivElement) {
   view.insertAdjacentHTML("beforeend", settingsHTML);
   view.querySelector(".lite-tools-settings")!.insertAdjacentElement("afterbegin", devInfo);
   log("初始化HTML完成");
-  initSettings(view);
+  initSettings(view, config);
 }
 
-async function initSettings(view: HTMLDivElement) {
+async function initSettings(view: HTMLDivElement, config: Config) {
   // 显示插件版本信息
   const versionLink = view.querySelector(".version .link") as HTMLElement;
   versionLink.innerText = packageJson.version;
   // 初始化折叠
   initWrap(view);
   // 初始化switch按钮
-  initSwitchButton(view);
+  initSwitchButton(view, config);
   // 初始化下拉菜单
-  initSelectMenu(view);
+  initSelectMenu(view, config);
   log("初始化设置页面完成");
 }
 
@@ -61,7 +65,7 @@ function initWrap(view: HTMLDivElement) {
 }
 
 // 初始化switch按钮
-function initSwitchButton(view: HTMLDivElement) {
+function initSwitchButton(view: HTMLDivElement, config: Config) {
   view.querySelectorAll(".q-switch").forEach((el) => {
     const configPath = el.getAttribute("data-config");
     if (configPath) {
@@ -89,7 +93,7 @@ function initSwitchButton(view: HTMLDivElement) {
 }
 
 // 初始化下拉菜单
-function initSelectMenu(view: HTMLDivElement) {
+function initSelectMenu(view: HTMLDivElement, config: Config) {
   // 全局点击事件，关闭下拉菜单
   view.addEventListener("click", function (event) {
     const target = event.target as HTMLElement;
@@ -110,8 +114,8 @@ function initSelectMenu(view: HTMLDivElement) {
           (item) => item.getAttribute("data-value") === configValue
         ) as HTMLElement;
         const showVlaue = findEl?.innerText ?? configValue;
-        item.querySelector("input.setting-input")!.setAttribute("value", showVlaue);
-        item.querySelector("div.setting-view")!.setAttribute("data-value", showVlaue);
+        item.querySelector("input.setting-input")?.setAttribute("value", showVlaue);
+        item.querySelector("div.setting-view")?.setAttribute("data-value", showVlaue);
         // 初始化时触发一次事件
         dispatchEvent(view, configPath, configValue);
         // 添加监听
@@ -142,4 +146,4 @@ function initSelectMenu(view: HTMLDivElement) {
   });
 }
 
-export default initSettingView;
+export { initSettingView };
