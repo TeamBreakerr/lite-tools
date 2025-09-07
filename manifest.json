@@ -12,11 +12,8 @@
       "link": "https://github.com/xiyuesaves"
     }
   ],
-  "platform": [
-    "win32",
-    "linux",
-    "darwin"
-  ],
+  "platform": ["win32", "linux", "darwin"],
+  "dependencies": ["ipc_interceptor"],
   "injects": {
     "renderer": "./dist/renderer/index.ll.js",
     "main": "./dist/main/index.js",
