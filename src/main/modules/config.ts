@@ -4,7 +4,6 @@ import { dialog, ipcMain } from "electron";
 import { configPath, dataPath } from "@main/utils/localPath";
 import { UserConfigRegistry } from "@main/utils/UserConfigRegistry";
 import { globalBroadcast } from "@main/utils/globalBroadcast";
-
 import configTemplate from "@common/config.template.json";
 import { createLogger } from "@main/utils/createLogger";
 import type { Config } from "@common/types";
@@ -54,7 +53,7 @@ function loadConfig(configPath: string): Config {
     dialog.showMessageBox({
       type: "info",
       title: "[轻量工具箱] 配置文件损坏",
-      message: "用户配置文件损坏，请重新配置\n\n这不是QQ的问题，请勿向腾讯团队反馈！",
+      message: "用户配置文件损坏，请重新配置",
       buttons: ["确定"],
     });
     fs.renameSync(configPath, `${configPath}.bak`);
@@ -78,8 +77,8 @@ function setupPath() {
   } catch (err) {
     dialog.showMessageBox({
       type: "info",
-      title: "[轻量工具箱] 权限错误",
-      message: "无法访问配置文件路径，请检查权限\n\n这不是QQ的问题，请勿向腾讯团队反馈！",
+      title: "[轻量工具箱] 路径错误",
+      message: "无法访问配置文件路径，请检查路径是否存在，或读写权限是否正确",
       buttons: ["确定"],
     });
     throw err;

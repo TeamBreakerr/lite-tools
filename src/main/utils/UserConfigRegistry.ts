@@ -24,7 +24,7 @@ export class UserConfigRegistry {
         dialog.showMessageBox({
           type: "info",
           title: "[轻量工具箱] 配置文件损坏",
-          message: "独立配置索引文件损坏，请重新配置\n\n这不是QQ的问题，请勿向腾讯团队反馈！",
+          message: "独立配置索引文件损坏，请重新配置",
           buttons: ["确定"],
         });
       }
