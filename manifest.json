@@ -4,7 +4,7 @@
   "name": "轻量工具箱",
   "slug": "lite_tools",
   "description": "轻量 · 优雅 · 高效",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "icon": "./icon.png",
   "authors": [
     {
@@ -20,10 +20,10 @@
   "injects": {
     "renderer": "./dist/renderer/index.ll.js",
     "main": "./dist/main/index.js",
-    "preload": "./preload.js"
+    "preload": "./dist/preload/index.js"
   },
   "repository": {
     "repo": "xiyuesaves/lite_tools",
-    "branch": "v5-ts"
+    "branch": "v5-dev-ts"
   }
 }

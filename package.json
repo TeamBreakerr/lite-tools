@@ -9,7 +9,7 @@
     "settings": "lite_tools",
     "inject": {
       "renderer": "./dist/renderer/index.qwq.js",
-      "preload": "./preload.js"
+      "preload": "./dist/preload/index.js"
     },
     "dependencies": {
       "ipc_interceptor": "^0.0.1",
