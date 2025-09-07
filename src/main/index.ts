@@ -11,7 +11,6 @@ const log = createLogger("lt_main");
 log("插件启动");
 
 const unSubscribe = IpcInterceptor.onIpcSendEvents("nodeIKernelSessionListener/onSessionInitComplete", (...args) => {
-  log("获取到UID", args);
   setupConfig(args[2].payload.uid);
   unSubscribe();
 });
