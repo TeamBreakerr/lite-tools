@@ -4,8 +4,12 @@ import { dialog, ipcMain } from "electron";
 import { configPath, dataPath } from "@main/utils/localPath";
 import { UserConfigRegistry } from "@main/utils/UserConfigRegistry";
 import { globalBroadcast } from "@main/utils/globalBroadcast";
+
 import configTemplate from "@common/config.template.json";
+import { createLogger } from "@main/utils/createLogger";
 import type { Config } from "@common/types";
+
+const log = createLogger("config");
 
 let config = {} as Config;
 let isInitialized = false;
@@ -17,21 +21,25 @@ const listeners = new Set<ConfigListener>();
 
 const defaultConfigPath = path.join(configPath, "config.json");
 
-const register = new UserConfigRegistry(path.join(configPath, "UserConfigRegistry.json"));
-
 function setupConfig(uid: string) {
-  setupPath();
-  setupIpcEvent();
-  const userConfigPath = register.get(uid);
-  if (userConfigPath) {
-    config = loadConfig(userConfigPath);
-    currentConfigPath = userConfigPath;
-    isInitialized = true;
-    isIndependent = true;
-  } else {
-    config = loadConfig(defaultConfigPath);
-    currentConfigPath = defaultConfigPath;
-    isInitialized = true;
+  try {
+    log("开始读取配置文件");
+    setupPath();
+    setupIpcEvent();
+    const register = new UserConfigRegistry(path.join(configPath, "UserConfigRegistry.json"));
+    const userConfigPath = register.get(uid);
+    if (userConfigPath) {
+      config = loadConfig(userConfigPath);
+      currentConfigPath = userConfigPath;
+      isInitialized = true;
+      isIndependent = true;
+    } else {
+      config = loadConfig(defaultConfigPath);
+      currentConfigPath = defaultConfigPath;
+      isInitialized = true;
+    }
+  } catch (err) {
+    log("初始化配置出错", err);
   }
 }
 
@@ -58,11 +66,13 @@ function loadConfig(configPath: string): Config {
 function setupPath() {
   try {
     if (!fs.existsSync(configPath)) {
+      log("初始化配置路径");
       fs.mkdirSync(configPath, { recursive: true });
       fs.mkdirSync(path.join(configPath, "configs"), { recursive: true });
       fs.mkdirSync(path.join(configPath, "messageRecall"), { recursive: true });
     }
     if (!fs.existsSync(dataPath)) {
+      log("初始化数据路径");
       fs.mkdirSync(dataPath, { recursive: true });
     }
   } catch (err) {
@@ -92,8 +102,9 @@ function safeMergeConfig(fileConfig: any, defaultConfig: any): any {
 }
 
 function setupIpcEvent() {
-  ipcMain.on("lite_tools.getConfig", (event) => {
-    event.returnValue = config;
+  log("注册IPC事件");
+  ipcMain.handle("lite_tools.getConfig", () => {
+    return config;
   });
   ipcMain.on("lite_tools.updateConfig", (_, data) => {
     Object.assign(config, data);
