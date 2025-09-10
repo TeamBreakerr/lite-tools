@@ -12,7 +12,7 @@
       "preload": "./dist/preload/index.js"
     },
     "dependencies": {
-      "ipc_interceptor": "^0.0.1",
+      "ipc_interceptor": "^1.0.0",
       "qwqnt-plugin_settings": "^1.2.5"
     }
   },
