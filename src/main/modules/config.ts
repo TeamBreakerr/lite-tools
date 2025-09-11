@@ -37,6 +37,7 @@ function setupConfig(uid: string) {
       currentConfigPath = defaultConfigPath;
       isInitialized = true;
     }
+    log("读取成功", config);
   } catch (err) {
     log("初始化配置出错", err);
   }

@@ -39,6 +39,7 @@
   "imageViewer": {
     "quickClose": false,
     "touchMove": false
+    "mainConsole": false
   },
   "message": {
     "previreUrl": {

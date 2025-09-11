@@ -1,9 +1,18 @@
-export function createLogger(moduleName: string) {
-  let log = (...args: any) => {
-    console.log(`[${moduleName}]`, ...args);
-  };
-  if ("Logs" in globalThis) {
-    log = new Logs(moduleName);
+import { config } from "@main/modules/config";
+
+class LocalLogger {
+  constructor(private moduleName: string) {}
+  log(...args: any[]) {
+    console.log(`[${this.moduleName}]`, ...args);
   }
-  return log;
 }
+
+function createLogger(moduleName: string) {
+  const logsInstance = "Logs" in globalThis ? new Logs(moduleName) : new LocalLogger(moduleName);
+  return (...args: any[]) => {
+    if (!config.debug.mainConsole) return;
+    logsInstance.log(...args);
+  };
+}
+
+export { createLogger };
