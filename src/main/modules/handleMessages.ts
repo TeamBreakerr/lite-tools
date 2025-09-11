@@ -35,6 +35,9 @@ function processMessages(msgList: any[]) {
   if (config.message.deleteBubbleSkin) {
     deleteBubbleSkin(msgList);
   }
+  if (config.message.miniArkToWebArk) {
+    miniArkToWebArk(msgList);
+  }
 }
 
 export { handleMessages };
