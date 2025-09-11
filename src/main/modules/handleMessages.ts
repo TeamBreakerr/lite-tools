@@ -32,6 +32,9 @@ function handleMessages(args: any[]) {
 }
 
 function processMessages(msgList: any[]) {
+  if (config.message.deleteBubbleSkin) {
+    deleteBubbleSkin(msgList);
+  }
 }
 
 export { handleMessages };
