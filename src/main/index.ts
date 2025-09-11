@@ -1,5 +1,6 @@
 import { setupConfig } from "./modules/config";
 import { createLogger } from "./utils/createLogger";
+import { setupIpcInterceptor } from "./modules/IpcInterceptor";
 import type { BrowserWindow } from "electron";
 
 const log = createLogger("lt_main");
@@ -8,6 +9,7 @@ log("插件启动");
 
 const unSubscribe = IpcInterceptor.onIpcSendEvents("nodeIKernelSessionListener/onSessionInitComplete", (...args) => {
   setupConfig(args[2].payload.uid);
+  setupIpcInterceptor();
   unSubscribe();
 });
 
