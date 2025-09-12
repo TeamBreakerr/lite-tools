@@ -16,7 +16,7 @@ configStore.onChange((config) => {
 document.head.appendChild(document.createElement("style")).appendChild(document.createTextNode(settingsCss));
 
 async function initSettingView(view: HTMLDivElement) {
-  await configStore.ready();
+  await configStore.ready;
   const config = configStore.config;
   log("获取到配置数据", config);
 

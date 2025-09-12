@@ -22,7 +22,7 @@ class ConfigStore {
     });
   }
 
-  async ready() {
+  get ready() {
     return this.readyPromise;
   }
 
@@ -35,6 +35,7 @@ class ConfigStore {
     if (!this.listeners.has(listener)) {
       this.listeners.add(listener);
     }
+    return () => this.offChange(listener);
   }
 
   offChange(listener: ConfigListener) {
