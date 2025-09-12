@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { dialog, ipcMain } from "electron";
 import { configPath, dataPath } from "@main/utils/localPath";
-import { UserConfigRegistry } from "@main/utils/UserConfigRegistry";
+import { UserConfigRegistry } from "@main/modules/UserConfigRegistry";
 import { globalBroadcast } from "@main/utils/globalBroadcast";
 import configTemplate from "@common/config.template.json";
 import { createLogger } from "@main/utils/createLogger";
