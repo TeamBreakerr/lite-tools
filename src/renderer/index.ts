@@ -1,4 +1,4 @@
-import getHash from "./utils/getHash";
+import { getHash } from "./utils/getHash";
 
 export async function main() {
   const hash = await getHash();

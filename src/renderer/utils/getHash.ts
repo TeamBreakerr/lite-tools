@@ -8,4 +8,4 @@ function getHash() {
   return promise;
 }
 
-export default getHash;
+export { getHash };
