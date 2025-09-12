@@ -1,5 +1,5 @@
-import type { Config } from "@common/types";
-import type { LiteTools } from "@preload/index";
+import type { Config } from "@/types/Config";
+import type { LiteTools } from "@/preload/index";
 
 declare const lite_tools: LiteTools;
 type ConfigListener = (config: Config) => void;

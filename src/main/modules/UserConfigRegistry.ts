@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { dialog } from "electron";
-import configTemplate from "@common/config.template.json";
+import configTemplate from "@/assets/config.template.json";
 
 export class UserConfigRegistry {
   private userConfigRegistryPath: string;

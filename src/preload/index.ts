@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { Config } from "@common/types";
+import type { Config } from "@/types/Config";
 
 const exposeFunctions = {
   updateConfig: (config: Config) => ipcRenderer.send("lite_tools.updateConfig", config),

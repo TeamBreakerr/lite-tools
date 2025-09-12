@@ -1,4 +1,4 @@
-import { config } from "@main/modules/config";
+import { config } from "@/main/modules/config";
 
 class LocalLogger {
   constructor(private moduleName: string) {}

@@ -1,7 +1,7 @@
-import { config } from "@main/modules/config";
-import { checkChatType } from "@common/checkChatType";
-import { findEvent } from "@main/utils/findEvent";
-import { createLogger } from "@main/utils/createLogger";
+import { config } from "@/main/modules/config";
+import { checkChatType } from "@/common/checkChatType";
+import { findEvent } from "@/main/utils/findEvent";
+import { createLogger } from "@/main/utils/createLogger";
 import { deleteBubbleSkin } from "./deleteBubbleSkin";
 import { miniArkToWebArk } from "./miniArkToWebArk";
 
