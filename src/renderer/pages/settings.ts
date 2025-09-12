@@ -3,7 +3,7 @@ import settingsHTML from "@/renderer/html/settings.html";
 import settingsCss from "@/renderer/scss/settings.scss";
 import { createLogger } from "@/renderer/utils/logs";
 import { getValueByPath, setValueByPath } from "@/renderer/utils/objectHandler";
-import { configStore } from "@/renderer/utils/config";
+import { configStore } from "@/renderer/modules/config";
 import { isQwQ } from "@/renderer/utils/loaderInspector";
 import type { Config } from "@/types/Config";
 
