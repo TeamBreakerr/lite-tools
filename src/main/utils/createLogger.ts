@@ -10,8 +10,9 @@ class LocalLogger {
 function createLogger(moduleName: string) {
   const logsInstance = "Logs" in globalThis ? new Logs(moduleName) : new LocalLogger(moduleName);
   return (...args: any[]) => {
-    if (!config.debug.mainConsole) return;
-    logsInstance.log(...args);
+    if (config?.debug?.mainConsole !== false) {
+      logsInstance.log(...args);
+    }
   };
 }
 
