@@ -1,4 +1,4 @@
-import { createLogger } from "../utils/createLogger";
+import { createLogger } from "@/renderer/utils/createLogger";
 
 const log = createLogger("captureAIO");
 

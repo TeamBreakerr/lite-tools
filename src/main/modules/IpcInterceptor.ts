@@ -1,4 +1,4 @@
-import { handleMessages } from "./handleMessages";
+import { handleMessages } from "@/main/modules/handleMessages";
 
 export function setupIpcInterceptor() {
   IpcInterceptor.onIpcSend((...args) => {

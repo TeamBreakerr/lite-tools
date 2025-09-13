@@ -1,5 +1,5 @@
 import { BrowserWindow } from "electron";
-import { createLogger } from "./createLogger";
+import { createLogger } from "@/main/utils/createLogger";
 
 const log = createLogger("globalBroadcast");
 

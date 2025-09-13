@@ -1,6 +1,6 @@
-import { setupConfig } from "./modules/config";
-import { createLogger } from "./utils/createLogger";
-import { setupIpcInterceptor } from "./modules/IpcInterceptor";
+import { setupConfig } from "@/main/modules/config";
+import { createLogger } from "@/main/utils/createLogger";
+import { setupIpcInterceptor } from "@/main/modules/IpcInterceptor";
 import type { BrowserWindow } from "electron";
 
 const log = createLogger("lt_main");
