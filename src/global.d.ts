@@ -15,6 +15,10 @@ interface Window {
   lt_errors: () => void;
 }
 
+interface Element {
+  __VUE__?: any[]; // 或指定具体类型
+}
+
 // LiteLoader 兼容
 declare const LiteLoader: any;
 
@@ -54,7 +58,6 @@ declare namespace PluginSettings {
   const preload: ICommon;
   const renderer: IRenderer;
 }
-
 
 // ipc-interceptor.d.ts
 

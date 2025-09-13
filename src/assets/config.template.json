@@ -6,5 +6,6 @@
   "message": {
     "deleteBubbleSkin": false,
     "miniArkToWebArk": false
+    "preventSelect": false
   }
 }

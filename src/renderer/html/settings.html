@@ -1,6 +1,28 @@
 <lite-tools class="lite-tools-settings plugins">
   <h1>功能</h1>
 
+  <!-- 界面调整 -->
+  <div class="wrap interface">
+    <div class="vertical-list-item title">
+      <h2>界面调整</h2>
+      <svg class="icon is-fold" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 8L12 17L3 8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
+      </svg>
+    </div>
+    <ul class="hidden">
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>阻止消息窗口拖拽操作</h2>
+          <span class="secondary-text">避免误触发多选消息</span>
+        </div>
+        <div class="switchDisabledSlideMultipleSelection q-switch" data-config="message.preventSelect">
+          <span class="q-switch__handle"></span>
+        </div>
+      </li>
+    </ul>
+  </div>
+
   <!-- 消息相关 -->
   <div class="wrap chatMessage">
     <div class="vertical-list-item title">
