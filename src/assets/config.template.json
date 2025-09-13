@@ -5,7 +5,8 @@
   },
   "message": {
     "deleteBubbleSkin": false,
-    "miniArkToWebArk": false
-    "preventSelect": false
+    "miniArkToWebArk": false,
+    "preventSelect": false,
+    "marketFaceToPicElement": false
   }
 }
