@@ -25,7 +25,7 @@ function replaceMarketFace(marketFaceElement: any): object {
   return {
     picSubType: 1,
     fileName,
-    fileSize: "0",
+    fileSize: "142857",
     picWidth,
     picHeight,
     original: true,
