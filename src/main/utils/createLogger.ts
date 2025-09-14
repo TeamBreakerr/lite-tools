@@ -2,9 +2,11 @@ import { config } from "@/main/modules/config";
 
 class LocalLogger {
   constructor(private moduleName: string) {}
-  log(...args: any[]) {
-    console.log(`[${this.moduleName}]`, ...args);
-  }
+  log = (...args: any[]) => {
+    if (config?.debug?.mainConsole !== false) {
+      console.log(`[${this.moduleName}]`, ...args);
+    }
+  };
 }
 
 function createLogger(moduleName: string) {
