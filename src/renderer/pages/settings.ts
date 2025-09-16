@@ -45,6 +45,9 @@ async function initSettings(view: HTMLDivElement, config: Config) {
   initSwitchButton(view, config);
   // 初始化下拉菜单
   initSelectMenu(view, config);
+  // 初始化侧边栏
+  const sidebarEl = view.querySelector(".sideBar ul") as HTMLElement;
+  createOptionItems(config, config.sideBar.top, sidebarEl, "sideBar.top", "enabled");
   log("初始化设置页面完成");
 }
 
@@ -144,6 +147,56 @@ function initSelectMenu(view: HTMLDivElement, config: Config) {
       }
     }
   });
+}
+
+type OptionItem = {
+  name: string;
+  [key: string]: any;
+};
+
+function createOptionItems<T extends OptionItem>(
+  config: Config,
+  list: T[],
+  element: HTMLElement,
+  objKey: string,
+  key: keyof T
+) {
+  // 减少多次 DOM 插入
+  const frag = document.createDocumentFragment();
+
+  list.forEach((el, index) => {
+    const hr = document.createElement("hr");
+    hr.classList.add("horizontal-dividing-line");
+
+    const li = document.createElement("li");
+    li.classList.add("vertical-list-item");
+
+    const switchEl = document.createElement("div");
+    switchEl.classList.add("q-switch");
+    if (el[key]) switchEl.classList.add("is-active");
+    switchEl.dataset.index = index.toString(); // 用 dataset 更语义化
+
+    switchEl.addEventListener("click", () => {
+      const active = !switchEl.classList.contains("is-active");
+      log("更新配置项", objKey, index, key, active);
+      setValueByPath(config, `${objKey}[${index}].${String(key)}`, active);
+      switchEl.classList.toggle("is-active");
+      configStore.setConfig(config);
+    });
+
+    const span = document.createElement("span");
+    span.classList.add("q-switch__handle");
+    switchEl.append(span);
+
+    const title = document.createElement("h2");
+    title.textContent = el.name;
+
+    li.append(title, switchEl);
+    frag.append(hr, li);
+  });
+
+  // 一次性插入
+  element.appendChild(frag);
 }
 
 export { initSettingView };

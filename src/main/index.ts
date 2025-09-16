@@ -1,19 +1,36 @@
 import { setupConfig } from "@/main/modules/config";
 import { createLogger } from "@/main/utils/createLogger";
-import { setupIpcInterceptor } from "@/main/modules/IpcInterceptor";
+import { setupHandleMessages } from "@/main/modules/handleMessages";
+import { setupIpcMain } from "@/main/modules/ipcMain";
+import { setupSideBar } from "@/main/modules/sideBar";
+import { captureWindow } from "@/main/utils/captureWindow";
 import type { BrowserWindow } from "electron";
 
 const log = createLogger("lt_main");
 
 log("插件启动");
 
+// 监听登录成功后读取配置文件
 const unSubscribe = IpcInterceptor.onIpcSendEvents("nodeIKernelSessionListener/onSessionInitComplete", (...args) => {
-  setupConfig(args[2].payload.uid);
-  setupIpcInterceptor();
+  setupMain(args[2].payload.uid);
   unSubscribe();
 });
 
-function onBrowserWindowCreated(browserWindow: BrowserWindow) {}
+// 初始化
+function setupMain(uid: string) {
+  try {
+    setupConfig(uid);
+    setupHandleMessages();
+    setupIpcMain();
+    setupSideBar();
+  } catch (err) {
+    log("初始化出错", err);
+  }
+}
+
+function onBrowserWindowCreated(window: BrowserWindow) {
+  captureWindow(window);
+}
 
 if ("qwqnt" in globalThis) {
   qwqnt.main.hooks.whenBrowserWindowCreated.peek(onBrowserWindowCreated);

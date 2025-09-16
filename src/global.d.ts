@@ -19,6 +19,12 @@ interface Element {
   __VUE__?: any[]; // 或指定具体类型
 }
 
+interface Peer {
+  chatType: 1 | 2 | 100;
+  guildId: string;
+  peerUid: string;
+}
+
 // LiteLoader 兼容
 declare const LiteLoader: any;
 

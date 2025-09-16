@@ -1,7 +1,7 @@
-import { handleMessages } from "@/main/modules/handleMessages";
+import { createLogger } from "@/main/utils/createLogger";
+
+const log = createLogger("ipcInterceptor");
 
 export function setupIpcInterceptor() {
-  IpcInterceptor.onIpcSend((...args) => {
-    handleMessages(args);
-  });
+  // IpcInterceptor.onIpcSend((...args) => {});
 }

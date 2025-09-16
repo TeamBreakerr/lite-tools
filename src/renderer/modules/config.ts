@@ -11,10 +11,8 @@ class ConfigStore {
   config!: Config;
 
   constructor() {
-    // 异步获取初始配置
     this.readyPromise = lite_tools.getConfig().then((config: Config) => {
       this.config = config;
-      // 订阅主进程广播的更新
       lite_tools.onConfigChange((update: Config) => {
         Object.assign(this.config, update);
         this.notify();

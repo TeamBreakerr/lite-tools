@@ -8,5 +8,24 @@
     "miniArkToWebArk": false,
     "preventSelect": false,
     "marketFaceToPicElement": false
+  },
+  "sideBar": {
+    "top": [
+      {
+        "name": "消息",
+        "id": -1,
+        "enabled": true
+      },
+      {
+        "name": "联系人",
+        "id": -1,
+        "enabled": true
+      },
+      {
+        "name": "更多",
+        "id": -1,
+        "enabled": true
+      }
+    ]
   }
 }

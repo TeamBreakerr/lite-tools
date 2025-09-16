@@ -107,10 +107,7 @@ function setupIpcEvent() {
     return config;
   });
   ipcMain.on("lite_tools.updateConfig", (_, data) => {
-    Object.assign(config, data);
-    fs.writeFileSync(currentConfigPath, JSON.stringify(data, null, 2), "utf-8");
-    listeners.forEach((listener) => listener(config));
-    globalBroadcast("lite_tools.configChanged", data);
+    updateConfig(data);
   });
 }
 
@@ -123,4 +120,11 @@ function offConfigUpdate(listener: ConfigListener) {
   listeners.delete(listener);
 }
 
-export { setupConfig, config, onConfigUpdate, offConfigUpdate };
+function updateConfig(newConfig: Config) {
+  Object.assign(config, newConfig);
+  fs.writeFileSync(currentConfigPath, JSON.stringify(config, null, 2), "utf-8");
+  listeners.forEach((listener) => listener(config));
+  globalBroadcast("lite_tools.configChanged", config);
+}
+
+export { setupConfig, config, updateConfig, onConfigUpdate, offConfigUpdate };

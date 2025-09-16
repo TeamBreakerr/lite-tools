@@ -8,7 +8,7 @@ import { marketFaceToPicElement } from "@/main/modules/marketFaceToPicElement";
 
 const log = createLogger("handleMessages");
 
-function handleMessages(args: any[]) {
+function handleMessages(...args: any[]) {
   try {
     const msgList = args[2]?.msgList;
     if (msgList && msgList.length && checkChatType(msgList[0])) {
@@ -49,4 +49,9 @@ function processMessages(msgList: any[]) {
   log("处理结束", msgList);
 }
 
-export { handleMessages };
+function setupHandleMessages() {
+  IpcInterceptor.onIpcSend(handleMessages);
+  log("注册事件");
+}
+
+export { setupHandleMessages };
