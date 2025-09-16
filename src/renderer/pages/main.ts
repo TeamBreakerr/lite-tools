@@ -30,16 +30,16 @@ function updateSideBar(config: Config) {
   // 特殊栏目
   (document.querySelector(".nav.sidebar__nav .nav-item:nth-child(1)") as HTMLElement)!.style.display = config.sideBar
     .top[0].enabled
-    ? "block"
+    ? "flex"
     : "none";
   (document.querySelector(".nav.sidebar__nav .nav-item:nth-child(2)") as HTMLElement)!.style.display = config.sideBar
     .top[1].enabled
-    ? "block"
+    ? "flex"
     : "none";
   (document.querySelector(".nav.sidebar__nav .nav-item:last-child") as HTMLElement)!.style.display = config.sideBar.top[
     config.sideBar.top.length - 1
   ].enabled
-    ? "block"
+    ? "flex"
     : "none";
 }
 
