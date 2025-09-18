@@ -16,29 +16,32 @@ async function setupMainPage() {
   const topSideBarhasChanged = createComparator(configStore.config.sideBar.top);
   const bottomSideBarhasChanged = createComparator(configStore.config.sideBar.bottom);
   preventMutipleSelect("chat-msg-area");
-  updateTopSideBar(configStore.config);
+  updateTopSideBar(configStore.config, false);
   updateBottomSideBar(configStore.config);
   configStore.onChange((config) => {
     if (topSideBarhasChanged(config.sideBar.top)) {
-      log("顶部侧边栏参数更新");
-      updateTopSideBar(config);
+      updateTopSideBar(config, false);
     }
     if (bottomSideBarhasChanged(config.sideBar.bottom)) {
-      log("底部侧边栏参数更新");
       updateBottomSideBar(config);
     }
   });
-  // 避免部分按钮延迟加载导致没有拦截到
-  for (let i = 0; i < 10; i++) {
-    await new Promise((res) => setTimeout(res, 100));
-    updateTopSideBar(configStore.config);
-    updateBottomSideBar(configStore.config);
-  }
+  const observer = new MutationObserver((mutationsList) => {
+    for (const mutation of mutationsList) {
+      if (mutation.type === "childList") {
+        updateTopSideBar(configStore.config, true);
+      }
+    }
+  });
+  observer.observe(document.querySelector(".nav.sidebar__nav")!, { childList: true });
+  setTimeout(() => observer.disconnect(), 30 * 1000);
 }
 
-function updateTopSideBar(config: Config) {
+function updateTopSideBar(config: Config, onlySpecial: boolean) {
   // 更新侧边栏
-  document.querySelector(".nav.sidebar__nav")?.__VUE__?.[0]?.proxy?.navStore?.loadSideBarConfig();
+  if (!onlySpecial) {
+    document.querySelector(".nav.sidebar__nav")?.__VUE__?.[0]?.proxy?.navStore?.loadSideBarConfig();
+  }
   // 特殊栏目
   (document.querySelector(".nav.sidebar__nav .nav-item:nth-child(1)") as HTMLElement)!.style.display = config.sideBar
     .top[0].enabled
