@@ -26,6 +26,29 @@
         "id": -1,
         "enabled": true
       }
+    ],
+    "bottom": [
+      {
+        "name": "邮箱",
+        "id": -1,
+        "enabled": true
+      },
+      {
+        "name": "文件",
+        "id": -1,
+        "enabled": true
+      },
+      {
+        "name": "收藏",
+        "id": -1,
+        "enabled": true
+      },
+      {
+        "name": "设置",
+        "id": -1,
+        "desc": "该栏目包含设置页面入口，关闭前请确认你有其他办法可以打开设置页面",
+        "enabled": true
+      }
     ]
   }
 }

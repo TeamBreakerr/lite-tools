@@ -8,23 +8,35 @@ import type { Config } from "@/types/Config";
 const log = createLogger("main");
 
 async function setupMainPage() {
-  log("await aio");
+  log("await init");
   await configStore.ready;
   const aioStore = new AioStore();
   await aioStore.ready;
-  const sideBarhasChanged = createComparator(configStore.config.sideBar.top);
   log("main ok");
+  const topSideBarhasChanged = createComparator(configStore.config.sideBar.top);
+  const bottomSideBarhasChanged = createComparator(configStore.config.sideBar.bottom);
   preventMutipleSelect("chat-msg-area");
-  updateSideBar(configStore.config);
+  updateTopSideBar(configStore.config);
+  updateBottomSideBar(configStore.config);
   configStore.onChange((config) => {
-    if (sideBarhasChanged(config.sideBar.top)) {
+    if (topSideBarhasChanged(config.sideBar.top)) {
       log("顶部侧边栏参数更新");
-      updateSideBar(config);
+      updateTopSideBar(config);
+    }
+    if (bottomSideBarhasChanged(config.sideBar.bottom)) {
+      log("底部侧边栏参数更新");
+      updateBottomSideBar(config);
     }
   });
+  // 避免部分按钮延迟加载导致没有拦截到
+  for (let i = 0; i < 10; i++) {
+    await new Promise((res) => setTimeout(res, 100));
+    updateTopSideBar(configStore.config);
+    updateBottomSideBar(configStore.config);
+  }
 }
 
-function updateSideBar(config: Config) {
+function updateTopSideBar(config: Config) {
   // 更新侧边栏
   document.querySelector(".nav.sidebar__nav")?.__VUE__?.[0]?.proxy?.navStore?.loadSideBarConfig();
   // 特殊栏目
@@ -41,6 +53,14 @@ function updateSideBar(config: Config) {
   ].enabled
     ? "flex"
     : "none";
+}
+
+function updateBottomSideBar(config: Config) {
+  (document.querySelectorAll(".sidebar-nav .sidebar__lower .func-menu__item_wrap") as NodeListOf<HTMLElement>).forEach(
+    (item, index) => {
+      item.style.display = config.sideBar.bottom[index].enabled ? "flex" : "none";
+    }
+  );
 }
 
 export { setupMainPage };

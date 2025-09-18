@@ -9,10 +9,6 @@ import type { Config } from "@/types/Config";
 
 const log = createLogger("settings");
 
-configStore.onChange((config) => {
-  log("配置更新", config);
-});
-
 document.head.appendChild(document.createElement("style")).appendChild(document.createTextNode(settingsCss));
 
 async function initSettingView(view: HTMLDivElement) {
@@ -48,6 +44,13 @@ async function initSettings(view: HTMLDivElement, config: Config) {
   // 初始化侧边栏
   const sidebarEl = view.querySelector(".sideBar ul") as HTMLElement;
   createOptionItems(config, config.sideBar.top, sidebarEl, "sideBar.top", "enabled");
+  createOptionItems(config, config.sideBar.bottom, sidebarEl, "sideBar.bottom", "enabled");
+
+  configStore.onChange((config) => {
+    updateOptionItems(config.sideBar.top, sidebarEl, "sideBar.top", "enabled");
+    updateOptionItems(config.sideBar.bottom, sidebarEl, "sideBar.bottom", "enabled");
+  });
+
   log("初始化设置页面完成");
 }
 
@@ -164,17 +167,18 @@ function createOptionItems<T extends OptionItem>(
   // 减少多次 DOM 插入
   const frag = document.createDocumentFragment();
 
-  list.forEach((el, index) => {
+  list.forEach((item, index) => {
     const hr = document.createElement("hr");
     hr.classList.add("horizontal-dividing-line");
 
     const li = document.createElement("li");
     li.classList.add("vertical-list-item");
+    li.dataset.id = `${objKey}-${item.name}`;
 
     const switchEl = document.createElement("div");
     switchEl.classList.add("q-switch");
-    if (el[key]) switchEl.classList.add("is-active");
-    switchEl.dataset.index = index.toString(); // 用 dataset 更语义化
+    if (item[key]) switchEl.classList.add("is-active");
+    switchEl.dataset.index = index.toString();
 
     switchEl.addEventListener("click", () => {
       const active = !switchEl.classList.contains("is-active");
@@ -188,15 +192,32 @@ function createOptionItems<T extends OptionItem>(
     span.classList.add("q-switch__handle");
     switchEl.append(span);
 
-    const title = document.createElement("h2");
-    title.textContent = el.name;
+    const div = document.createElement("div");
 
-    li.append(title, switchEl);
+    const title = document.createElement("h2");
+    title.textContent = item.name;
+    div.append(title);
+
+    if (item.desc) {
+      const desc = document.createElement("p");
+      desc.classList.add("secondary-text");
+      desc.textContent = item.desc;
+      div.append(desc);
+    }
+
+    li.append(div, switchEl);
     frag.append(hr, li);
   });
 
   // 一次性插入
   element.appendChild(frag);
+}
+
+function updateOptionItems<T extends OptionItem>(list: T[], element: HTMLElement, objKey: string, key: keyof T) {
+  list.forEach((item) => {
+    const switchEl = element.querySelector(`li[data-id="${objKey}-${item.name}"] .q-switch`) as HTMLElement;
+    switchEl.classList.toggle("is-active", item[key]);
+  });
 }
 
 export { initSettingView };

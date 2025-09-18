@@ -154,9 +154,12 @@
       flex-direction: column;
       align-items: flex-start;
     }
-
     &.sub-item {
       margin-left: 16px;
+    }
+    & > *:last-child {
+      flex-shrink: 0;
+      margin-left: 4px;
     }
   }
 

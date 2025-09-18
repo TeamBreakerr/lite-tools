@@ -1,5 +1,4 @@
 import { config, updateConfig, onConfigUpdate } from "@/main/modules/config";
-import { mainWindow } from "@/main/utils/captureWindow";
 import { createLogger } from "@/main/utils/createLogger";
 import { createComparator } from "@/common/createComparator";
 
@@ -21,10 +20,21 @@ function setupSideBar() {
   //   }
   // });
 
+  IpcInterceptor.onIpcReceiveEvents("nodeIKernelConfigMgrService/saveSideBarConfig", (meat, _, channel, payload) => {
+    const sideBarConfig = payload[1]?.payload?.[0]?.config as any[];
+    sideBarConfig?.forEach((item: any) => {
+      config.sideBar.top.forEach((el) => {
+        if (el.id === item.barId) {
+          el.enabled = item.status === 1;
+        }
+      });
+    });
+    updateConfig(config);
+  });
+
   IpcInterceptor.onIpcSendEvents("nodeIKernelConfigMgrListener/onSideBarChanged", (channel, meta, payload) => {
     payload.payload.config.forEach((item: any) => {
       const findItem = config.sideBar.top.find((i) => i.id === item.barId);
-      log(findItem);
       if (findItem !== undefined) {
         item.status = findItem.enabled ? 1 : 2;
       }
