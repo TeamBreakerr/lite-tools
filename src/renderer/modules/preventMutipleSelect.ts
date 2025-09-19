@@ -4,11 +4,10 @@ import { createLogger } from "@/renderer/utils/createLogger";
 const log = createLogger("阻止滑动选择");
 
 let listenTarget = false;
-
 let interception = false;
 
-function preventMutipleSelect(className: string) {
-  log("模块已加载", configStore.config.message.preventSelect);
+function setupPreventMutipleSelect(className: string) {
+  log("已加载");
   const app = document.querySelector("#app") as HTMLElement;
   app.addEventListener("pointerdown", (event) => {
     if (configStore.config.message.preventSelect && (event.buttons === 1 || event.buttons === 4)) {
@@ -51,4 +50,4 @@ function preventMutipleSelect(className: string) {
   });
 }
 
-export { preventMutipleSelect };
+export { setupPreventMutipleSelect };
