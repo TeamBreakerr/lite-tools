@@ -24,6 +24,12 @@ async function initSettingView(view: HTMLDivElement) {
   <p>插件版本：${packageJson.version}</p>
   </div>
   `;
+  devInfo.insertAdjacentHTML(
+    "afterbegin",
+    `<div style="color: red;justify-content: center;" class="vertical-list-item">
+    <p><strong>该版本仅供内部测试，请勿外传</strong></p>
+  </div>`
+  );
   view.insertAdjacentHTML("beforeend", settingsHTML);
   view.querySelector(".lite-tools-settings")!.insertAdjacentElement("afterbegin", devInfo);
   log("初始化HTML完成");
