@@ -2,7 +2,6 @@ import packageJson from "package.json";
 import settingsHTML from "@/renderer/html/settings.html";
 import settingsCss from "@/renderer/scss/settings.scss";
 import { createLogger } from "@/renderer/utils/createLogger";
-import { getValueByPath, setValueByPath } from "@/renderer/utils/objectHandler";
 import { configStore } from "@/renderer/modules/config";
 import { isQwQ } from "@/renderer/utils/loaderInspector";
 import type { Config } from "@/types/Config";
@@ -41,11 +40,20 @@ async function initSettings(view: HTMLDivElement, config: Config) {
   initSwitchButton(view, config);
   // 初始化下拉菜单
   initSelectMenu(view, config);
-  // 初始化侧边栏
+  // 初始化精简功能
   const sidebarEl = view.querySelector(".sideBar ul") as HTMLElement;
+  const topFuncBarEl = view.querySelector(".topFuncBar ul") as HTMLElement;
+  const chatFuncBarEl = view.querySelector(".chatFuncBar ul") as HTMLElement;
   createOptionItems(config, config.sideBar.top, sidebarEl, "sideBar.top", "enabled");
   createOptionItems(config, config.sideBar.bottom, sidebarEl, "sideBar.bottom", "enabled");
-
+  if (config.topFuncBar.length > 1) {
+    topFuncBarEl.querySelector(".first-tips")?.remove();
+  }
+  createOptionItems(config, config.topFuncBar, topFuncBarEl, "topFuncBar", "enabled");
+  if (config.chatFuncBar.length > 1) {
+    chatFuncBarEl.querySelector(".first-tips")?.remove();
+  }
+  createOptionItems(config, config.chatFuncBar, chatFuncBarEl, "chatFuncBar", "enabled");
   configStore.onChange((config) => {
     updateOptionItems(config.sideBar.top, sidebarEl, "sideBar.top", "enabled");
     updateOptionItems(config.sideBar.bottom, sidebarEl, "sideBar.bottom", "enabled");
@@ -218,6 +226,43 @@ function updateOptionItems<T extends OptionItem>(list: T[], element: HTMLElement
     const switchEl = element.querySelector(`li[data-id="${objKey}-${item.name}"] .q-switch`) as HTMLElement;
     switchEl.classList.toggle("is-active", item[key]);
   });
+}
+
+function getValueByPath<T = any>(target: Record<string, any>, path: string): T | undefined {
+  const pathArr = path.replace(/\[(\d+)\]/g, ".$1").split(".");
+  let result: any = target;
+  for (let i = 0; i < pathArr.length; i++) {
+    if (result != null && result[pathArr[i]] !== undefined) {
+      result = result[pathArr[i]];
+    } else {
+      return undefined;
+    }
+  }
+  return result as T;
+}
+
+function setValueByPath(
+  target: Record<string, any>,
+  path: string,
+  value: any,
+  createPath: boolean = false,
+  overridePath: boolean = false
+): boolean {
+  const keys = path.replace(/\[(\d+)\]/g, ".$1").split(".");
+  let current: any = target;
+
+  for (let i = 0; i < keys.length - 1; i++) {
+    const key = keys[i];
+    if ((!current[key] && createPath) || (!(current[key] instanceof Object) && overridePath)) {
+      current[key] = {};
+    }
+    if (!current[key]) {
+      return false;
+    }
+    current = current[key];
+  }
+  current[keys[keys.length - 1]] = value;
+  return true;
 }
 
 export { initSettingView };
