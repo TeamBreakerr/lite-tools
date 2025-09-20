@@ -14,8 +14,8 @@ function marketFaceToPicElement(msgList: any[]) {
 
 function replaceMarketFace(marketFaceElement: any): object {
   const fileName = marketFaceElement.staticFacePath.split("\\").pop();
-  const picWidth = marketFaceElement.supportSize[0].width;
-  const picHeight = marketFaceElement.supportSize[0].height;
+  const picWidth = marketFaceElement.supportSize?.[0].width ?? marketFaceElement.imageHeight ?? 200;
+  const picHeight = marketFaceElement.supportSize?.[0].height ?? marketFaceElement.imageHeight ?? 200;
   const sourcePath = marketFaceElement.staticFacePath;
   const thumbPath = new Map([
     ["0", sourcePath],
