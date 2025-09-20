@@ -180,6 +180,26 @@ function chatMessage() {
         .querySelector(`.sidebar__upper .nav.sidebar__nav .nav-item[aria-label="${areaLabel}"]`)
         ?.classList?.toggle("LT-disabled", findLabel.disabled);
     }
+
+    // Patch starts here
+    // We need to create a special case for "空间" because it has no aria-label? Tencent Programmers Sucks.
+    // If nav item matches data-v-a5e9cffe, change its class to "nav-item LT-disabled"
+    if (areaLabel === "空间") {
+      if (findLabel.disabled) {
+        // console.log("[Debug] 空间 is disabled, changing class...");
+        const el = document.querySelector('.sidebar__nav .nav-item[data-v-a5e9cffe]');
+        if (el) {
+          el.className = "nav-item LT-disabled";
+        }  
+      } else {
+        // console.log("[Debug] 空间 is enabled, changing class...");
+        const el = document.querySelector('.sidebar__nav .nav-item[data-v-a5e9cffe]');
+        if (el) {
+          el.className = "nav-item";
+        }
+      }
+    }
+    // Patch ends here
   }
 
   // 初始化推荐表情
