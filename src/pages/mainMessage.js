@@ -158,12 +158,27 @@ function chatMessage() {
   });
 
   // 初始化底部侧边栏
-  document.querySelectorAll(".func-menu.sidebar__menu .func-menu__item").forEach((el) => {
-    const find = options.sidebar.bottom.find((opt) => opt.id === el?.__VUE__?.[0]?.attrs?.item?.id);
-    if (find) {
-      el.classList.toggle("LT-disabled", find.disabled);
+  // document.querySelectorAll(".func-menu.sidebar__menu .func-menu__item").forEach((el) => {
+  //   const find = options.sidebar.bottom.find((opt) => opt.id === el?.__VUE__?.[0]?.attrs?.item?.id);
+  //   if (find) {
+  //     el.classList.toggle("LT-disabled", find.disabled);
+  //   }
+  // });
+  // the original method by getting (opt) => opt.id === el?.__VUE__?.[0]?.attrs?.item?.id can no longer work
+  // use index to match instead
+  document.querySelectorAll(".func-menu.sidebar__menu .func-menu__item_wrap").forEach((el, index) => {
+    const opt = options.sidebar.bottom[index];
+    console.log("[Debug] opt ids:", JSON.stringify(options.sidebar.bottom, null, 2));
+    if (opt) {
+      if (opt.disabled) {
+        // change class name: func-menu__item_wrap -> func-menu__item_wrap LT-disabled
+        el.className = "func-menu__item_wrap LT-disabled";
+      } else {
+        el.className = "func-menu__item_wrap";
+      }
     }
   });
+
 
   // 更新侧边栏数据，只执行一次
   if (navStore?.finalTabConfig?.length && first("updateSiderbarNavFuncList")) {
@@ -180,6 +195,26 @@ function chatMessage() {
         .querySelector(`.sidebar__upper .nav.sidebar__nav .nav-item[aria-label="${areaLabel}"]`)
         ?.classList?.toggle("LT-disabled", findLabel.disabled);
     }
+
+    // Patch starts here
+    // We need to create a special case for "空间" because it has no aria-label? Tencent Programmers Sucks.
+    // If nav item matches data-v-a5e9cffe, change its class to "nav-item LT-disabled"
+    if (areaLabel === "空间") {
+      if (findLabel.disabled) {
+        // console.log("[Debug] 空间 is disabled, changing class...");
+        const el = document.querySelector('.sidebar__nav .nav-item[data-v-a5e9cffe]');
+        if (el) {
+          el.className = "nav-item LT-disabled";
+        }  
+      } else {
+        // console.log("[Debug] 空间 is enabled, changing class...");
+        const el = document.querySelector('.sidebar__nav .nav-item[data-v-a5e9cffe]');
+        if (el) {
+          el.className = "nav-item";
+        }
+      }
+    }
+    // Patch ends here
   }
 
   // 初始化推荐表情
