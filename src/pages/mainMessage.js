@@ -158,12 +158,27 @@ function chatMessage() {
   });
 
   // 初始化底部侧边栏
-  document.querySelectorAll(".func-menu.sidebar__menu .func-menu__item").forEach((el) => {
-    const find = options.sidebar.bottom.find((opt) => opt.id === el?.__VUE__?.[0]?.attrs?.item?.id);
-    if (find) {
-      el.classList.toggle("LT-disabled", find.disabled);
+  // document.querySelectorAll(".func-menu.sidebar__menu .func-menu__item").forEach((el) => {
+  //   const find = options.sidebar.bottom.find((opt) => opt.id === el?.__VUE__?.[0]?.attrs?.item?.id);
+  //   if (find) {
+  //     el.classList.toggle("LT-disabled", find.disabled);
+  //   }
+  // });
+  // the original method by getting (opt) => opt.id === el?.__VUE__?.[0]?.attrs?.item?.id can no longer work
+  // use index to match instead
+  document.querySelectorAll(".func-menu.sidebar__menu .func-menu__item_wrap").forEach((el, index) => {
+    const opt = options.sidebar.bottom[index];
+    console.log("[Debug] opt ids:", JSON.stringify(options.sidebar.bottom, null, 2));
+    if (opt) {
+      if (opt.disabled) {
+        // change class name: func-menu__item_wrap -> func-menu__item_wrap LT-disabled
+        el.className = "func-menu__item_wrap LT-disabled";
+      } else {
+        el.className = "func-menu__item_wrap";
+      }
     }
   });
+
 
   // 更新侧边栏数据，只执行一次
   if (navStore?.finalTabConfig?.length && first("updateSiderbarNavFuncList")) {
