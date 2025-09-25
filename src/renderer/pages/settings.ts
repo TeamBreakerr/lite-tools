@@ -178,7 +178,6 @@ function createOptionItems<T extends OptionItem>(
   objKey: string,
   key: keyof T
 ) {
-  // 减少多次 DOM 插入
   const frag = document.createDocumentFragment();
 
   list.forEach((item, index) => {
@@ -189,41 +188,39 @@ function createOptionItems<T extends OptionItem>(
     li.classList.add("vertical-list-item");
     li.dataset.id = `${objKey}-${item.name}`;
 
-    const switchEl = document.createElement("div");
-    switchEl.classList.add("q-switch");
-    if (item[key]) switchEl.classList.add("is-active");
-    switchEl.dataset.index = index.toString();
-
-    switchEl.addEventListener("click", () => {
-      const active = !switchEl.classList.contains("is-active");
-      log("更新配置项", objKey, index, key, active);
-      setValueByPath(config, `${objKey}[${index}].${String(key)}`, active);
-      switchEl.classList.toggle("is-active");
-      configStore.setConfig(config);
-    });
-
-    const span = document.createElement("span");
-    span.classList.add("q-switch__handle");
-    switchEl.append(span);
-
     const div = document.createElement("div");
-
     const title = document.createElement("h2");
     title.textContent = item.name;
     div.append(title);
-
     if (item.desc) {
       const desc = document.createElement("p");
       desc.classList.add("secondary-text");
       desc.textContent = item.desc;
       div.append(desc);
     }
+    li.append(div);
 
-    li.append(div, switchEl);
+    if (item[key] !== undefined) {
+      const switchEl = document.createElement("div");
+      switchEl.classList.add("q-switch");
+      switchEl.classList.toggle("is-active", item[key]);
+      switchEl.dataset.index = index.toString();
+      switchEl.addEventListener("click", () => {
+        const active = !switchEl.classList.contains("is-active");
+        log("更新配置项", objKey, index, key, active);
+        setValueByPath(config, `${objKey}[${index}].${String(key)}`, active);
+        switchEl.classList.toggle("is-active", active);
+        configStore.setConfig(config);
+      });
+      const span = document.createElement("span");
+      span.classList.add("q-switch__handle");
+      switchEl.append(span);
+      li.append(switchEl);
+    }
+
     frag.append(hr, li);
   });
 
-  // 一次性插入
   element.appendChild(frag);
 }
 

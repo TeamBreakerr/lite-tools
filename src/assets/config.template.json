@@ -53,14 +53,12 @@
   },
   "topFuncBar": [
     {
-      "name": "等待栏目初始化...",
-      "enabled": true
+      "name": "等待栏目初始化..."
     }
   ],
   "chatFuncBar": [
     {
-      "name": "等待栏目初始化...",
-      "enabled": true
+      "name": "等待栏目初始化..."
     }
   ]
 }
