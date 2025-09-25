@@ -1,25 +1,10 @@
 import { config, updateConfig, onConfigUpdate } from "@/main/modules/config";
 import { createLogger } from "@/main/utils/createLogger";
-import { createComparator } from "@/common/createComparator";
 
 function setupSideBar() {
   const log = createLogger("sideBar");
-
   log("load");
-  // IpcInterceptor.onIpcSendEvents("nodeIKernelUnitedConfigListener/onUnitedConfigUpdate", (channel, meta, payload) => {
-  //   if (payload?.payload?.configData?.group === "100073") {
-  //     const sideBarList = JSON.parse(payload.payload.configData.content);
-
-  //     // sideBarList.forEach((item: any) => {
-  //     //   item.isFixed = false;
-  //     //   item.status = 2;
-  //     // });
-
-  //     payload.payload.configData.content = JSON.stringify(sideBarList);
-  //     log("找到侧边栏参数2", sideBarList);
-  //   }
-  // });
-
+  let isInitConfig = false;
   IpcInterceptor.onIpcReceiveEvents("nodeIKernelConfigMgrService/saveSideBarConfig", (meat, _, channel, payload) => {
     const sideBarConfig = payload[1]?.payload?.[0]?.config as any[];
     sideBarConfig?.forEach((item: any) => {
@@ -32,21 +17,37 @@ function setupSideBar() {
     updateConfig(config);
   });
 
-  IpcInterceptor.onIpcSendEvents("nodeIKernelConfigMgrListener/onSideBarChanged", (channel, meta, payload) => {
-    payload.payload.config.forEach((item: any) => {
-      const findItem = config.sideBar.top.find((i) => i.id === item.barId);
-      if (findItem !== undefined) {
-        item.status = findItem.enabled ? 1 : 2;
-      }
-    });
-    log("侧边栏图标更新", payload.payload.config);
+  IpcInterceptor.interceptIpcSendEvents("nodeIKernelConfigMgrListener/onSideBarChanged", (channel, meta, payload) => {
+    if (isInitConfig) {
+      isInitConfig = false;
+      log("初始化侧边栏", payload.payload.config);
+      payload.payload.config.forEach((item: any) => {
+        const findItem = config.sideBar.top.find((i) => i.id === item.barId);
+        if (findItem !== undefined) {
+          findItem.enabled = item.status === 1;
+        }
+      });
+      updateConfig(config);
+    } else {
+      log("更新侧边栏", payload.payload.config);
+      payload.payload.config.forEach((item: any) => {
+        const findItem = config.sideBar.top.find((i) => i.id === item.barId);
+        if (findItem !== undefined) {
+          item.status = findItem.enabled ? 1 : 2;
+        }
+      });
+    }
   });
 
-  const unSubscribe = IpcInterceptor.onIpcSend((channel, meta, payload) => {
+  const unSubscribe = IpcInterceptor.interceptIpcSend((channel, meta, payload) => {
     if (payload?.configData?.group === "100073") {
       try {
         unSubscribe();
         const rawSideBar = JSON.parse(payload.configData.content);
+        if (rawSideBar.length !== config.sideBar.top.length - 3) {
+          log("侧边栏数量不匹配，执行初始化", rawSideBar.length, config.sideBar.top.length);
+          isInitConfig = true;
+        }
         rawSideBar.forEach((item: any) => {
           item.isFixed = false;
         });
@@ -54,7 +55,7 @@ function setupSideBar() {
           return {
             id: item.id,
             name: item.label,
-            enabled: config.sideBar.top.find((i) => i.id === item.id)?.enabled ?? item.status === 1,
+            enabled: config.sideBar.top.find((i) => i.id === item.id)?.enabled ?? false,
           };
         });
         config.sideBar.top = [
@@ -77,19 +78,11 @@ function setupSideBar() {
         ];
         updateConfig(config);
         payload.configData.content = JSON.stringify(rawSideBar);
-        log("侧边栏初始化", rawSideBar);
+        log("更新侧边栏项目列表", rawSideBar);
       } catch (err) {
-        log("初始化失败", err);
+        log("更新侧边栏项目列表出错", err);
       }
       unSubscribe();
-    }
-  });
-
-  const hasChanged = createComparator(config.sideBar);
-
-  onConfigUpdate((config) => {
-    if (hasChanged(config.sideBar)) {
-      log("侧边栏变化", config.sideBar);
     }
   });
 }

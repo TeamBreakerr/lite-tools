@@ -44,7 +44,12 @@
         "enabled": true
       },
       {
-        "name": "设置",
+        "name": "我的手机",
+        "id": -1,
+        "enabled": true
+      },
+      {
+        "name": "更多",
         "id": -1,
         "desc": "该栏目包含设置页面入口，关闭前请确认你有其他办法可以打开设置页面",
         "enabled": true

@@ -62,12 +62,16 @@ function updateTopSideBar(config: Config, onlySpecial: boolean) {
 }
 
 function updateBottomSideBar(config: Config) {
-  const bottomSideBar = document.querySelectorAll<HTMLElement>(".sidebar-nav .sidebar__lower .func-menu__item_wrap");
-  if (bottomSideBar) {
-    bottomSideBar.forEach((item, index) => {
-      item.style.display = config.sideBar.bottom[index].enabled ? "flex" : "none";
-    });
-  }
+  const bottomSideBar = document.querySelector<HTMLElement>(".sidebar-nav .sidebar__lower")!;
+
+  config.sideBar.bottom.forEach((item) => {
+    const findEl = bottomSideBar
+      .querySelector(`[aria-label="${item.name}"]`)
+      ?.closest<HTMLElement>(".func-menu__item_wrap");
+    if (findEl) {
+      findEl.style.display = item.enabled ? "flex" : "none";
+    }
+  });
 }
 
 export { setupMainPage };
