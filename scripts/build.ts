@@ -6,8 +6,6 @@ const isDev = process.argv.includes("--watch");
 // 通用配置
 const baseConfig: BuildOptions = {
   bundle: true,
-  // minify: !isDev,
-  // sourcemap: isDev ? "linked" : false,
   charset: "utf8",
   tsconfig: "./tsconfig.json",
 };
