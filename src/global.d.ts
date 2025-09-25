@@ -64,22 +64,3 @@ declare namespace PluginSettings {
   const preload: ICommon;
   const renderer: IRenderer;
 }
-
-// ipc-interceptor.d.ts
-
-type Unsubscribe = () => void;
-type EventName = string | string[];
-type IpcCallback = (...args: any[]) => void;
-
-interface IpcInterceptorType {
-  onIpcReceive(callback: IpcCallback): Unsubscribe;
-  onIpcSend(callback: IpcCallback): Unsubscribe;
-  offIpcReceive(callback: IpcCallback): void;
-  offIpcSend(callback: IpcCallback): void;
-  onIpcReceiveEvents(eventName: EventName, callback: IpcCallback): Unsubscribe;
-  onIpcSendEvents(eventName: EventName, callback: IpcCallback): Unsubscribe;
-  offIpcReceiveEvents(eventName: EventName, callback: IpcCallback): void;
-  offIpcSendEvents(eventName: EventName, callback: IpcCallback): void;
-}
-
-declare const IpcInterceptor: IpcInterceptorType;

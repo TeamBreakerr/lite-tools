@@ -50,7 +50,7 @@ function processMessages(msgList: any[]) {
 }
 
 function setupHandleMessages() {
-  IpcInterceptor.onIpcSend(handleMessages);
+  IpcInterceptor.interceptIpcSend(handleMessages);
   log("注册事件");
 }
 
