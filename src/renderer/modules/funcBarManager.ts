@@ -23,8 +23,9 @@ async function updateTopFuncBar() {
   const value = instance.props.items;
   value.forEach((item: any) => {
     const id = element.querySelector(`.bar-icon [aria-label="${item.label}"] svg use`)?.getAttribute("xlink:href");
+    const key = `${item.label}_${id}`;
     if (id) {
-      topFuncMap.set(id, {
+      topFuncMap.set(key, {
         name: item.label,
         id,
       });
@@ -40,6 +41,7 @@ async function updateTopFuncBar() {
         enabled: true,
       };
     });
+    log("更新顶部栏目", configStore.config.chatFuncBar);
     configStore.setConfig(configStore.config);
   }
   hiddenFuncBtn(element, configStore.config.topFuncBar);
@@ -51,44 +53,47 @@ async function updateChatFuncBar() {
   if (configStore.config.chatFuncBar.length > 1) {
     hiddenFuncBtn(await waitForElement(".chat-input-area .chat-func-bar.shortcuts"), configStore.config.chatFuncBar);
   }
+  async function initChatFuncBar() {
+    const { element, instance, value } = await waitForInstance(
+      ".chat-input-area .chat-func-bar.shortcuts",
+      "proxy.list"
+    );
 
-  const { element, instance, value } = await waitForInstance(".chat-input-area .chat-func-bar.shortcuts", "proxy.list");
+    await instance.proxy.$nextTick();
 
-  await instance.proxy.$nextTick();
-
-  value.forEach((item: any) => {
-    const id = element.querySelector(`.bar-icon [aria-label="${item.label}"] svg use`)?.getAttribute("xlink:href");
-    if (id) {
-      chatFuncMap.set(id, {
-        name: item.label,
-        id,
-      });
-    }
-  });
-
-  if (
-    chatFuncMap.size >= configStore.config.chatFuncBar.length &&
-    !isFuncCountEqual(chatFuncMap, configStore.config.chatFuncBar)
-  ) {
-    log("update chat func bar", chatFuncMap);
-    configStore.config.chatFuncBar = Array.from(chatFuncMap.values()).map((item) => {
-      return {
-        ...item,
-        enabled: true,
-      };
+    value.forEach((item: any) => {
+      const id = element.querySelector(`.bar-icon [aria-label="${item.label}"] svg use`)?.getAttribute("xlink:href");
+      const key = `${item.label}_${id}`;
+      if (id) {
+        chatFuncMap.set(key, {
+          name: item.label,
+          id,
+        });
+      }
     });
-    log("更新聊天栏目", configStore.config.chatFuncBar);
-  }
-  observeMutations(
-    element.querySelector(".func-bar:first-child")!,
-    () => {
-      hiddenFuncBtn(element, configStore.config.chatFuncBar);
-    },
-    {
-      childList: true,
-      autoDisconnect: 1000,
+
+    if (
+      chatFuncMap.size >= configStore.config.chatFuncBar.length &&
+      !isFuncCountEqual(chatFuncMap, configStore.config.chatFuncBar)
+    ) {
+      log("update chat func bar", chatFuncMap);
+      configStore.config.chatFuncBar = Array.from(chatFuncMap.values()).map((item) => {
+        return {
+          ...item,
+          enabled: true,
+        };
+      });
+      log("更新聊天栏目", configStore.config.chatFuncBar);
+      configStore.setConfig(configStore.config);
     }
-  );
+    return element;
+  }
+  const element = await initChatFuncBar();
+
+  observeMutations(element.querySelector(".func-bar:first-child")!, initChatFuncBar, {
+    childList: true,
+    autoDisconnect: 3000,
+  });
   hiddenFuncBtn(element, configStore.config.chatFuncBar);
 }
 
@@ -98,7 +103,7 @@ function hiddenFuncBtn(element: HTMLElement, funcBar: FuncBar[]) {
       .find((element) => {
         return element.getAttribute("xlink:href") === item.id;
       })
-      ?.closest<HTMLElement>(".bar-icon");
+      ?.closest<HTMLElement>(`.bar-icon:has([aria-label="${item.name}"])`);
     if (findEl) {
       findEl.style.display = item.enabled ? "flex" : "none";
     }
@@ -106,7 +111,7 @@ function hiddenFuncBtn(element: HTMLElement, funcBar: FuncBar[]) {
 }
 
 function isFuncCountEqual(a: Map<string, FuncBar>, b: FuncBar[]) {
-  const mapB = new Map(b.map((item) => [item.id, item]));
+  const mapB = new Map(b.map((item) => [`${item.name}_${item.id}`, item]));
   if (a.size !== mapB.size) return false;
   return [...mapB.keys()].every((id) => a.has(id));
 }
