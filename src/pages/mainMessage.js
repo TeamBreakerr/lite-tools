@@ -168,7 +168,7 @@ function chatMessage() {
   // use index to match instead
   document.querySelectorAll(".func-menu.sidebar__menu .func-menu__item_wrap").forEach((el, index) => {
     const opt = options.sidebar.bottom[index];
-    console.log("[Debug] opt ids:", JSON.stringify(options.sidebar.bottom, null, 2));
+    // console.log("[Debug] opt ids:", JSON.stringify(options.sidebar.bottom, null, 2));
     if (opt) {
       if (opt.disabled) {
         // change class name: func-menu__item_wrap -> func-menu__item_wrap LT-disabled
@@ -186,7 +186,7 @@ function chatMessage() {
   }
 
   // 特殊的图标
-  const arr = ["消息", "联系人", "短视频", "腾讯文档", "QQ游戏", "自选股", "腾讯网", "微云", "QQ音乐", "QQ钱包", "更多", "空间", "频道", "游戏"];
+  const arr = ["消息", "联系人", "短视频", "腾讯文档", "QQ游戏", "自选股", "腾讯网", "微云", "QQ音乐", "QQ钱包", "更多", "空间", "频道", "游戏", "QQ天气"];
   for (let i = 0; i < arr.length; i++) {
     const areaLabel = arr[i];
     const findLabel = options.sidebar.top.find((el) => el.name === areaLabel);
@@ -196,7 +196,7 @@ function chatMessage() {
         ?.classList?.toggle("LT-disabled", findLabel.disabled);
     }
 
-    // Patch starts here
+    // Patch of fixing 空间 option starts here
     // We need to create a special case for "空间" because it has no aria-label? Tencent Programmers Sucks.
     // If nav item matches data-v-a5e9cffe, change its class to "nav-item LT-disabled"
     if (areaLabel === "空间") {
@@ -211,6 +211,22 @@ function chatMessage() {
         const el = document.querySelector('.sidebar__nav .nav-item[data-v-a5e9cffe]');
         if (el) {
           el.className = "nav-item";
+        }
+      }
+    }
+    // Patch ends here
+    // Patch of fixing QQ天气 option starts here
+    // The same, QQ天气 has no aria-label too, we need to locate it with class name "nav-item-weather nav-item"
+    if (areaLabel === "QQ天气") {
+      if (findLabel && findLabel.disabled) {
+        const el = document.querySelector('.sidebar__nav .nav-item-weather.nav-item');
+        if (el) {
+          el.className = "nav-item-weather nav-item LT-disabled";
+        }
+      } else {
+        const el = document.querySelector('.sidebar__nav .nav-item-weather.nav-item');
+        if (el) {
+          el.className = "nav-item-weather nav-item";
         }
       }
     }

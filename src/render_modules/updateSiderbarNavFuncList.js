@@ -14,7 +14,7 @@ export function updateSiderbarNavFuncList(navStore) {
     disabled: tabIcon.status === 1 ? false : true,
   }));
   // 插入特殊图标数据
-  const arr = ["消息", "联系人", "短视频", "腾讯文档", "QQ游戏", "自选股", "腾讯网", "微云", "QQ音乐", "QQ钱包", "更多", "空间", "频道", "游戏"];
+  const arr = ["消息", "联系人", "短视频", "腾讯文档", "QQ游戏", "自选股", "腾讯网", "微云", "QQ音乐", "QQ钱包", "更多", "空间", "频道", "游戏", "QQ天气"];
   top.unshift(
     ...arr.map((name) => ({
       name,
@@ -33,6 +33,11 @@ export function updateSiderbarNavFuncList(navStore) {
       };
       return item;
     });
+
+  // print full sidebar.top for debugging
+  // console.log("[Debug] 完整的 sidebar.top 列表:");
+  // console.log(JSON.stringify(top, null, 2));
+
   log("更新侧边栏数据", top, bottom);
   lite_tools.sendSidebar({
     top,
