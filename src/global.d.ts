@@ -16,7 +16,7 @@ interface Window {
 }
 
 interface Element {
-  __VUE__?: any[]; // 或指定具体类型
+  __VUE__?: any[];
 }
 
 interface Peer {

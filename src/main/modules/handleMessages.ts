@@ -34,7 +34,7 @@ function handleMessages(...args: any[]) {
 
 function processMessages(msgList: any[]) {
   log("捕获到消息", msgList);
-  if (config.message.deleteBubbleSkin) {
+  if (config.interface.deleteBubbleSkin) {
     log("执行 删除气泡皮肤 ");
     deleteBubbleSkin(msgList);
   }

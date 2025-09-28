@@ -3,10 +3,14 @@
     "console": false,
     "mainConsole": false
   },
-  "message": {
+  "interface": {
     "deleteBubbleSkin": false,
-    "miniArkToWebArk": false,
     "preventSelect": false,
+    "hiddenWeatherBtn": false,
+    "hiddenClassicBtn": false
+  },
+  "message": {
+    "miniArkToWebArk": false,
     "marketFaceToPicElement": false
   },
   "sideBar": {
