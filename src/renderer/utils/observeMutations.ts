@@ -12,7 +12,6 @@ function observeMutations(target: HTMLElement, callback: ObserverCallback, optio
   if (!target || !callback) {
     return () => {};
   }
-  console.log("开始监听元素", target);
   const observer = new MutationObserver((mutationsList) => {
     callback(mutationsList, observer);
   });
