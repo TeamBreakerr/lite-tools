@@ -4,6 +4,7 @@ import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/config";
 import { createComparator } from "@/common/createComparator";
 import { updateTopFuncBar, updateChatFuncBar } from "@/renderer/modules/funcBarManager";
+import { observeMutations } from "@/renderer/utils/observeMutations";
 import type { Config } from "@/types/Config";
 
 const log = createLogger("main");
@@ -13,64 +14,78 @@ async function setupMainPage() {
   const aioStore = new AioStore();
   await configStore.ready;
   await aioStore.ready;
-  log("ok");
+  log("initialized");
   const topSideBarhasChanged = createComparator(configStore.config.sideBar.top);
   setupPreventMutipleSelect("chat-msg-area");
-  updateTopSideBar(configStore.config, false);
+  updateTopSideBar(configStore.config);
   updateBottomSideBar(configStore.config);
+  updateInterface(configStore.config);
   aioStore.onChange(() => {
     updateTopFuncBar();
     updateChatFuncBar();
   });
   configStore.onChange((config) => {
+    log("config changed", config);
     if (topSideBarhasChanged(config.sideBar.top)) {
-      updateTopSideBar(config, false);
+      updateTopSideBar(config);
     }
+    updateInterface(config);
     updateBottomSideBar(config);
     updateTopFuncBar();
     updateChatFuncBar();
   });
-  const observer = new MutationObserver((mutationsList) => {
-    for (const mutation of mutationsList) {
-      if (mutation.type === "childList") {
-        updateTopSideBar(configStore.config, true);
+
+  observeMutations(
+    document.querySelector(".nav.sidebar__nav")!,
+    (mutationsList) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type === "childList") {
+          updateTopSideBar(configStore.config);
+          updateBottomSideBar(configStore.config);
+        }
       }
-    }
-  });
-  observer.observe(document.querySelector(".nav.sidebar__nav")!, { childList: true });
-  setTimeout(() => observer.disconnect(), 30 * 1000);
+    },
+    { childList: true, autoDisconnect: 5000 }
+  );
 }
 
-function updateTopSideBar(config: Config, onlySpecial: boolean) {
+function updateInterface(config: Config) {
+  document
+    .querySelector<HTMLElement>(".user-profile-card__widgets .weather-widget")
+    ?.style.setProperty("display", config.interface.hiddenWeatherBtn ? "none" : "flex");
+  document
+    .querySelector<HTMLElement>(".window-control-area .narrow-toggler")
+    ?.style.setProperty("display", config.interface.hiddenClassicBtn ? "none" : "flex");
+  const controlAreaWidth = document.querySelector<HTMLElement>(".window-control-area")?.offsetWidth;
+  if (controlAreaWidth) {
+    document
+      .querySelector<HTMLElement>(".topbar.container-topbar .topbar-content")
+      ?.style.setProperty("padding-right", `${controlAreaWidth - 10}px`);
+  }
+}
+
+function updateTopSideBar(config: Config) {
   // 更新侧边栏
-  if (!onlySpecial) {
-    document.querySelector(".nav.sidebar__nav")?.__VUE__?.[0]?.proxy?.navStore?.loadSideBarConfig();
-  }
+  const sideBarUpper = document.querySelector<HTMLElement>(".sidebar-wrapper .sidebar__upper")!;
+  sideBarUpper.querySelector(".nav.sidebar__nav")?.__VUE__?.[0]?.proxy?.navStore?.loadSideBarConfig();
   // 特殊栏目
-  const message = document.querySelector<HTMLElement>(".nav.sidebar__nav .nav-item:nth-child(1)");
-  if (message) {
-    message.style.display = config.sideBar.top[0].enabled ? "flex" : "none";
-  }
-  const contact = document.querySelector<HTMLElement>(".nav.sidebar__nav .nav-item:nth-child(2)");
-  if (contact) {
-    contact.style.display = config.sideBar.top[1].enabled ? "flex" : "none";
-  }
-  const more = document.querySelector<HTMLElement>(".nav.sidebar__nav .nav-item:last-child");
-  if (more) {
-    more.style.display = config.sideBar.top[config.sideBar.top.length - 1].enabled ? "flex" : "none";
-  }
+  sideBarUpper
+    .querySelector<HTMLElement>(`.nav.sidebar__nav .nav-item[aria-label="消息"]`)
+    ?.style.setProperty("display", config.sideBar.top[0].enabled ? "flex" : "none");
+  sideBarUpper
+    .querySelector<HTMLElement>(`.nav.sidebar__nav .nav-item[aria-label="联系人"]`)
+    ?.style.setProperty("display", config.sideBar.top[1].enabled ? "flex" : "none");
+  sideBarUpper
+    .querySelector<HTMLElement>(`.nav.sidebar__nav .nav-item[aria-label="更多"]`)
+    ?.style.setProperty("display", config.sideBar.top[config.sideBar.top.length - 1].enabled ? "flex" : "none");
 }
 
 function updateBottomSideBar(config: Config) {
-  const bottomSideBar = document.querySelector<HTMLElement>(".sidebar-nav .sidebar__lower")!;
-
+  const sideBarLower = document.querySelector<HTMLElement>(".sidebar-wrapper .sidebar__lower")!;
   config.sideBar.bottom.forEach((item) => {
-    const findEl = bottomSideBar
-      .querySelector(`[aria-label="${item.name}"]`)
-      ?.closest<HTMLElement>(".func-menu__item_wrap");
-    if (findEl) {
-      findEl.style.display = item.enabled ? "flex" : "none";
-    }
+    sideBarLower
+      .querySelector<HTMLElement>(`.func-menu__item_wrap:has([aria-label="${item.name}"])`)
+      ?.style.setProperty("display", item.enabled ? "flex" : "none");
   });
 }
 
