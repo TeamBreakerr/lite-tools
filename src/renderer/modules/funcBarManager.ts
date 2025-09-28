@@ -12,7 +12,7 @@ async function updateTopFuncBar() {
   await configStore.ready;
 
   if (configStore.config.topFuncBar.length > 1) {
-    hiddenFuncBtn(await waitForElement(".panel-header__action .func-bar"), configStore.config.topFuncBar);
+    hiddenFuncBtn(await waitForElement(".panel-header__action .func-bar"), configStore.config.topFuncBar, true);
   }
 
   const { element, instance } = await waitForInstance(
@@ -51,7 +51,11 @@ async function updateChatFuncBar() {
   await configStore.ready;
 
   if (configStore.config.chatFuncBar.length > 1) {
-    hiddenFuncBtn(await waitForElement(".chat-input-area .chat-func-bar.shortcuts"), configStore.config.chatFuncBar);
+    hiddenFuncBtn(
+      await waitForElement(".chat-input-area .chat-func-bar.shortcuts"),
+      configStore.config.chatFuncBar,
+      true
+    );
   }
   async function initChatFuncBar() {
     const { element, instance, value } = await waitForInstance(
@@ -90,20 +94,27 @@ async function updateChatFuncBar() {
   }
   const element = await initChatFuncBar();
 
-  observeMutations(element.querySelector(".func-bar:first-child")!, initChatFuncBar, {
-    childList: true,
-    autoDisconnect: 3000,
-  });
+  observeMutations(
+    element.querySelector(".func-bar:first-child")!,
+    () => {
+      initChatFuncBar();
+      hiddenFuncBtn(element, configStore.config.chatFuncBar);
+    },
+    {
+      childList: true,
+      autoDisconnect: 3000,
+    }
+  );
   hiddenFuncBtn(element, configStore.config.chatFuncBar);
 }
 
-function hiddenFuncBtn(element: HTMLElement, funcBar: FuncBar[]) {
+function hiddenFuncBtn(element: HTMLElement, funcBar: FuncBar[], preparatory = false) {
   funcBar.forEach((item) => {
     const findEl = Array.from(element.querySelectorAll(`.bar-icon use`))
       .find((element) => {
         return element.getAttribute("xlink:href") === item.id;
       })
-      ?.closest<HTMLElement>(`.bar-icon:has([aria-label="${item.name}"])`);
+      ?.closest<HTMLElement>(`.bar-icon${!preparatory ? `:has([aria-label^="${item.name.slice(0, 2)}"])` : ``}`);
     if (findEl) {
       findEl.style.display = item.enabled ? "flex" : "none";
     }
