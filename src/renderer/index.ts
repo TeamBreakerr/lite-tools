@@ -1,5 +1,7 @@
 import { getHash } from "@/renderer/utils/getHash";
 import { createLogger } from "@/renderer/utils/createLogger";
+import globalCss from "@/renderer/scss/global.scss";
+document.head.appendChild(document.createElement("style")).appendChild(document.createTextNode(globalCss));
 
 // pages
 import { setupMainPage } from "@/renderer/pages/main";
