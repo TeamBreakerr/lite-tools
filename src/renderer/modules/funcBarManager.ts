@@ -38,7 +38,7 @@ async function updateTopFuncBar() {
     configStore.config.topFuncBar = Array.from(topFuncMap.values()).map((item) => {
       return {
         ...item,
-        enabled: true,
+        enabled: configStore.config.topFuncBar.find((i) => i.name === item.name)?.enabled ?? true,
       };
     });
     log("更新顶部栏目", configStore.config.chatFuncBar);
@@ -84,7 +84,7 @@ async function updateChatFuncBar() {
       configStore.config.chatFuncBar = Array.from(chatFuncMap.values()).map((item) => {
         return {
           ...item,
-          enabled: true,
+          enabled: configStore.config.chatFuncBar.find((i) => i.name === item.name)?.enabled ?? true,
         };
       });
       log("更新聊天栏目", configStore.config.chatFuncBar);
