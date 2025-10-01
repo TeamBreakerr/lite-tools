@@ -37,9 +37,7 @@ class ConfigStore {
   }
 
   offChange(listener: ConfigListener) {
-    if (this.listeners.has(listener)) {
-      this.listeners.delete(listener);
-    }
+    this.listeners.delete(listener);
   }
 
   private notify() {

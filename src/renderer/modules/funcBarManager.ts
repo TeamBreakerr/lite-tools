@@ -80,7 +80,6 @@ async function updateChatFuncBar() {
       chatFuncMap.size >= configStore.config.chatFuncBar.length &&
       !isFuncCountEqual(chatFuncMap, configStore.config.chatFuncBar)
     ) {
-      log("update chat func bar", chatFuncMap);
       configStore.config.chatFuncBar = Array.from(chatFuncMap.values()).map((item) => {
         return {
           ...item,

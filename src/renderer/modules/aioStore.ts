@@ -65,9 +65,7 @@ class AioStore {
   }
 
   offChange(listener: (val: any) => void) {
-    if (this.listeners.has(listener)) {
-      this.listeners.delete(listener);
-    }
+    this.listeners.delete(listener);
   }
 }
 

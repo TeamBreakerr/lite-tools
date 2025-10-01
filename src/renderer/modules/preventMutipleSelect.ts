@@ -7,7 +7,7 @@ let listenTarget = false;
 let interception = false;
 
 function setupPreventMutipleSelect(className: string) {
-  log("已加载");
+  log("加载");
   const app = document.querySelector("#app") as HTMLElement;
   app.addEventListener("pointerdown", (event) => {
     if (configStore.config.interface.preventSelect && (event.buttons === 1 || event.buttons === 4)) {
@@ -20,20 +20,17 @@ function setupPreventMutipleSelect(className: string) {
     } else {
       interception = false;
     }
-    log("更新状态", interception);
   });
   app.addEventListener("pointerup", (event) => {
     if (configStore.config.interface.preventSelect) {
       if (event.buttons === 0) {
         interception = false;
       }
-      log("更新状态", interception);
     }
   });
 
   app.addEventListener("mousemove", (event) => {
     if (!listenTarget && document.querySelector(`.${className}`)) {
-      log("已捕获目标元素");
       (document.querySelector(`.${className}`) as HTMLElement).addEventListener("pointerdown", (event) => {
         if (configStore.config.interface.preventSelect && (event.buttons === 1 || event.buttons === 4)) {
           document.querySelector(".q-context-menu")?.remove();
