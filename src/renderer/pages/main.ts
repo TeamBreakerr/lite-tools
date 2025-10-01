@@ -1,4 +1,4 @@
-import { AioStore } from "@/renderer/modules/AioStore";
+import { aioStore } from "@/renderer/modules/aioStore";
 import { setupPreventMutipleSelect } from "@/renderer/modules/preventMutipleSelect";
 import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/config";
@@ -11,7 +11,6 @@ const log = createLogger("main");
 
 async function setupMainPage() {
   log("await init");
-  const aioStore = new AioStore();
   await configStore.ready;
   await aioStore.ready;
   log("initialized");

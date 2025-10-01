@@ -1,4 +1,4 @@
-import { AioStore } from "@/renderer/modules/AioStore";
+import { aioStore } from "@/renderer/modules/aioStore";
 import { setupPreventMutipleSelect } from "@/renderer/modules/preventMutipleSelect";
 import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/config";
@@ -8,7 +8,6 @@ const log = createLogger("chat");
 
 async function setupChatPage() {
   log("await aio");
-  const aioStore = new AioStore();
   await configStore.ready;
   await aioStore.ready;
   log("ok");

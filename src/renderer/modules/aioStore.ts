@@ -71,4 +71,6 @@ class AioStore {
   }
 }
 
-export { AioStore };
+const aioStore = new AioStore();
+
+export { aioStore };
