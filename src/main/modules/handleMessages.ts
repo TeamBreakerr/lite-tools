@@ -10,9 +10,11 @@ const log = createLogger("handleMessages");
 
 function handleMessages(...args: any[]) {
   try {
+    const channel = args[0] as string;
+    const webContentId = parseInt(channel.split("RM_IPCFROM_MAIN")[1]) || 2;
     const msgList = args[2]?.msgList;
     if (msgList && msgList.length && checkChatType(msgList[0])) {
-      processMessages(msgList);
+      processMessages(msgList, webContentId, args);
     }
     const onRecvMsg = findEvent(args, [
       "nodeIKernelMsgListener/onRecvMsg",
@@ -21,18 +23,18 @@ function handleMessages(...args: any[]) {
       "nodeIKernelMsgListener/onActiveMsgInfoUpdate",
     ]);
     if (onRecvMsg && checkChatType(args?.[2]?.payload?.msgList?.[0])) {
-      processMessages(args[2].payload.msgList);
+      processMessages(args[2].payload.msgList, webContentId, args);
     }
     const onForwardMsg = findEvent(args, "nodeIKernelMsgListener/onAddSendMsg");
     if (onForwardMsg && checkChatType(args?.[2]?.payload?.msgRecord)) {
-      processMessages([args[2].payload.msgRecord]);
+      processMessages([args[2].payload.msgRecord], webContentId, args);
     }
-  } catch (err) {
-    log("出现错误", err);
+  } catch (err: any) {
+    log("出现错误", err.message, err?.stack);
   }
 }
 
-function processMessages(msgList: any[]) {
+function processMessages(msgList: any[], webContentId: number, args: any[]) {
   log("捕获到消息", msgList);
   if (config.interface.deleteBubbleSkin) {
     log("执行 删除气泡皮肤 ");
@@ -44,7 +46,7 @@ function processMessages(msgList: any[]) {
   }
   if (config.message.marketFaceToPicElement) {
     log("执行 转换表情类型 ");
-    marketFaceToPicElement(msgList);
+    marketFaceToPicElement(msgList, webContentId);
   }
   log("处理结束", msgList);
 }
