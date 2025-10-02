@@ -6,16 +6,16 @@ import { UserConfigRegistry } from "@/main/modules/UserConfigRegistry";
 import { globalBroadcast } from "@/main/utils/globalBroadcast";
 import configTemplate from "@/assets/config.template.json";
 import { createLogger } from "@/main/utils/createLogger";
-import type { Config } from "@/types/Config";
+import type { BaseConfig } from "@/types/Config";
 
 const log = createLogger("config");
 
-let config = {} as Config;
+let config = {} as BaseConfig;
 let isInitialized = false;
 let isIndependent = false;
 let currentConfigPath: string;
 
-type ConfigListener = (config: Config) => void;
+type ConfigListener = (config: BaseConfig) => void;
 const listeners = new Set<ConfigListener>();
 
 const defaultConfigPath = path.join(configPath, "config.json");
@@ -43,7 +43,7 @@ function setupConfig(uid: string) {
   }
 }
 
-function loadConfig(configPath: string): Config {
+function loadConfig(configPath: string): BaseConfig {
   try {
     if (!fs.existsSync(configPath)) {
       fs.writeFileSync(configPath, JSON.stringify(configTemplate, null, 2), "utf-8");
@@ -120,7 +120,7 @@ function offConfigUpdate(listener: ConfigListener) {
   listeners.delete(listener);
 }
 
-function updateConfig(newConfig: Config) {
+function updateConfig(newConfig: BaseConfig) {
   Object.assign(config, newConfig);
   fs.writeFileSync(currentConfigPath, JSON.stringify(config, null, 2), "utf-8");
   listeners.forEach((listener) => listener(config));

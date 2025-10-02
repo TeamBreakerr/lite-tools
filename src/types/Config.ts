@@ -15,4 +15,4 @@ type ExtendedConfig = Omit<BaseConfig, "chatFuncBar" | "topFuncBar"> & {
 
 type Config = ExtendedConfig;
 
-export type { FuncBar, Config };
+export type { FuncBar, Config, BaseConfig };
