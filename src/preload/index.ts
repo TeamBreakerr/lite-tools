@@ -4,9 +4,11 @@ import type { Config } from "@/types/Config";
 const exposeFunctions = {
   updateConfig: (config: Config) => ipcRenderer.send("lite_tools.updateConfig", config),
   getConfig: async (): Promise<Config> => ipcRenderer.invoke("lite_tools.getConfig"),
+  isIndependent: (): boolean => ipcRenderer.sendSync("lite_tools.isIndependent"),
+  isInitialized: (): boolean => ipcRenderer.sendSync("lite_tools.isInitialized"),
   onConfigChange: (callback: (config: Config) => void) =>
     ipcRenderer.on("lite_tools.configChanged", (_, config: Config) => callback(config)),
-  getWebContentId: () => ipcRenderer.sendSync("lite_tools.getWebContentId"),
+  getWebContentId: (): number => ipcRenderer.sendSync("lite_tools.getWebContentId"),
 
   nativeCall: (event: any, payload: any, awaitCallback?: boolean | string | string[]) => {
     const callbackId = crypto.randomUUID();

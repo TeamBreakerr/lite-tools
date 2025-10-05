@@ -20,11 +20,12 @@ const listeners = new Set<ConfigListener>();
 
 const defaultConfigPath = path.join(configPath, "config.json");
 
+setupIpcEvent();
+
 function setupConfig(uid: string) {
   try {
     log("开始读取配置文件");
     setupPath();
-    setupIpcEvent();
     const register = new UserConfigRegistry(path.join(configPath, "UserConfigRegistry.json"));
     const userConfigPath = register.get(uid);
     if (userConfigPath) {
@@ -103,6 +104,12 @@ function safeMergeConfig(fileConfig: any, defaultConfig: any): any {
 
 function setupIpcEvent() {
   log("注册IPC事件");
+  ipcMain.on("lite_tools.isIndependent", (event) => {
+    event.returnValue = isIndependent;
+  });
+  ipcMain.on("lite_tools.isInitialized", (event) => {
+    event.returnValue = isInitialized;
+  });
   ipcMain.handle("lite_tools.getConfig", () => {
     return config;
   });

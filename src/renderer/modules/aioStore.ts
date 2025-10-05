@@ -2,34 +2,44 @@ import { createLogger } from "@/renderer/utils/createLogger";
 
 const log = createLogger("captureAIO");
 
+enum InitStatus {
+  Uninitialized,
+  Initializing,
+  Initialized,
+}
+
 class AioStore {
   private listeners: Set<Function> = new Set();
   private readyPromise: Promise<void>;
-  private captureResolve: () => void;
+  private resolveReady: () => void;
   private curAioData: any;
+  private status = InitStatus.Uninitialized;
 
   constructor() {
     const { resolve, promise } = Promise.withResolvers<void>();
-    log("初始化");
     this.readyPromise = promise;
-    this.captureResolve = resolve;
-    this.setupCaptureAIO();
+    this.resolveReady = resolve;
   }
 
   get ready() {
+    if (this.status === InitStatus.Uninitialized) {
+      this.status = InitStatus.Initializing;
+      this.setupCaptureAIO();
+    }
     return this.readyPromise;
   }
 
   async setupCaptureAIO(): Promise<void> {
+    log("开始初始化");
     while (true) {
       const vueInstance = document.querySelector(".aio .vue-component")?.__VUE__;
-      log("查询中", vueInstance);
       if (vueInstance) {
         const instance = vueInstance.find((instance) => instance?.proxy?.aioStore || instance?.proxy?.commonAioStore);
         const aioStore = instance?.proxy?.aioStore || instance?.proxy?.commonAioStore;
         if (aioStore) {
           this.handleCurAioData(aioStore);
-          this.captureResolve();
+          this.status = InitStatus.Initialized;
+          this.resolveReady();
           return;
         }
       }
