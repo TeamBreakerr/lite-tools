@@ -29,7 +29,7 @@ function ensureObserver() {
           if (waiter.propPath) {
             const vueInstances = element.__VUE__;
             if (vueInstances?.length) {
-              for (const instance of vueInstances) {
+              for (const instance of new Set(vueInstances)) {
                 const value = getByPath(instance, waiter.propPath);
                 if (value !== undefined) {
                   waiters.splice(i, 1);
@@ -89,11 +89,11 @@ function waitForElement(selector: string, timeout?: number): Promise<HTMLElement
  */
 function waitForInstance(selector: string, propPath: string, timeout?: number): Promise<{ element: HTMLElement; instance: any; value: any }> {
   return new Promise((resolve, reject) => {
-    const element = document.querySelector<HTMLElement>(selector) as any;
+    const element = document.querySelector(selector) as any;
     if (element) {
       const vueInstances = element.__VUE__;
       if (vueInstances?.length) {
-        for (const instance of vueInstances) {
+        for (const instance of new Set(vueInstances)) {
           const value = getByPath(instance, propPath);
           if (value !== undefined) return resolve({ element, instance, value });
         }
