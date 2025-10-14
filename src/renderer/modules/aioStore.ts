@@ -1,4 +1,5 @@
 import { createLogger } from "@/renderer/utils/createLogger";
+import { waitForInstance } from "@/renderer/utils/domWatiFor";
 
 const log = createLogger("captureAIO");
 
@@ -31,20 +32,12 @@ class AioStore {
 
   async setupCaptureAIO(): Promise<void> {
     log("开始初始化");
-    while (true) {
-      const vueInstance = document.querySelector(".aio .vue-component")?.__VUE__;
-      if (vueInstance) {
-        const instance = vueInstance.find((instance) => instance?.proxy?.aioStore || instance?.proxy?.commonAioStore);
-        const aioStore = instance?.proxy?.aioStore || instance?.proxy?.commonAioStore;
-        if (aioStore) {
-          this.handleCurAioData(aioStore);
-          this.status = InitStatus.Initialized;
-          this.resolveReady();
-          return;
-        }
-      }
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
+    const { value: aioStore } = await waitForInstance(".aio.vue-component", "proxy.commonAioStore");
+    this.handleCurAioData(aioStore);
+    this.status = InitStatus.Initialized;
+    this.resolveReady();
+    log("初始化完成", this.curAioData);
+    return;
   }
 
   handleCurAioData(aioStore: any) {
