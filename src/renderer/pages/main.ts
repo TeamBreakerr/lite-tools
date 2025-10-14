@@ -1,7 +1,7 @@
 import { aioStore } from "@/renderer/modules/aioStore";
 import { setupPreventMutipleSelect } from "@/renderer/modules/preventMutipleSelect";
 import { createLogger } from "@/renderer/utils/createLogger";
-import { configStore } from "@/renderer/modules/config";
+import { configStore } from "@/renderer/modules/configStore";
 import { createComparator } from "@/common/createComparator";
 import { updateTopFuncBar, updateChatFuncBar } from "@/renderer/modules/funcBarManager";
 import { observeMutations } from "@/renderer/utils/observeMutations";

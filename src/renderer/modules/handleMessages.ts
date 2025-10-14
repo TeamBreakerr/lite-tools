@@ -2,7 +2,7 @@ import { onComponentMount } from "@/renderer/modules/vueComponentTracker";
 import { checkChatType } from "@/common/checkChatType";
 import { createLogger } from "@/renderer/utils/createLogger";
 import { waitForInstance } from "@/renderer/utils/domWatiFor";
-import { configStore } from "@/renderer/modules/config";
+import { configStore } from "@/renderer/modules/configStore";
 
 const log = createLogger("handleMessages");
 

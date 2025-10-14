@@ -1,4 +1,4 @@
-import { configStore } from "@/renderer/modules/config.js";
+import { configStore } from "@/renderer/modules/configStore.js";
 import { createLogger } from "@/renderer/utils/createLogger";
 
 const log = createLogger("阻止滑动选择");

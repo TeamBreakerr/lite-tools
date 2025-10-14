@@ -1,5 +1,5 @@
 import { waitForInstance, waitForElement } from "@/renderer/utils/domWatiFor";
-import { configStore } from "@/renderer/modules/config";
+import { configStore } from "@/renderer/modules/configStore";
 import { observeMutations } from "@/renderer/utils/observeMutations";
 import { createLogger } from "@/renderer/utils/createLogger";
 import type { FuncBar } from "@/types/Config";
