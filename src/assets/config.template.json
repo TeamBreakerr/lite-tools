@@ -11,7 +11,13 @@
   },
   "message": {
     "miniArkToWebArk": false,
-    "marketFaceToPicElement": false
+    "marketFaceToPicElement": false,
+    "showSendTime": {
+      "enabled": false,
+      "showTimeZone": false,
+      "timeFormat": "220",
+      "dateFormat": "000"
+    },
   },
   "sideBar": {
     "top": [

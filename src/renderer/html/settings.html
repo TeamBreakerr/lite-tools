@@ -77,6 +77,65 @@
           <span class="q-switch__handle"></span>
         </div>
       </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>显示消息发送时间</h2>
+          <span class="secondary-text">显示每一条消息的发送时间 - 重载消息生效</span>
+        </div>
+        <div class="q-switch" data-config="message.showSendTime.enabled">
+          <span class="q-switch__handle"></span>
+        </div>
+      </li>
+      <li class="vertical-list-item sub-item">
+        <div>
+          <h2 title="或许可以避免迷失在时差中...">显示时区</h2>
+          <span class="secondary-text">在时间前面显示当前时区，比如 “GMT +8”</span>
+        </div>
+        <div class="q-switch" data-config="message.showSendTime.showTimeZone">
+          <span class="q-switch__handle"></span>
+        </div>
+      </li>
+      <li class="vertical-list-item sub-item">
+        <div>
+          <h2>时间格式</h2>
+          <span class="secondary-text">调整显示的时间格式</span>
+        </div>
+        <div class="setting-select" data-config="message.showSendTime.timeFormat">
+          <div class="setting-view text_color show-icon" data-value="未初始化"></div>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 8L12 17L3 8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
+          </svg>
+          <div class="setting-option">
+            <div class="setting-item" data-value="220">hh:mm</div>
+            <div class="setting-item" data-value="222">hh:mm:ss</div>
+          </div>
+        </div>
+      </li>
+      <li class="vertical-list-item sub-item">
+        <div>
+          <h2>日期格式</h2>
+          <span class="secondary-text">调整显示的日期格式</span>
+        </div>
+        <div class="setting-select" data-config="message.showSendTime.dateFormat">
+          <div class="setting-view text_color show-icon" data-value="未初始化"></div>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 8L12 17L3 8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
+          </svg>
+          <div class="setting-option show">
+            <div class="setting-item" data-value="000">不显示</div>
+            <div class="setting-item" data-value="011">M/D</div>
+            <div class="setting-item" data-value="022">MM/DD</div>
+            <div class="setting-item" data-value="211">YY/M/D</div>
+            <div class="setting-item" data-value="222">YY/MM/DD</div>
+            <div class="setting-item" data-value="111">YYYY/M/D</div>
+            <div class="setting-item" data-value="122">YYYY/MM/DD</div>
+          </div>
+        </div>
+      </li>
+
+    </ul>
+  </div>
     </ul>
   </div>
 

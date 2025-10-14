@@ -3,15 +3,17 @@ import { setupPreventMutipleSelect } from "@/renderer/modules/preventMutipleSele
 import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/config";
 import { updateTopFuncBar, updateChatFuncBar } from "@/renderer/modules/funcBarManager";
+import { setupHandleMessages } from "@/renderer/modules/handleMessages";
 
 const log = createLogger("chat");
 
 async function setupChatPage() {
-  log("await aio");
+  log("await init");
   await configStore.ready;
   await aioStore.ready;
-  log("ok");
+  log("initialized");
   setupPreventMutipleSelect("chat-msg-area");
+  setupHandleMessages();
   updateTopFuncBar();
   updateChatFuncBar();
   aioStore.onChange(() => {

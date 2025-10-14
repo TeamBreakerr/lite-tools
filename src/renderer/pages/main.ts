@@ -5,6 +5,8 @@ import { configStore } from "@/renderer/modules/config";
 import { createComparator } from "@/common/createComparator";
 import { updateTopFuncBar, updateChatFuncBar } from "@/renderer/modules/funcBarManager";
 import { observeMutations } from "@/renderer/utils/observeMutations";
+import { setupHandleMessages } from "@/renderer/modules/handleMessages";
+
 import type { Config } from "@/types/Config";
 
 const log = createLogger("main");
@@ -19,6 +21,7 @@ async function setupMainPage() {
   updateTopSideBar(configStore.value);
   updateBottomSideBar(configStore.value);
   updateInterface(configStore.value);
+  setupHandleMessages();
   aioStore.onChange(() => {
     updateTopFuncBar();
     updateChatFuncBar();
