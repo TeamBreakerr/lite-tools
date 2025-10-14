@@ -12,7 +12,7 @@ document.head.appendChild(document.createElement("style")).appendChild(document.
 
 async function initSettingView(view: HTMLDivElement) {
   await configStore.ready;
-  const config = configStore.config;
+  const config = configStore.value;
   log("获取到配置数据", config);
 
   const devInfo: HTMLDivElement = document.createElement("div");

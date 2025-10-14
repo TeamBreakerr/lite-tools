@@ -15,8 +15,7 @@ class ConfigStore {
   private readyPromise: Promise<void>;
   private resolveReady: () => void;
   private status = InitStatus.Uninitialized;
-
-  config!: Config;
+  private config!: Config;
 
   constructor() {
     const { promise, resolve } = Promise.withResolvers<void>();
@@ -24,12 +23,8 @@ class ConfigStore {
     this.resolveReady = resolve;
   }
 
-  get ready() {
-    if (this.status === InitStatus.Uninitialized && lite_tools.isInitialized()) {
-      this.status = InitStatus.Initializing;
-      this.setupConfig();
-    }
-    return this.readyPromise;
+  private notify() {
+    this.listeners.forEach((listener) => listener(this.config));
   }
 
   private async setupConfig() {
@@ -61,8 +56,16 @@ class ConfigStore {
     this.listeners.delete(listener);
   }
 
-  private notify() {
-    this.listeners.forEach((listener) => listener(this.config));
+  get ready() {
+    if (this.status === InitStatus.Uninitialized && lite_tools.isInitialized()) {
+      this.status = InitStatus.Initializing;
+      this.setupConfig();
+    }
+    return this.readyPromise;
+  }
+
+  get value() {
+    return this.config;
   }
 }
 

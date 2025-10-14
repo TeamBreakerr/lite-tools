@@ -11,8 +11,8 @@ const chatFuncMap = new Map() as Map<string, FuncBar>;
 async function updateTopFuncBar() {
   await configStore.ready;
 
-  if (configStore.config.topFuncBar.length > 1) {
-    hiddenFuncBtn(await waitForElement(".panel-header__action .func-bar"), configStore.config.topFuncBar, true);
+  if (configStore.value.topFuncBar.length > 1) {
+    hiddenFuncBtn(await waitForElement(".panel-header__action .func-bar"), configStore.value.topFuncBar, true);
   }
 
   const { element, instance } = await waitForInstance(
@@ -32,28 +32,28 @@ async function updateTopFuncBar() {
     }
   });
   if (
-    topFuncMap.size >= configStore.config.topFuncBar.length &&
-    !isFuncCountEqual(topFuncMap, configStore.config.topFuncBar)
+    topFuncMap.size >= configStore.value.topFuncBar.length &&
+    !isFuncCountEqual(topFuncMap, configStore.value.topFuncBar)
   ) {
-    configStore.config.topFuncBar = Array.from(topFuncMap.values()).map((item) => {
+    configStore.value.topFuncBar = Array.from(topFuncMap.values()).map((item) => {
       return {
         ...item,
-        enabled: configStore.config.topFuncBar.find((i) => i.name === item.name)?.enabled ?? true,
+        enabled: configStore.value.topFuncBar.find((i) => i.name === item.name)?.enabled ?? true,
       };
     });
-    log("更新顶部栏目", configStore.config.chatFuncBar);
-    configStore.setConfig(configStore.config);
+    log("更新顶部栏目", configStore.value.chatFuncBar);
+    configStore.setConfig(configStore.value);
   }
-  hiddenFuncBtn(element, configStore.config.topFuncBar);
+  hiddenFuncBtn(element, configStore.value.topFuncBar);
 }
 
 async function updateChatFuncBar() {
   await configStore.ready;
 
-  if (configStore.config.chatFuncBar.length > 1) {
+  if (configStore.value.chatFuncBar.length > 1) {
     hiddenFuncBtn(
       await waitForElement(".chat-input-area .chat-func-bar.shortcuts"),
-      configStore.config.chatFuncBar,
+      configStore.value.chatFuncBar,
       true
     );
   }
@@ -77,17 +77,17 @@ async function updateChatFuncBar() {
     });
 
     if (
-      chatFuncMap.size >= configStore.config.chatFuncBar.length &&
-      !isFuncCountEqual(chatFuncMap, configStore.config.chatFuncBar)
+      chatFuncMap.size >= configStore.value.chatFuncBar.length &&
+      !isFuncCountEqual(chatFuncMap, configStore.value.chatFuncBar)
     ) {
-      configStore.config.chatFuncBar = Array.from(chatFuncMap.values()).map((item) => {
+      configStore.value.chatFuncBar = Array.from(chatFuncMap.values()).map((item) => {
         return {
           ...item,
-          enabled: configStore.config.chatFuncBar.find((i) => i.name === item.name)?.enabled ?? true,
+          enabled: configStore.value.chatFuncBar.find((i) => i.name === item.name)?.enabled ?? true,
         };
       });
-      log("更新聊天栏目", configStore.config.chatFuncBar);
-      configStore.setConfig(configStore.config);
+      log("更新聊天栏目", configStore.value.chatFuncBar);
+      configStore.setConfig(configStore.value);
     }
     return element;
   }
@@ -97,14 +97,14 @@ async function updateChatFuncBar() {
     element.querySelector(".func-bar:first-child")!,
     () => {
       initChatFuncBar();
-      hiddenFuncBtn(element, configStore.config.chatFuncBar);
+      hiddenFuncBtn(element, configStore.value.chatFuncBar);
     },
     {
       childList: true,
       autoDisconnect: 3000,
     }
   );
-  hiddenFuncBtn(element, configStore.config.chatFuncBar);
+  hiddenFuncBtn(element, configStore.value.chatFuncBar);
 }
 
 function hiddenFuncBtn(element: HTMLElement, funcBar: FuncBar[], preparatory = false) {

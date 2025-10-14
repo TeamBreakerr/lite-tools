@@ -10,7 +10,7 @@ function setupPreventMutipleSelect(className: string) {
   log("加载");
   const app = document.querySelector("#app") as HTMLElement;
   app.addEventListener("pointerdown", (event) => {
-    if (configStore.config.interface.preventSelect && (event.buttons === 1 || event.buttons === 4)) {
+    if (configStore.value.interface.preventSelect && (event.buttons === 1 || event.buttons === 4)) {
       const target = event.target as HTMLElement;
       interception = !!(
         !target.closest(".message-content__wrapper") &&
@@ -22,7 +22,7 @@ function setupPreventMutipleSelect(className: string) {
     }
   });
   app.addEventListener("pointerup", (event) => {
-    if (configStore.config.interface.preventSelect) {
+    if (configStore.value.interface.preventSelect) {
       if (event.buttons === 0) {
         interception = false;
       }
@@ -32,13 +32,13 @@ function setupPreventMutipleSelect(className: string) {
   app.addEventListener("mousemove", (event) => {
     if (!listenTarget && document.querySelector(`.${className}`)) {
       (document.querySelector(`.${className}`) as HTMLElement).addEventListener("pointerdown", (event) => {
-        if (configStore.config.interface.preventSelect && (event.buttons === 1 || event.buttons === 4)) {
+        if (configStore.value.interface.preventSelect && (event.buttons === 1 || event.buttons === 4)) {
           document.querySelector(".q-context-menu")?.remove();
         }
       });
       listenTarget = true;
     }
-    if (configStore.config.interface.preventSelect && (event.buttons === 1 || event.buttons === 4)) {
+    if (configStore.value.interface.preventSelect && (event.buttons === 1 || event.buttons === 4)) {
       if (interception) {
         event.preventDefault();
         event.stopPropagation();

@@ -14,11 +14,11 @@ async function setupMainPage() {
   await configStore.ready;
   await aioStore.ready;
   log("initialized");
-  const topSideBarhasChanged = createComparator(configStore.config.sideBar.top);
+  const topSideBarhasChanged = createComparator(configStore.value.sideBar.top);
   setupPreventMutipleSelect("chat-msg-area");
-  updateTopSideBar(configStore.config);
-  updateBottomSideBar(configStore.config);
-  updateInterface(configStore.config);
+  updateTopSideBar(configStore.value);
+  updateBottomSideBar(configStore.value);
+  updateInterface(configStore.value);
   aioStore.onChange(() => {
     updateTopFuncBar();
     updateChatFuncBar();
@@ -39,8 +39,8 @@ async function setupMainPage() {
     (mutationsList) => {
       for (const mutation of mutationsList) {
         if (mutation.type === "childList") {
-          updateTopSideBar(configStore.config);
-          updateBottomSideBar(configStore.config);
+          updateTopSideBar(configStore.value);
+          updateBottomSideBar(configStore.value);
         }
       }
     },

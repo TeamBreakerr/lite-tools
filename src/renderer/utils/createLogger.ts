@@ -8,7 +8,7 @@ let config: Config | null = null;
 // 异步初始化 config
 const logsReady = (async () => {
   await configStore.ready;
-  config = configStore.config;
+  config = configStore.value;
 })();
 
 // 日志类
