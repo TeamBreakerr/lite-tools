@@ -1,4 +1,4 @@
-import { config } from "@/main/modules/config";
+import { configManager } from "@/main/modules/configManager";
 import { checkChatType } from "@/common/checkChatType";
 import { findEvent } from "@/main/utils/findEvent";
 import { createLogger } from "@/main/utils/createLogger";
@@ -35,6 +35,7 @@ function handleMessages(...args: any[]) {
 }
 
 function processMessages(msgList: any[], webContentId: number, args: any[]) {
+  const config = configManager.value;
   log("捕获到消息", msgList);
   if (config.interface.deleteBubbleSkin) {
     log("执行 删除气泡皮肤 ");

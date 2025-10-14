@@ -1,9 +1,9 @@
-import { config } from "@/main/modules/config";
+import { configManager } from "@/main/modules/configManager";
 
 class LocalLogger {
   constructor(private moduleName: string) {}
   log = (...args: any[]) => {
-    if (config?.debug?.mainConsole !== false) {
+    if (configManager.value?.debug?.mainConsole !== false) {
       console.log(`[${this.moduleName}]`, ...args);
     }
   };
@@ -12,7 +12,7 @@ class LocalLogger {
 function createLogger(moduleName: string) {
   const logsInstance = "Logs" in globalThis ? new Logs(moduleName) : new LocalLogger(moduleName).log;
   return (...args: any[]) => {
-    if (config?.debug?.mainConsole !== false) {
+    if (configManager.value?.debug?.mainConsole !== false) {
       logsInstance(...args);
     }
   };

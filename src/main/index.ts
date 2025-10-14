@@ -1,4 +1,4 @@
-import { setupConfig } from "@/main/modules/config";
+import { configManager } from "@/main/modules/configManager";
 import { createLogger } from "@/main/utils/createLogger";
 import { setupHandleMessages } from "@/main/modules/handleMessages";
 import { setupIpcMain } from "@/main/modules/ipcMain";
@@ -19,7 +19,7 @@ const unSubscribe = IpcInterceptor.onIpcSendEvents("nodeIKernelSessionListener/o
 // 初始化
 function setupMain(uid: string) {
   try {
-    setupConfig(uid);
+    configManager.setup(uid);
     setupHandleMessages();
     setupIpcMain();
     setupSideBar();

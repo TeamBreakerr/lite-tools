@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { webContents } from "electron";
 import { dispatchIpcEvent } from "@/main/utils/dispatchIpcEvent";
-import { config } from "@/main/modules/config";
+import { configManager } from "@/main/modules/configManager";
 
 const faceFilePaths = new Set<string>();
 const awaitIsFileExist = new Map<string, Function>();
@@ -114,7 +114,7 @@ function downloadMarketFace(marketFaceElement: any, webContentId: number) {
 IpcInterceptor.interceptIpcSendEvents(
   "nodeIKernelMsgListener/onEmojiDownloadComplete",
   (channel: string, event: any, args: any) => {
-    if (config.message.marketFaceToPicElement) {
+    if (configManager.value.message.marketFaceToPicElement) {
       const filePath = args?.payload?.notifyInfo?.path;
       if (!filePath) return;
       const cb = awaitIsFileExist.get(filePath);
@@ -129,7 +129,7 @@ IpcInterceptor.interceptIpcSendEvents(
 );
 
 IpcInterceptor.interceptIpcReceiveEvents("isFileExist", (_: any, __: any, channel: string, args: any) => {
-  if (config.message.marketFaceToPicElement) {
+  if (configManager.value.message.marketFaceToPicElement) {
     const webContentId = parseInt(channel.split("RM_IPCFROM_RENDERER")[1]) || 2;
     const callbackId = args?.[0]?.callbackId;
     const filePath = args?.[1]?.payload?.[0];
