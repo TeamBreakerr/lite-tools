@@ -85,6 +85,9 @@ function processMessages(component: any) {
   if (configStore.value.message.showSendTime.enabled) {
     insertTime(slot, msgRecord);
   }
+  if (configStore.value.message.preventRecall.enabled) {
+    insertRecallTag(slot, msgRecord);
+  }
 }
 
 function insertSlot(messageEl: HTMLElement, msgRecord: any) {
@@ -156,5 +159,24 @@ function getSendTime(sendTime: number) {
   }).format(new Date(sendTime));
 }
 
+function insertRecallTag(slot: HTMLElement, msgRecord: any) {
+  const span = document.createElement("span");
+  span.classList.add("lt-recall");
+  span.textContent = "已撤回";
+  span.title = `[时间] 被 [操作人] 撤回`;
+  const clone = span.cloneNode(true) as HTMLElement;
+  const { spacer, float } = slots.get(slot) ?? {};
+  spacer?.insertAdjacentElement("afterbegin", span);
+  float?.insertAdjacentElement("afterbegin", clone);
+}
 
 export { setupHandleMessages };
+
+// aio元素实例
+// group-chat 107
+
+// 图片查看器 属性可用于判断是否出现滚动条
+// main-area main-area--image vue-component
+// uid 39
+// [3].proxy.isDirectionXValid
+// [3].proxy.isDirectionYValid

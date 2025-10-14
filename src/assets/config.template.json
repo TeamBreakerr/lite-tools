@@ -18,6 +18,20 @@
       "timeFormat": "220",
       "dateFormat": "000"
     },
+    "preventRecall": {
+      "enabled": false,
+      "localStorage": false,
+      "customColor": false,
+      "preventSelfMsg": false,
+      "blockAllrecall": false,
+      "cacheHistory": false,
+      "stealthMode": false,
+      "redirectPicPath": false,
+      "customTextColor": {
+        "light": "#ff6666",
+        "dark": "#c70000"
+      }
+    }
   },
   "sideBar": {
     "top": [
