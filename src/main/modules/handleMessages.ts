@@ -5,6 +5,7 @@ import { createLogger } from "@/main/utils/createLogger";
 import { deleteBubbleSkin } from "@/main/modules/deleteBubbleSkin";
 import { miniArkToWebArk } from "@/main/modules/miniArkToWebArk";
 import { marketFaceToPicElement } from "@/main/modules/marketFaceToPicElement";
+import { preventRecall } from "@/main/modules/preventRecall";
 
 const log = createLogger("handleMessages");
 
@@ -35,21 +36,29 @@ function handleMessages(...args: any[]) {
 }
 
 function processMessages(msgList: any[], webContentId: number, args: any[]) {
-  const config = configManager.value;
-  log("捕获到消息", msgList);
-  if (config.interface.deleteBubbleSkin) {
-    log("执行 删除气泡皮肤 ");
-    deleteBubbleSkin(msgList);
+  try {
+    const config = configManager.value;
+    log("捕获到消息", msgList);
+    if (config.message.preventRecall.enabled) {
+      log("执行 阻止撤回 ");
+      preventRecall(msgList);
+    }
+    if (config.interface.deleteBubbleSkin) {
+      log("执行 删除气泡皮肤 ");
+      deleteBubbleSkin(msgList);
+    }
+    if (config.message.miniArkToWebArk) {
+      log("执行 替换小程序卡片 ");
+      miniArkToWebArk(msgList);
+    }
+    if (config.message.marketFaceToPicElement) {
+      log("执行 转换表情类型 ");
+      marketFaceToPicElement(msgList, webContentId);
+    }
+    log("处理结束", msgList);
+  } catch (err: any) {
+    log("出现错误", err.message, err?.stack);
   }
-  if (config.message.miniArkToWebArk) {
-    log("执行 替换小程序卡片 ");
-    miniArkToWebArk(msgList);
-  }
-  if (config.message.marketFaceToPicElement) {
-    log("执行 转换表情类型 ");
-    marketFaceToPicElement(msgList, webContentId);
-  }
-  log("处理结束", msgList);
 }
 
 function setupHandleMessages() {
