@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { Config } from "@/types/Config";
+import type { RecallData } from "@/main/modules/preventRecall";
 
 const exposeFunctions = {
   updateConfig: (config: Config) => ipcRenderer.send("lite_tools.updateConfig", config),
@@ -9,6 +10,9 @@ const exposeFunctions = {
   onConfigChange: (callback: (config: Config) => void) =>
     ipcRenderer.on("lite_tools.configChanged", (_, config: Config) => callback(config)),
   getWebContentId: (): number => ipcRenderer.sendSync("lite_tools.getWebContentId"),
+  // 防撤回相关
+  onRecallMessagesFound: (callback: (recallDatas: RecallData[]) => void) =>
+    ipcRenderer.on("lite_tools.recallMessagesFound", (_, recallDatas: RecallData[]) => callback(recallDatas)),
 
   nativeCall: (event: any, payload: any, awaitCallback?: boolean | string | string[]) => {
     const callbackId = crypto.randomUUID();
