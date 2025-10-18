@@ -4,6 +4,10 @@ import { createLogger } from "@/renderer/utils/createLogger";
 import { waitForInstance } from "@/renderer/utils/domWatiFor";
 import { configStore } from "@/renderer/modules/configStore";
 
+import type { LiteTools } from "@/preload";
+
+declare const lite_tools: LiteTools;
+
 const log = createLogger("handleMessages");
 
 const processedInstances = new WeakSet<any>();
@@ -53,6 +57,7 @@ async function setupHandleMessages() {
   await configStore.ready;
   log("注册事件");
   onComponentMount(handleMessages);
+  initIpcEvent();
   const { value: msgList } = await waitForInstance(
     ".container-content .container .aio .group-chat",
     "proxy.curMsgListData"
@@ -63,6 +68,17 @@ async function setupHandleMessages() {
     if (el && el?.__VUE__[0]) {
       handleMessages(el.__VUE__[0]);
     }
+  });
+}
+
+function initIpcEvent() {
+  lite_tools.onRecallMessagesFound((recallDatas) => {
+    recallDatas.forEach((recallData) => {
+      const recallMsg = document.getElementById(recallData.id.toString())?.firstElementChild as any;
+      if (recallMsg && recallMsg?.__VUE__[0]) {
+        processMessages(recallMsg.__VUE__[0]);
+      }
+    });
   });
 }
 
@@ -91,7 +107,11 @@ function processMessages(component: any) {
 }
 
 function insertSlot(messageEl: HTMLElement, msgRecord: any) {
+  if (messageEl.lt_slot) {
+    return messageEl.lt_slot;
+  }
   const slot = createSlot();
+  messageEl.lt_slot = slot;
   if (
     msgRecord.elements.some(
       (item: any) =>
@@ -128,18 +148,12 @@ function createSlot() {
 }
 
 function insertTime(slot: HTMLElement, msgRecord: any) {
+  if (slot.querySelector(".lt-time")) return;
   const time = document.createElement("span");
   time.classList.add("lt-time");
   const sendTime = getSendTime(msgRecord.msgTime * 1000);
   time.textContent = sendTime;
-  time.title = new Date(msgRecord.msgTime * 1000).toLocaleString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
+  time.title = formatChineseDate(new Date(msgRecord.msgTime * 1000));
   const clone = time.cloneNode(true) as HTMLElement;
   const { spacer, float } = slots.get(slot) ?? {};
   spacer?.insertAdjacentElement("beforeend", time);
@@ -160,23 +174,40 @@ function getSendTime(sendTime: number) {
 }
 
 function insertRecallTag(slot: HTMLElement, msgRecord: any) {
-  const span = document.createElement("span");
-  span.classList.add("lt-recall");
-  span.textContent = "已撤回";
-  span.title = `[时间] 被 [操作人] 撤回`;
-  const clone = span.cloneNode(true) as HTMLElement;
-  const { spacer, float } = slots.get(slot) ?? {};
-  spacer?.insertAdjacentElement("afterbegin", span);
-  float?.insertAdjacentElement("afterbegin", clone);
+  if (msgRecord.lt_recall) {
+    if (slot.querySelector(".lt-recall")) return;
+    const span = document.createElement("span");
+    span.classList.add("lt-recall");
+    span.textContent = "已撤回";
+    span.title = `${formatChineseDate(new Date(msgRecord.msgTime * 1000))} 被 ${
+      msgRecord.lt_recall.operatorRemark || msgRecord.lt_recall.operatorMemRemark || msgRecord.lt_recall.operatorNick
+    } 撤回`;
+    const clone = span.cloneNode(true) as HTMLElement;
+    const { spacer, float } = slots.get(slot) ?? {};
+    spacer?.insertAdjacentElement("afterbegin", span);
+    float?.insertAdjacentElement("afterbegin", clone);
+  }
+}
+
+function formatChineseDate(date: Date): string {
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Shanghai",
+  };
+
+  const formatter = new Intl.DateTimeFormat("zh-CN", options);
+  const parts = formatter.formatToParts(date).reduce<Record<string, string>>((acc, { type, value }) => {
+    acc[type] = value;
+    return acc;
+  }, {});
+
+  return `${parts.year}年${parts.month}月${parts.day}日 ${parts.hour}:${parts.minute}:${parts.second}`;
 }
 
 export { setupHandleMessages };
-
-// aio元素实例
-// group-chat 107
-
-// 图片查看器 属性可用于判断是否出现滚动条
-// main-area main-area--image vue-component
-// uid 39
-// [3].proxy.isDirectionXValid
-// [3].proxy.isDirectionYValid
