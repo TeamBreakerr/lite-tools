@@ -1,66 +1,27 @@
-declare module "*.scss" {
-  const content: string;
-  export default content;
-}
+declare global {
+  // LiteLoader 兼容
+  declare const LiteLoader: any;
 
-declare module "*.html" {
-  const content: string;
-  export default content;
-}
+  // ipc-logger 兼容
+  declare const Logs: any;
 
-interface Window {
-  navigation: any;
-  qwqnt: any;
-  lt_logs: () => void;
-  lt_errors: () => void;
-}
-
-interface Element {
-  __VUE__?: any[];
-}
-
-interface Peer {
-  chatType: 1 | 2 | 100;
-  guildId: string;
-  peerUid: string;
-}
-
-// LiteLoader 兼容
-declare const LiteLoader: any;
-
-// ipc-logger 兼容
-declare const Logs: any;
-
-// RendererEvents
-declare namespace RendererEvents {
-  const onSettingsWindowCreated: (callback: () => void) => void;
-}
-
-// PluginSettings
-interface IQwQNTPlugin {
-  name: string;
-  qwqnt: {
-    name: string;
-    icon?: string;
-    inject?: {
-      renderer?: string;
-      preload?: string;
-    };
-  };
-}
-
-declare namespace PluginSettings {
-  interface ICommon {
-    readConfig: <T>(id: string, defaultConfig?: T) => T;
-    writeConfig: <T>(id: string, newConfig: T) => boolean;
-    openPath: (path: string) => void;
-    openExternal: (url: string) => void;
-  }
-  interface IRenderer extends ICommon {
-    registerPluginSettings: (packageJson: IQwQNTPlugin) => Promise<HTMLDivElement>;
+  interface Window {
+    navigation: any;
+    qwqnt: any;
+    lt_logs: () => void;
+    lt_errors: () => void;
   }
 
-  const main: ICommon;
-  const preload: ICommon;
-  const renderer: IRenderer;
+  interface Peer {
+    chatType: 1 | 2 | 100;
+    guildId: string;
+    peerUid: string;
+  }
+
+  interface Element {
+    lt_slot?: HTMLElement;
+    __VUE__?: any[];
+  }
 }
+
+export {};
