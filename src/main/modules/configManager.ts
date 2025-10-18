@@ -64,19 +64,24 @@ class ConfigManager {
     }
   }
 
-  private safeMergeConfig(fileConfig: any, defaultConfig: any): any {
-    if (!fileConfig || typeof fileConfig !== "object") return defaultConfig;
-    const result: any = {};
-    for (const key in defaultConfig) {
-      const defaultVal = defaultConfig[key];
-      const fileVal = fileConfig[key];
-      if (defaultVal && typeof defaultVal === "object" && !Array.isArray(defaultVal)) {
-        result[key] = this.safeMergeConfig(fileVal, defaultVal);
-        continue;
+  private safeMergeConfig<T>(userConfig: Partial<T>, baseConfig: T): T {
+    if (!userConfig || typeof userConfig !== "object") return baseConfig;
+    const result: Partial<T> = {};
+    for (const key in baseConfig) {
+      const k = key as keyof T;
+      const baseValue = baseConfig[k];
+      const userValue = userConfig[k];
+      if (baseValue && typeof baseValue === "object" && baseValue !== null && !Array.isArray(baseValue)) {
+        if (!userValue || typeof userValue !== "object") {
+          result[k] = baseValue;
+        } else {
+          result[k] = this.safeMergeConfig(userValue, baseValue);
+        }
+      } else {
+        result[k] = typeof userValue === typeof baseValue ? userValue : baseValue;
       }
-      result[key] = typeof fileVal === typeof defaultVal ? fileVal : defaultVal;
     }
-    return result;
+    return result as T;
   }
 
   private loadConfig(configPath: string): Config {
