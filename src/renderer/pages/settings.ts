@@ -6,6 +6,11 @@ import { configStore } from "@/renderer/modules/configStore";
 import { isQwQ } from "@/renderer/utils/loaderInspector";
 import type { Config } from "@/types/Config";
 
+type OptionItem = {
+  name: string;
+  [key: string]: any;
+};
+
 const log = createLogger("settings");
 
 document.head.appendChild(document.createElement("style")).appendChild(document.createTextNode(settingsCss));
@@ -64,10 +69,27 @@ async function initSettings(view: HTMLDivElement, config: Config) {
     updateOptionItems(config.sideBar.top, sidebarEl, "sideBar.top", "enabled");
     updateOptionItems(config.sideBar.bottom, sidebarEl, "sideBar.bottom", "enabled");
   });
-
+  // 初始化撤回相关选项
+  initRecallOptions(view, config);
   log("初始化设置页面完成");
 }
 
+function initRecallOptions(view: HTMLDivElement, config: Config) {
+  const light = view.querySelector<HTMLInputElement>(".custom-text-color-lite")!;
+  const dark = view.querySelector<HTMLInputElement>(".custom-text-color-dark")!;
+  light.value = config.message.preventRecall.customTextColor.light;
+  dark.value = config.message.preventRecall.customTextColor.dark;
+  light.addEventListener("change", () => {
+    config.message.preventRecall.customTextColor.light = light.value;
+    configStore.setConfig(config);
+  });
+  dark.addEventListener("change", () => {
+    config.message.preventRecall.customTextColor.dark = dark.value;
+    configStore.setConfig(config);
+  });
+}
+
+// 派发事件
 function dispatchEvent(el: HTMLElement, configPath: string, detail: any) {
   const event = new CustomEvent(configPath, { detail });
   el.dispatchEvent(event);
@@ -166,11 +188,7 @@ function initSelectMenu(view: HTMLDivElement, config: Config) {
   });
 }
 
-type OptionItem = {
-  name: string;
-  [key: string]: any;
-};
-
+// 创建选项
 function createOptionItems<T extends OptionItem>(
   config: Config,
   list: T[],
@@ -224,6 +242,7 @@ function createOptionItems<T extends OptionItem>(
   element.appendChild(frag);
 }
 
+// 更新选项
 function updateOptionItems<T extends OptionItem>(list: T[], element: HTMLElement, objKey: string, key: keyof T) {
   list.forEach((item) => {
     const switchEl = element.querySelector(`li[data-id="${objKey}-${item.name}"] .q-switch`) as HTMLElement;
@@ -231,6 +250,7 @@ function updateOptionItems<T extends OptionItem>(list: T[], element: HTMLElement
   });
 }
 
+// 获取配置
 function getValueByPath<T = any>(target: Record<string, any>, path: string): T | undefined {
   const pathArr = path.replace(/\[(\d+)\]/g, ".$1").split(".");
   let result: any = target;
@@ -244,6 +264,7 @@ function getValueByPath<T = any>(target: Record<string, any>, path: string): T |
   return result as T;
 }
 
+// 设置配置
 function setValueByPath(
   target: Record<string, any>,
   path: string,

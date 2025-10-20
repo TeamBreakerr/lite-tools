@@ -21,6 +21,7 @@ async function setupMainPage() {
   updateTopSideBar(configStore.value);
   updateBottomSideBar(configStore.value);
   updateInterface(configStore.value);
+  updateRecallConfig(configStore.value);
   setupHandleMessages();
   aioStore.onChange(() => {
     updateTopFuncBar();
@@ -35,6 +36,8 @@ async function setupMainPage() {
     updateBottomSideBar(config);
     updateTopFuncBar();
     updateChatFuncBar();
+
+    updateRecallConfig(config);
   });
 
   observeMutations(
@@ -49,6 +52,12 @@ async function setupMainPage() {
     },
     { childList: true, autoDisconnect: 5000 }
   );
+}
+
+function updateRecallConfig(config: Config) {
+  document.body.classList.toggle("lt-custom-recall-color", config.message.preventRecall.customColor);
+  document.body.style.setProperty("--lt-recall-color-light", config.message.preventRecall.customTextColor.light);
+  document.body.style.setProperty("--lt-recall-color-dark", config.message.preventRecall.customTextColor.dark);
 }
 
 function updateInterface(config: Config) {
