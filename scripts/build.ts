@@ -8,6 +8,7 @@ const baseConfig: BuildOptions = {
   bundle: true,
   charset: "utf8",
   tsconfig: "./tsconfig.json",
+  minify: isDev ? false : true,
 };
 
 // node 构建配置
