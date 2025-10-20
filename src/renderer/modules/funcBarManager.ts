@@ -8,6 +8,8 @@ const log = createLogger("funcBarManager");
 const topFuncMap = new Map() as Map<string, FuncBar>;
 const chatFuncMap = new Map() as Map<string, FuncBar>;
 
+let closeObserver: ReturnType<typeof observeMutations> | null = null;
+
 async function updateTopFuncBar() {
   await configStore.ready;
 
@@ -93,7 +95,9 @@ async function updateChatFuncBar() {
   }
   const element = await initChatFuncBar();
 
-  observeMutations(
+  closeObserver?.();
+
+  closeObserver = observeMutations(
     element.querySelector(".func-bar:first-child")!,
     () => {
       initChatFuncBar();
@@ -101,7 +105,6 @@ async function updateChatFuncBar() {
     },
     {
       childList: true,
-      autoDisconnect: 3000,
     }
   );
   hiddenFuncBtn(element, configStore.value.chatFuncBar);

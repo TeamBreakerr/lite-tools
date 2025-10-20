@@ -7,8 +7,9 @@ type Options = {
 };
 
 type ObserverCallback = (mutationsList: MutationRecord[], observer: MutationObserver) => void;
+type offObserver = () => void;
 
-function observeMutations(target: HTMLElement, callback: ObserverCallback, options: Options = {}) {
+function observeMutations(target: HTMLElement, callback: ObserverCallback, options: Options = {}): offObserver {
   if (!target || !callback) {
     return () => {};
   }
