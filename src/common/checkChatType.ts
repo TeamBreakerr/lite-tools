@@ -1,4 +1,4 @@
-function checkChatType(peer: any) {
+function checkChatType(peer: Peer) {
   if (!peer) {
     return false;
   }
