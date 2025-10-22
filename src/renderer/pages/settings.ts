@@ -1,10 +1,13 @@
 import packageJson from "package.json";
-import settingsHTML from "@/renderer/html/settings.html";
+import settingsHTML from "@/renderer/views/settings.html";
 import settingsCss from "@/renderer/scss/settings.scss";
 import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/configStore";
 import { isQwQ } from "@/renderer/utils/loaderInspector";
 import type { Config } from "@/types/config";
+import type { LiteTools } from "@/preload/index";
+
+declare const lite_tools: LiteTools;
 
 type OptionItem = {
   name: string;
