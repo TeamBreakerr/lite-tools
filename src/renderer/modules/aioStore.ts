@@ -1,5 +1,5 @@
 import { createLogger } from "@/renderer/utils/createLogger";
-import { waitForInstance } from "@/renderer/utils/domWatiFor";
+import { waitForInstance } from "@/renderer/utils/domWaitFor";
 
 const log = createLogger("captureAIO");
 

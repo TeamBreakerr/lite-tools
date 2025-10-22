@@ -1,4 +1,4 @@
-import { waitForInstance, waitForElement } from "@/renderer/utils/domWatiFor";
+import { waitForInstance, waitForElement } from "@/renderer/utils/domWaitFor";
 import { configStore } from "@/renderer/modules/configStore";
 import { observeMutations } from "@/renderer/utils/observeMutations";
 import { createLogger } from "@/renderer/utils/createLogger";

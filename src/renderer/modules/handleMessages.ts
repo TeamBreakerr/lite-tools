@@ -1,7 +1,7 @@
 import { onComponentMount } from "@/renderer/modules/vueComponentTracker";
 import { checkChatType } from "@/common/checkChatType";
 import { createLogger } from "@/renderer/utils/createLogger";
-import { waitForInstance } from "@/renderer/utils/domWatiFor";
+import { waitForInstance } from "@/renderer/utils/domWaitFor";
 import { configStore } from "@/renderer/modules/configStore";
 
 import type { LiteTools } from "@/preload";

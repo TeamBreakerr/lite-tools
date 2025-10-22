@@ -1,5 +1,5 @@
 import { aioStore } from "@/renderer/modules/aioStore";
-import { setupPreventMutipleSelect } from "@/renderer/modules/preventMutipleSelect";
+import { setupPreventMutipleSelect } from "@/renderer/modules/preventMultipleSelect";
 import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/configStore";
 import { createComparator } from "@/common/createComparator";
