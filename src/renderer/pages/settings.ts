@@ -77,11 +77,19 @@ async function initSettings(view: HTMLDivElement, config: Config) {
   log("初始化设置页面完成");
 }
 
-function initRecallOptions(view: HTMLDivElement, config: Config) {
+async function initRecallOptions(view: HTMLDivElement, config: Config) {
+  const localRecallMsgCache = view.querySelector<HTMLInputElement>(".local-recall-msg-num")!;
   const light = view.querySelector<HTMLInputElement>(".custom-text-color-lite")!;
   const dark = view.querySelector<HTMLInputElement>(".custom-text-color-dark")!;
+  view.querySelector(".clear-localStorage-recall-msg")!.addEventListener("click", () => {
+    lite_tools.clearRecallCache();
+  });
   light.value = config.message.preventRecall.customTextColor.light;
   dark.value = config.message.preventRecall.customTextColor.dark;
+  lite_tools.onUpdateRecallCacheSize(
+    (size) => (localRecallMsgCache.innerText = `清除所有本地保存的撤回数据，当前保存有 ${size} 条消息`)
+  );
+  localRecallMsgCache.innerText = `清除所有本地保存的撤回数据，当前保存有 ${await lite_tools.getRecallCacheSize()} 条消息`;
   light.addEventListener("change", () => {
     config.message.preventRecall.customTextColor.light = light.value;
     configStore.setConfig(config);

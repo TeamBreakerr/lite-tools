@@ -1,10 +1,10 @@
-import { ipcMain } from "electron";
-import { settingWindow } from "@/main/utils/captureWindow";
+import { ipcMain, dialog } from "electron";
 import { serialize, deserialize } from "node:v8";
 import { deflateSync, inflateSync } from "node:zlib";
 import path from "node:path";
-import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, appendFileSync } from "node:fs";
+import { readFileSync, writeFileSync, unlinkSync, readdirSync, existsSync, mkdirSync, appendFileSync } from "node:fs";
 import { dataPath } from "@/main/utils/localPath";
+import { settingWindow } from "@/main/utils/captureWindow";
 import { createLogger } from "@/main/utils/createLogger";
 import { configManager } from "@/main/modules/configManager";
 import { globalBroadcast } from "@/main/utils/globalBroadcast";
@@ -79,6 +79,9 @@ class MsgStore {
     });
     ipcMain.handle("lite_tools.getRecallCacheSize", (event) => {
       return this.recallCacheSize;
+    });
+    ipcMain.on("lite_tools.clearRecallCache", (event) => {
+      this.clearPersistedFiles();
     });
   }
 
@@ -186,6 +189,28 @@ class MsgStore {
     return null;
   }
 
+  private async clearPersistedFiles() {
+    if (settingWindow && settingWindow?.isDestroyed() === false) {
+      const { response } = await dialog.showMessageBox(settingWindow, {
+        type: "question",
+        title: "确认",
+        message: "确定要清除所有撤回数据吗？",
+        buttons: ["取消", "确定"],
+      });
+
+      if (response === 1) {
+        for (const file of this.persistedFiles) {
+          unlinkSync(file.path);
+        }
+        this.persistedFiles = [];
+        this.loadedPersistedCache.clear();
+        this.activeRecallCache.clear();
+        writeFileSync(path.join(this.LOCAL_DATA_PATH, "activeRecallCache.bin"), Buffer.alloc(0));
+        settingWindow.webContents.send("lite_tools.updateRecallCacheSize", 0);
+      }
+    }
+  }
+
   static createRecallData(message: Message) {
     const recallInfo = MsgStore.getRecallInfo(message)!;
     return {
@@ -231,7 +256,6 @@ class MsgStore {
       if (settingWindow && settingWindow?.isDestroyed() === false) {
         settingWindow.webContents.send("lite_tools.updateRecallCacheSize", this.recallCacheSize);
       }
-
       if (this.activeRecallCache.size >= this.MAX_MESSAGES_PER_FILE) {
         this.saveToPersistedFile(Date.now());
         writeFileSync(path.join(this.LOCAL_DATA_PATH, "activeRecallCache.bin"), Buffer.alloc(0));
@@ -241,6 +265,7 @@ class MsgStore {
       }
       return fromRecent;
     }
+
     const fromActiveRecallCache = this.activeRecallCache.get(msgId);
     if (fromActiveRecallCache) {
       log("从实时缓存中找到数据", msgId);

@@ -13,6 +13,10 @@ const exposeFunctions = {
   // 防撤回相关
   onRecallMessagesFound: (callback: (recallDatas: RecallData[]) => void) =>
     ipcRenderer.on("lite_tools.recallMessagesFound", (_, recallDatas: RecallData[]) => callback(recallDatas)),
+  onUpdateRecallCacheSize: (callback: (size: number) => void) =>
+    ipcRenderer.on("lite_tools.updateRecallCacheSize", (_, size: number) => callback(size)),
+  getRecallCacheSize: (): Promise<number> => ipcRenderer.invoke("lite_tools.getRecallCacheSize"),
+  clearRecallCache: () => ipcRenderer.send("lite_tools.clearRecallCache"),
 
   nativeCall: (event: any, payload: any, awaitCallback?: boolean | string | string[]) => {
     const callbackId = crypto.randomUUID();
