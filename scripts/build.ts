@@ -1,94 +1,124 @@
 import { build, context, BuildOptions } from "esbuild";
 import { sassPlugin } from "esbuild-sass-plugin";
+import { readFileSync, writeFileSync } from "node:fs";
+import { basename } from "node:path";
+import chokidar from "chokidar";
 
 const isDev = process.argv.includes("--watch");
 
-// 通用配置
+// 通用基础配置
 const baseConfig: BuildOptions = {
   bundle: true,
   charset: "utf8",
   tsconfig: "./tsconfig.json",
-  minify: isDev ? false : true,
+  minify: !isDev,
 };
 
-// node 构建配置
-const mainConfig: BuildOptions = {
-  ...baseConfig,
-  platform: "node",
-  target: "node20",
-  format: "cjs",
-  entryPoints: ["src/main/index.ts"],
-  outfile: "dist/main/index.js",
-  external: ["electron"],
-};
-
-// preload 构建配置
-const preloadConfig: BuildOptions = {
-  ...baseConfig,
-  platform: "node",
-  target: "node20",
-  format: "cjs",
-  entryPoints: ["src/preload/index.ts"],
-  outfile: "dist/preload/index.js",
-  external: ["electron"],
-};
-
-// QwQNT web 构建配置
-const rendererQwQConfig: BuildOptions = {
-  ...baseConfig,
-  platform: "browser",
-  target: "esnext",
-  format: "cjs",
-  entryPoints: ["src/renderer/index.qwq.ts"],
-  outfile: "dist/renderer/index.qwq.js",
-  loader: {
-    ".html": "text",
+// 构建目标列表
+const builds: { config: BuildOptions; watchHtml?: string }[] = [
+  {
+    config: {
+      ...baseConfig,
+      platform: "node",
+      target: "node20",
+      format: "cjs",
+      entryPoints: ["src/main/index.ts"],
+      outfile: "dist/main/index.js",
+      external: ["electron"],
+    },
   },
-  plugins: [
-    sassPlugin({
-      type: "css-text",
-    }),
-  ],
-};
-
-// renderer ll 构建配置
-const rendererLLConfig: BuildOptions = {
-  ...baseConfig,
-  platform: "browser",
-  target: "esnext",
-  format: "esm",
-  entryPoints: ["src/renderer/index.ll.ts"],
-  outfile: "dist/renderer/index.ll.js",
-  loader: {
-    ".html": "text",
+  {
+    config: {
+      ...baseConfig,
+      platform: "node",
+      target: "node20",
+      format: "cjs",
+      entryPoints: ["src/preload/index.ts"],
+      outfile: "dist/preload/index.js",
+      external: ["electron"],
+    },
   },
-  plugins: [
-    sassPlugin({
-      type: "css-text",
-    }),
-  ],
-};
+  {
+    config: {
+      ...baseConfig,
+      platform: "browser",
+      target: "esnext",
+      format: "cjs",
+      entryPoints: ["src/renderer/index.qwq.ts"],
+      outfile: "dist/renderer/index.qwq.js",
+      loader: { ".html": "text" },
+      plugins: [sassPlugin({ type: "css-text" })],
+    },
+  },
+  {
+    config: {
+      ...baseConfig,
+      platform: "browser",
+      target: "esnext",
+      format: "esm",
+      entryPoints: ["src/renderer/index.ll.ts"],
+      outfile: "dist/renderer/index.ll.js",
+      loader: { ".html": "text" },
+      plugins: [sassPlugin({ type: "css-text" })],
+    },
+  },
+  {
+    config: {
+      ...baseConfig,
+      platform: "browser",
+      target: "esnext",
+      format: "esm",
+      entryPoints: ["src/renderer/entries/showRecallList/index.ts"],
+      outfile: "dist/renderer/entries/showRecallList/index.js",
+      plugins: [sassPlugin({ type: "style" })],
+    },
+    watchHtml: "src/renderer/entries/showRecallList/index.html",
+  },
+];
 
-// 构建函数
+// 构建 HTML 的辅助函数
+function processHtml(srcPath: string, outPath: string) {
+  const html = readFileSync(srcPath, "utf-8");
+  const newHtml = html.replace(/(<script\s+src=["'])(.+?)\.ts(["']><\/script>)/g, (_, start, name, end) => {
+    return `${start}${basename(name)}.js${end}`;
+  });
+  writeFileSync(outPath, newHtml, "utf-8");
+}
+
+// 批量构建
 async function runBuild() {
   if (isDev) {
     console.log("Starting development build...");
+    const contexts = await Promise.all(
+      builds.map(async ({ config, watchHtml }) => {
+        const ctx = await context(config);
+        await ctx.watch();
 
-    const mainCtx = await context(mainConfig);
-    const preloadCtx = await context(preloadConfig);
-    const rendererQwQCtx = await context(rendererQwQConfig);
-    const rendererLLCtx = await context(rendererLLConfig);
+        if (watchHtml) {
+          chokidar
+            .watch(watchHtml, { persistent: true, ignoreInitial: true })
+            .on("all", () => processHtml(watchHtml, config.outfile!.replace(/\.js$/, ".html")));
+          // 初始化一次
+          processHtml(watchHtml, config.outfile!.replace(/\.js$/, ".html"));
+        }
 
-    await mainCtx.watch();
-    await preloadCtx.watch();
-    await rendererQwQCtx.watch();
-    await rendererLLCtx.watch();
+        return ctx;
+      })
+    );
 
     console.log("Development build started. Watching for changes...");
+    return contexts;
   } else {
     console.log("Starting production build...");
     try {
-      await Promise.all([build(mainConfig), build(preloadConfig), build(rendererQwQConfig), build(rendererLLConfig)]);
+      await Promise.all(
+        builds.map(async ({ config, watchHtml }) => {
+          await build(config);
+          if (watchHtml) {
+            processHtml(watchHtml, config.outfile!.replace(/\.js$/, ".html"));
+          }
+        })
+      );
       console.log("Production build completed successfully.");
     } catch (err) {
       console.error("Error during production build:", err);
@@ -96,6 +126,7 @@ async function runBuild() {
     }
   }
 }
+
 runBuild().catch((err) => {
   console.error("Unhandled error in build script:", err);
   process.exit(1);

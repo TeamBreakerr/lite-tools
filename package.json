@@ -29,6 +29,7 @@
   "devDependencies": {
     "@qwqnt/types": "github:QwQ-002/types",
     "@types/node": "20.19.20",
+    "chokidar": "^4.0.3",
     "electron": "^37.2.5",
     "esbuild": "^0.25.8",
     "esbuild-sass-plugin": "^3.3.1",
