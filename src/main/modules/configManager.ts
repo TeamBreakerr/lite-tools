@@ -4,7 +4,7 @@ import { dialog, ipcMain } from "electron";
 import { configPath, dataPath } from "@/main/utils/localPath";
 import { UserConfigRegistry } from "@/main/modules/UserConfigRegistry";
 import { globalBroadcast } from "@/main/utils/globalBroadcast";
-import configTemplate from "@/assets/config.template.json";
+import configTemplate from "@/config/main.template.json";
 import type { BaseConfig as Config } from "@/types/Config";
 
 type ConfigListener = (config: Config) => void;

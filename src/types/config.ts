@@ -1,4 +1,4 @@
-import configJson from "@/assets/config.template.json";
+import configJson from "@/config/main.template.json";
 
 type BaseConfig = typeof configJson;
 

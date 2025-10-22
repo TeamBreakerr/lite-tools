@@ -3,8 +3,8 @@ import { checkChatType } from "@/common/checkChatType";
 import { findEvent } from "@/main/utils/findEvent";
 import { createLogger } from "@/main/utils/createLogger";
 import { deleteBubbleSkin } from "@/main/modules/deleteBubbleSkin";
-import { miniArkToWebArk } from "@/main/modules/miniArkToWebArk";
-import { marketFaceToPicElement } from "@/main/modules/marketFaceToPicElement";
+import { convertMiniArkToWebArk } from "@/main/modules/convertMiniArkToWebArk";
+import { convertMarketFaceToPic } from "@/main/modules/convertMarketFaceToPic";
 import { preventRecall } from "@/main/modules/preventRecall";
 
 const log = createLogger("handleMessages");
@@ -49,11 +49,11 @@ function processMessages(msgList: any[], webContentId: number, args: any[]) {
     }
     if (config.message.miniArkToWebArk) {
       log("执行 替换小程序卡片 ");
-      miniArkToWebArk(msgList);
+      convertMiniArkToWebArk(msgList);
     }
     if (config.message.marketFaceToPicElement) {
       log("执行 转换表情类型 ");
-      marketFaceToPicElement(msgList, webContentId);
+      convertMarketFaceToPic(msgList, webContentId);
     }
     log("处理结束", msgList);
   } catch (err: any) {

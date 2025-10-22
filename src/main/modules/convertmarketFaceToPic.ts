@@ -6,7 +6,7 @@ import { configManager } from "@/main/modules/configManager";
 const faceFilePaths = new Set<string>();
 const awaitIsFileExist = new Map<string, Function>();
 
-function marketFaceToPicElement(msgList: any[], webContentId: number) {
+function convertMarketFaceToPic(msgList: any[], webContentId: number) {
   msgList.forEach((msgItem) => {
     msgItem.elements.forEach((msgElements: any) => {
       if (msgElements?.marketFaceElement) {
@@ -158,4 +158,4 @@ function sendFileIsExist(webContentId: number, callbackId: string) {
   }
 }
 
-export { marketFaceToPicElement };
+export { convertMarketFaceToPic };

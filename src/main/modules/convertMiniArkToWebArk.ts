@@ -3,7 +3,7 @@ const appIdToName = new Map([
   ["1109937557", "哔哩哔哩"],
 ]);
 
-function miniArkToWebArk(msgList: any[]) {
+function convertMiniArkToWebArk(msgList: any[]) {
   msgList.forEach((msgItem) => {
     let msg_seq = msgItem.msgSeq;
     msgItem.elements.forEach((msgElements: any) => {
@@ -54,4 +54,4 @@ function getArkData(json: any) {
   return json.meta.detail_1.title || appIdToName.get(json.meta.detail_1.appid) || json.meta.detail_1.desc;
 }
 
-export { miniArkToWebArk };
+export { convertMiniArkToWebArk };
