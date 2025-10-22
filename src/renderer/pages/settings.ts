@@ -4,7 +4,7 @@ import settingsCss from "@/renderer/scss/settings.scss";
 import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/configStore";
 import { isQwQ } from "@/renderer/utils/loaderInspector";
-import type { Config } from "@/types/Config";
+import type { Config } from "@/types/config";
 
 type OptionItem = {
   name: string;

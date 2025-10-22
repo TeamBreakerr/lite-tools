@@ -7,7 +7,7 @@ import { updateTopFuncBar, updateChatFuncBar } from "@/renderer/modules/funcBarM
 import { observeMutations } from "@/renderer/utils/observeMutations";
 import { setupHandleMessages } from "@/renderer/modules/handleMessages";
 
-import type { Config } from "@/types/Config";
+import type { Config } from "@/types/config";
 
 const log = createLogger("main");
 

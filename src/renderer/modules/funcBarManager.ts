@@ -2,7 +2,7 @@ import { waitForInstance, waitForElement } from "@/renderer/utils/domWaitFor";
 import { configStore } from "@/renderer/modules/configStore";
 import { observeMutations } from "@/renderer/utils/observeMutations";
 import { createLogger } from "@/renderer/utils/createLogger";
-import type { FuncBar } from "@/types/Config";
+import type { FuncBar } from "@/types/config";
 
 const log = createLogger("funcBarManager");
 const topFuncMap = new Map() as Map<string, FuncBar>;

@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { Config } from "@/types/Config";
+import type { Config } from "@/types/config";
 import type { RecallData } from "@/main/modules/preventRecall";
 
 const exposeFunctions = {

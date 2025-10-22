@@ -1,4 +1,4 @@
-import type { Config } from "@/types/Config";
+import type { Config } from "@/types/config";
 import type { LiteTools } from "@/preload/index";
 
 declare const lite_tools: LiteTools;

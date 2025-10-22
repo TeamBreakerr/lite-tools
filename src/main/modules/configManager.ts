@@ -5,7 +5,7 @@ import { configPath, dataPath } from "@/main/utils/localPath";
 import { UserConfigRegistry } from "@/main/modules/UserConfigRegistry";
 import { globalBroadcast } from "@/main/utils/globalBroadcast";
 import configTemplate from "@/config/main.template.json";
-import type { BaseConfig as Config } from "@/types/Config";
+import type { BaseConfig as Config } from "@/types/config";
 
 type ConfigListener = (config: Config) => void;
 

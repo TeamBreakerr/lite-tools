@@ -5,7 +5,7 @@ import { configStore } from "@/renderer/modules/configStore";
 import { updateTopFuncBar, updateChatFuncBar } from "@/renderer/modules/funcBarManager";
 import { setupHandleMessages } from "@/renderer/modules/handleMessages";
 
-import type { Config } from "@/types/Config";
+import type { Config } from "@/types/config";
 
 const log = createLogger("chat");
 

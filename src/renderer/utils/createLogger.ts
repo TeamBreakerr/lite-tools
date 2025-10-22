@@ -1,5 +1,5 @@
 import { configStore } from "@/renderer/modules/configStore";
-import type { Config } from "@/types/Config";
+import type { Config } from "@/types/config";
 
 const logList: { name: string; log: any[] }[] = [];
 
