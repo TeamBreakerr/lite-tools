@@ -1,7 +1,7 @@
 import { build, context, BuildOptions } from "esbuild";
 import { sassPlugin } from "esbuild-sass-plugin";
-import { readFileSync, writeFileSync } from "node:fs";
-import { basename } from "node:path";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { basename, dirname } from "node:path";
 import chokidar from "chokidar";
 
 const isDev = process.argv.includes("--watch");
@@ -68,20 +68,33 @@ const builds: { config: BuildOptions; watchHtml?: string }[] = [
       platform: "browser",
       target: "esnext",
       format: "esm",
+      loader: { ".html": "text" },
       entryPoints: ["src/renderer/entries/showRecallList/index.ts"],
       outfile: "dist/renderer/entries/showRecallList/index.js",
       plugins: [sassPlugin({ type: "style" })],
     },
     watchHtml: "src/renderer/entries/showRecallList/index.html",
   },
+  {
+    config: {
+      ...baseConfig,
+      platform: "node",
+      target: "node20",
+      format: "cjs",
+      entryPoints: ["src/renderer/entries/showRecallList/preload.ts"],
+      outfile: "dist/renderer/entries/showRecallList/preload.js",
+      external: ["electron"],
+    },
+  },
 ];
 
 // 构建 HTML 的辅助函数
 function processHtml(srcPath: string, outPath: string) {
   const html = readFileSync(srcPath, "utf-8");
-  const newHtml = html.replace(/(<script\s+src=["'])(.+?)\.ts(["']><\/script>)/g, (_, start, name, end) => {
-    return `${start}${basename(name)}.js${end}`;
-  });
+  const newHtml = html.replace(
+    /<script\b([^>]*?)\bsrc=["']([^"']+?)\.ts["']([^>]*)><\/script>/g,
+    (_, beforeSrc, srcPath, afterSrc) => `<script${beforeSrc} src="${srcPath}.js"${afterSrc}></script>`
+  );
   writeFileSync(outPath, newHtml, "utf-8");
 }
 
@@ -95,10 +108,13 @@ async function runBuild() {
         await ctx.watch();
 
         if (watchHtml) {
+          // 初始化一次
+          if (!existsSync(dirname(config.outfile!))) {
+            mkdirSync(dirname(config.outfile!), { recursive: true });
+          }
           chokidar
             .watch(watchHtml, { persistent: true, ignoreInitial: true })
             .on("all", () => processHtml(watchHtml, config.outfile!.replace(/\.js$/, ".html")));
-          // 初始化一次
           processHtml(watchHtml, config.outfile!.replace(/\.js$/, ".html"));
         }
 

@@ -1,5 +1,6 @@
 import type { BrowserWindow } from "electron";
-
+import { createLogger } from "@/main/utils/createLogger";
+const log = createLogger("captureWindow");
 let mainWindow: BrowserWindow | null = null;
 let settingWindow: BrowserWindow | null = null;
 
@@ -17,9 +18,11 @@ function captureWindow(window: BrowserWindow) {
 }
 
 function handleWindowClose(window: BrowserWindow) {
-  window.once("close", () => {
-    if (window === mainWindow) mainWindow = null;
-    else if (window === settingWindow) settingWindow = null;
+  window.on("close", () => {
+    if (window.isDestroyed()) {
+      if (window === mainWindow) mainWindow = null;
+      else if (window === settingWindow) settingWindow = null;
+    }
   });
 }
 

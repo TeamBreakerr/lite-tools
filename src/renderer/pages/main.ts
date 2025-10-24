@@ -8,6 +8,9 @@ import { observeMutations } from "@/renderer/utils/observeMutations";
 import { setupHandleMessages } from "@/renderer/modules/handleMessages";
 
 import type { Config } from "@/types/config";
+import type { LiteTools } from "@/preload";
+
+declare const lite_tools: LiteTools;
 
 const log = createLogger("main");
 
@@ -23,6 +26,7 @@ async function setupMainPage() {
   updateInterface(configStore.value);
   updateRecallConfig(configStore.value);
   setupHandleMessages();
+  setupIpcToBroadcast();
   aioStore.onChange(() => {
     updateTopFuncBar();
     updateChatFuncBar();
@@ -97,6 +101,14 @@ function updateBottomSideBar(config: Config) {
     sideBarLower
       .querySelector<HTMLElement>(`.func-menu__item_wrap:has([aria-label="${item.name}"])`)
       ?.style.setProperty("display", item.enabled ? "flex" : "none");
+  });
+}
+
+function setupIpcToBroadcast() {
+  lite_tools.onBroadcast((channelName, payload) => {
+    const broadcast = new BroadcastChannel(channelName);
+    broadcast.postMessage(payload);
+    broadcast.close();
   });
 }
 

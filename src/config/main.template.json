@@ -20,7 +20,7 @@
     },
     "preventRecall": {
       "enabled": false,
-      "localStorage": false,
+      "persistedFiles": false,
       "customColor": false,
       "preventSelfMsg": false,
       "blockAllrecall": false,

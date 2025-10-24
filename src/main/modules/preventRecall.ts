@@ -1,4 +1,4 @@
-import { ipcMain, dialog } from "electron";
+import { ipcMain, dialog, BrowserWindow } from "electron";
 import { serialize, deserialize } from "node:v8";
 import { deflateSync, inflateSync } from "node:zlib";
 import path from "node:path";
@@ -8,11 +8,16 @@ import { settingWindow } from "@/main/utils/captureWindow";
 import { createLogger } from "@/main/utils/createLogger";
 import { configManager } from "@/main/modules/configManager";
 import { globalBroadcast } from "@/main/utils/globalBroadcast";
+import { pluginPath } from "@/main/utils/localPath";
+import { getUserInfo } from "@/main/utils/nativeCall";
 
 const log = createLogger("preventRecall");
 
 type MsgId = string;
 type Message = any;
+type ChatPeerUid = string;
+type ChatName = string;
+type RecallChatList = Map<ChatPeerUid, { peerName: ChatName; chatType: number; peerUin: string }>;
 type RecallCache = Map<MsgId, Message>;
 type FilePath = string;
 type PersistedFiles = { time: number; path: FilePath }[];
@@ -25,6 +30,15 @@ type RecallElement = {
   origMsgSenderRemark: string;
   origMsgSenderMemRemark: string;
 };
+type RecallData = {
+  id: number;
+  recallData?: ReturnType<typeof MsgStore.createRecallData>;
+};
+type ChatList = {
+  name: string;
+  chatType: number;
+  uid: string;
+};
 
 class MsgStore {
   // 最近消息 <msgId, msg>
@@ -35,6 +49,10 @@ class MsgStore {
   private persistedFiles: PersistedFiles = [];
   // 缓存的已加载持久化撤回数据
   private loadedPersistedCache: Map<FilePath, RecallCache> = new Map();
+  // 撤回消息查看窗口
+  private recallMsgListWindow: BrowserWindow | null = null;
+  // 所有撤回消息缓存，仅用于打开查看撤回消息列表页面时使用
+  private allCaches: RecallCache = new Map();
   // 缓存持久化文件的数量
   private readonly MAX_PERSISTED_FILES = 5;
   // 每个切片文件储存消息数量
@@ -71,11 +89,12 @@ class MsgStore {
   }
 
   private initIpcEvent() {
-    ipcMain.handle("lite_tools.getRecallChats", (event) => {
-      return [];
+    ipcMain.handle("lite_tools.getAllRecallChatList", (event) => {
+      return this.getAllRecallChatList();
     });
-    ipcMain.handle("lite_tools.getRecallCacheFromChatId", (event) => {
-      return [];
+    ipcMain.handle("lite_tools.getRecallMessagesByUid", (event, peerUid) => {
+      log("getRecallMessagesByUid", peerUid);
+      return this.getRecallMessagesByUid(peerUid);
     });
     ipcMain.handle("lite_tools.getRecallCacheSize", (event) => {
       return this.recallCacheSize;
@@ -83,6 +102,99 @@ class MsgStore {
     ipcMain.on("lite_tools.clearRecallCache", (event) => {
       this.clearPersistedFiles();
     });
+    ipcMain.on("lite_tools.openRecallMsgList", (event) => {
+      this.openRecallMsgList();
+    });
+  }
+
+  private async getAllRecallChatList() {
+    const chatList: RecallChatList = new Map();
+    const allMessages: any[] = [];
+    this.allCaches.clear();
+
+    for (const persistedFile of this.persistedFiles) {
+      const persistedCache = deserialize(inflateSync(readFileSync(persistedFile.path))) as RecallCache;
+      allMessages.push(...persistedCache.values());
+    }
+    allMessages.push(...this.activeRecallCache.values());
+
+    // 先找出所有需要请求用户信息的 uid
+    const unknownUids = new Set<string>();
+    for (const msg of allMessages) {
+      if (msg.chatType !== 2) {
+        unknownUids.add(msg.peerUid);
+      }
+    }
+    let userInfos: Map<string, any>;
+    try {
+      const response = await getUserInfo(Array.from(unknownUids));
+      userInfos = response.detail;
+    } catch {
+      userInfos = new Map();
+    }
+    for (const message of allMessages) {
+      const uid = message.peerUid;
+      let cache = this.allCaches.get(uid);
+      if (!cache) {
+        cache = [];
+        this.allCaches.set(uid, cache);
+      }
+      cache.push(message);
+
+      if (!chatList.has(uid)) {
+        if (message.chatType === 2 && !message.peerName) {
+          continue;
+        }
+        const info = message.chatType === 2 ? null : userInfos.get(uid);
+        const peerName =
+          message.chatType === 2
+            ? message.peerName
+            : info?.simpleInfo?.coreInfo?.remark || info?.simpleInfo?.coreInfo?.nick || "未知用户";
+        chatList.set(uid, {
+          peerName,
+          chatType: message.chatType,
+          peerUin: message.peerUin,
+        });
+      }
+    }
+    log("return getAllRecallChatList", chatList.size);
+
+    return chatList;
+  }
+
+  private getRecallMessagesByUid(peerUid: string) {
+    log("getRecallMessagesByUid", peerUid, this.allCaches.get(peerUid));
+    return this.allCaches.get(peerUid);
+  }
+
+  private openRecallMsgList() {
+    if (this.recallMsgListWindow && this.recallMsgListWindow.isDestroyed() === false) {
+      this.recallMsgListWindow.webContents.focus();
+    } else {
+      this.recallMsgListWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+        autoHideMenuBar: true,
+        webPreferences: {
+          preload: path.join(pluginPath, `/dist/renderer/entries/showRecallList/preload.js`),
+        },
+      });
+      this.recallMsgListWindow.setMenuBarVisibility(false);
+      const htmlPath = path.join(pluginPath, `/dist/renderer/entries/showRecallList/index.html`);
+      this.recallMsgListWindow.loadFile(htmlPath);
+      log("加载页面");
+      this.recallMsgListWindow.webContents.on("before-input-event", (_, input) => {
+        if (input.key == "F5" && input.type == "keyUp") {
+          log("刷新页面");
+          this.recallMsgListWindow!.loadFile(htmlPath);
+        }
+      });
+      this.recallMsgListWindow.on("closed", () => {
+        log("窗口被关闭");
+        this.recallMsgListWindow = null;
+        this.allCaches.clear();
+      });
+    }
   }
 
   private loadActiveRecallCacheBuffer() {
@@ -116,18 +228,6 @@ class MsgStore {
       })
       .sort((a, b) => a.time - b.time);
     log(`读取到 ${this.persistedFiles.length} 个持久化文件`);
-    this.persistedFiles.forEach((item) => {
-      log(
-        new Date(item.time).toLocaleString("zh-CN", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        })
-      );
-    });
   }
 
   private saveToTempFile(message: Message) {
@@ -239,6 +339,10 @@ class MsgStore {
   }
 
   addMessageToCache(message: Message) {
+    // 不是完整消息
+    if (!message.elements.length) {
+      return;
+    }
     this.recentMessages.set(message.msgId, message);
     if (this.recentMessages.size >= this.MAX_RECALL_CACHE_SIZE) {
       this.recentMessages.delete(this.recentMessages.keys().next().value!);
@@ -256,12 +360,14 @@ class MsgStore {
       if (settingWindow && settingWindow?.isDestroyed() === false) {
         settingWindow.webContents.send("lite_tools.updateRecallCacheSize", this.recallCacheSize);
       }
-      if (this.activeRecallCache.size >= this.MAX_MESSAGES_PER_FILE) {
-        this.saveToPersistedFile(Date.now());
-        writeFileSync(path.join(this.LOCAL_DATA_PATH, "activeRecallCache.bin"), Buffer.alloc(0));
-        this.activeRecallCache.clear();
-      } else {
-        this.saveToTempFile(fromRecent);
+      if (configManager.value.message.preventRecall.persistedFiles) {
+        if (this.activeRecallCache.size >= this.MAX_MESSAGES_PER_FILE) {
+          this.saveToPersistedFile(Date.now());
+          writeFileSync(path.join(this.LOCAL_DATA_PATH, "activeRecallCache.bin"), Buffer.alloc(0));
+          this.activeRecallCache.clear();
+        } else {
+          this.saveToTempFile(fromRecent);
+        }
       }
       return fromRecent;
     }
@@ -281,11 +387,6 @@ class MsgStore {
 }
 
 const msgStore = new MsgStore();
-
-type RecallData = {
-  id: number;
-  recallData?: ReturnType<typeof MsgStore.createRecallData>;
-};
 
 function preventRecall(msgList: Message[]) {
   const recallDatas: RecallData[] = [];
@@ -317,5 +418,5 @@ function preventRecall(msgList: Message[]) {
   }
 }
 
-export type { RecallData };
+export type { RecallData, ChatList, Message, RecallChatList };
 export { preventRecall };

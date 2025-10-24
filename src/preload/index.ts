@@ -17,6 +17,12 @@ const exposeFunctions = {
     ipcRenderer.on("lite_tools.updateRecallCacheSize", (_, size: number) => callback(size)),
   getRecallCacheSize: (): Promise<number> => ipcRenderer.invoke("lite_tools.getRecallCacheSize"),
   clearRecallCache: () => ipcRenderer.send("lite_tools.clearRecallCache"),
+  openRecallMsgList: () => ipcRenderer.send("lite_tools.openRecallMsgList"),
+
+  // ipc转broadcast
+  onBroadcast: (callback: (channelName: any, payload: any) => void) =>
+    ipcRenderer.on("lite_tools.broadcast", (_, channelName, payload) => callback(channelName, payload)),
+  sendBroadcast: (channelName: any, payload: any) => ipcRenderer.send("lite_tools.broadcast", channelName, payload),
 
   nativeCall: (event: any, payload: any, awaitCallback?: boolean | string | string[]) => {
     const callbackId = crypto.randomUUID();

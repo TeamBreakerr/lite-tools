@@ -40,6 +40,10 @@
   --msg-content-text-color: #111111; /* 消息内容文本 */
   --msg-img-item-bg-color: #f2f2f2; /* 消息图片背景 */
   --content-list-bg-color: #f2f2f2; /* 消息列表背景 */
+
+  --sidebar-hover-bg-color: rgba(0, 153, 255, 0.1);
+  --chat-tag-bg-color: #90a4ae;
+  --chat-tag-text-color: #ffffff;
 }
 
 /* 系统暗色主题样式 */
@@ -56,6 +60,10 @@
     --msg-content-text-color: #ffffffe6; /* 消息内容文本 */
     --msg-img-item-bg-color: #111111; /* 消息图片背景 */
     --content-list-bg-color: #111111; /* 消息列表背景 */
+
+    --sidebar-hover-bg-color: rgba(0, 153, 255, 0.3);
+    --chat-tag-bg-color: #67767e;
+    --chat-tag-text-color: #ffffffa1;
   }
 }
 
@@ -73,6 +81,8 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
+  opacity: 1 !important;
+  transition: 0.3s ease;
 }
 
 .qq-number-filter {
@@ -100,6 +110,9 @@ body {
   color: var(--sidebar-text-color);
   border-radius: 4px;
   transition: 0.15s ease;
+  &:hover {
+    background-color: var(--sidebar-hover-bg-color);
+  }
 }
 
 .filter-item span {
@@ -109,8 +122,20 @@ body {
   white-space: nowrap;
   margin-right: 2px;
 }
-.filter-item span:first-child,
-.filter-item span:last-child {
+.filter-item span.chat-type {
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 16px;
+  width: 16px;
+  text-align: center;
+  display: inline-block;
+  background-color: var(--chat-tag-bg-color);
+  color: var(--chat-tag-text-color);
+  border-radius: 4px;
+}
+.filter-item span:not(:last-child) {
   flex-shrink: 0;
 }
 .filter-item.active {

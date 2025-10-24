@@ -132,7 +132,6 @@
           </div>
         </div>
       </li>
-
     </ul>
   </div>
   <!-- 阻止撤回 -->
@@ -163,16 +162,18 @@
           <span class="q-switch__handle"></span>
         </div>
       </li>
-      <hr class="horizontal-dividing-line" />
-      <li class="vertical-list-item">
-        <div>
-          <h2>拦截所有聊天</h2>
-          <span class="secondary-text">默认仅拦截最近打开过的10个聊天对象，启用后会占用更多资源 - 重启生效</span>
-        </div>
-        <div class="q-switch" data-config="message.preventRecall.blockAllrecall">
-          <span class="q-switch__handle"></span>
-        </div>
-      </li>
+      <span class="lt-disabled">
+        <hr class="horizontal-dividing-line" />
+        <li class="vertical-list-item">
+          <div>
+            <h2>拦截所有聊天</h2>
+            <span class="secondary-text">默认仅拦截最近打开过的10个聊天对象，启用后会占用更多资源 - 重启生效</span>
+          </div>
+          <div class="q-switch" data-config="message.preventRecall.blockAllrecall">
+            <span class="q-switch__handle"></span>
+          </div>
+        </li>
+      </span>
       <hr class="horizontal-dividing-line" />
       <li class="vertical-list-item">
         <div>
@@ -181,20 +182,22 @@
             将撤回记录保存在插件的数据目录中，建议每隔一段时间清理一次本地数据。<br />
           </span>
         </div>
-        <div class="q-switch" data-config="message.preventRecall.localStorage">
+        <div class="q-switch" data-config="message.preventRecall.persistedFiles">
           <span class="q-switch__handle"></span>
         </div>
       </li>
-      <hr class="horizontal-dividing-line" />
-      <li class="vertical-list-item">
-        <div>
-          <h2>重定向图片储存路径</h2>
-          <span class="secondary-text">将被撤回图片保存到插件的数据目录下</span>
-        </div>
-        <div class="q-switch" data-config="message.preventRecall.redirectPicPath">
-          <span class="q-switch__handle"></span>
-        </div>
-      </li>
+      <span class="lt-disabled">
+        <hr class="horizontal-dividing-line" />
+        <li class="vertical-list-item">
+          <div>
+            <h2>重定向图片储存路径</h2>
+            <span class="secondary-text">将被撤回图片保存到插件的数据目录下</span>
+          </div>
+          <div class="q-switch" data-config="message.preventRecall.redirectPicPath">
+            <span class="q-switch__handle"></span>
+          </div>
+        </li>
+      </span>
       <hr class="horizontal-dividing-line" />
       <li class="vertical-list-item">
         <div>
@@ -219,7 +222,9 @@
       <li class="vertical-list-item">
         <div>
           <h2>清理缓存</h2>
-          <span class="secondary-text local-recall-msg-num">清除所有撤回数据，当前保存有 0 条消息</span>
+          <span class="secondary-text local-recall-msg-num" title="仅供参考，可能和实际消息数量有所出入"
+            >清除所有撤回数据，当前保存有 0 条消息</span
+          >
         </div>
         <div class="ops-btns">
           <button class="q-button q-button--small q-button--danger clear-localStorage-recall-msg">清除</button>
@@ -245,8 +250,7 @@
         <path d="M21 8L12 17L3 8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
       </svg>
     </div>
-    <ul class="hidden">
-    </ul>
+    <ul class="hidden"></ul>
   </div>
   <div class="wrap topFuncBar">
     <div class="vertical-list-item title">
@@ -296,7 +300,9 @@
       <hr class="horizontal-dividing-line" />
       <li class="vertical-list-item">
         <div>
-          <h2>此菜单内的选项仅用于调试，部分功能可能会导致卡顿、内存泄漏等问题<br /><strong>普通用户请勿开启</strong></h2>
+          <h2>
+            此菜单内的选项仅用于调试，部分功能可能会导致卡顿、内存泄漏等问题<br /><strong>普通用户请勿开启</strong>
+          </h2>
         </div>
       </li>
       <hr class="horizontal-dividing-line" />
@@ -361,5 +367,7 @@
       </li>
     </ul>
   </div>
-  <h1 class="version">当前版本<span class="link tag-version" data-href="https://github.com/xiyuesaves/lite_tools/tree/v4">v0.0.0</span></h1>
+  <h1 class="version">
+    当前版本<span class="link tag-version" data-href="https://github.com/xiyuesaves/lite_tools/tree/v4">v0.0.0</span>
+  </h1>
 </lite-tools>

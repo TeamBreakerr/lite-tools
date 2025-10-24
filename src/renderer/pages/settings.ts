@@ -16,9 +16,8 @@ type OptionItem = {
 
 const log = createLogger("settings");
 
-document.head.appendChild(document.createElement("style")).appendChild(document.createTextNode(settingsCss));
-
 async function initSettingView(view: HTMLDivElement) {
+  document.head.appendChild(document.createElement("style")).appendChild(document.createTextNode(settingsCss));
   await configStore.ready;
   const config = configStore.value;
   log("获取到配置数据", config);
@@ -83,6 +82,9 @@ async function initRecallOptions(view: HTMLDivElement, config: Config) {
   const dark = view.querySelector<HTMLInputElement>(".custom-text-color-dark")!;
   view.querySelector(".clear-localStorage-recall-msg")!.addEventListener("click", () => {
     lite_tools.clearRecallCache();
+  });
+  view.querySelector(".open-recall-msg-list")?.addEventListener("click", () => {
+    lite_tools.openRecallMsgList();
   });
   light.value = config.message.preventRecall.customTextColor.light;
   dark.value = config.message.preventRecall.customTextColor.dark;
