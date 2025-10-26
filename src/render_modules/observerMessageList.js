@@ -6,7 +6,8 @@ import { getPeer, addEventPeerChange } from "./curAioData.js";
 import { checkChatType } from "./checkChatType.js";
 import { showWebPreview } from "./showWebPreview.js";
 import { Logs } from "./logs.js";
-import { findShortestPathAndValue } from "./findShortestPathAndValue.js";
+// import { findShortestPathAndValue } from "./findShortestPathAndValue.js";
+import { waitForInstance } from "./domWaitFor.js";
 const log = new Logs("消息列表处理");
 
 /**
@@ -67,11 +68,15 @@ let showMsgElapsedTime = options.message.showMsgElapsedTime;
 /**
  * 处理当前可见的消息列表
  */
-function processingMsgList() {
+async function processingMsgList() {
   // 消息列表数组
-  const findObj = findShortestPathAndValue(app, "msgListRef");
-  const msgListRef = {} ?? findObj.value;
+  // const findObj = findShortestPathAndValue(app, "msgListRef");
+  // const msgListRef = {} ?? findObj.value;
 
+  const { value: msgList } = await waitForInstance(".container-content .container .aio .group-chat", "proxy.curMsgListData");
+  const msgListRef = {
+    curMsgs: msgList,
+  };
   // 消息类型不在处理范围
   if (!checkChatType(msgListRef.curMsgs?.[0]?.data)) {
     return;
@@ -533,10 +538,11 @@ function messageToleft(component) {
  * 初始化当前已加载的消息元素
  * @param {Boolean} recursion 是否递归检测
  */
-const initMessageList = (recursion = true) => {
-  return
-  const findObj = findShortestPathAndValue(app, "curMsgs");
-  const curMsgs = findObj.value;
+const initMessageList = async (recursion = true) => {
+  // const findObj = findShortestPathAndValue(app, "curMsgs");
+  // const curMsgs = findObj.value;
+  const { value: curMsgs } = await waitForInstance(".aio .group-chat", "proxy.curMsgListData");
+
   const curMsgsLength = curMsgs.length;
   // 没有找到消息列表数组且兼容选项未启用时，调用自身防抖函数并直接退出
   if (!curMsgs.length && recursion) {
@@ -545,7 +551,8 @@ const initMessageList = (recursion = true) => {
   }
   for (let index = 0; index < curMsgsLength; index++) {
     const el = curMsgs[index];
-    const msgItemEl = document.querySelector(`[id="${el.id}"]`);
+    log(el);
+    const msgItemEl = document.querySelector(`[id="${el.msgId}"]`);
     const messageEl = msgItemEl.querySelector(".message");
     if (messageEl) {
       singleMessageProcessing(messageEl, el.data);

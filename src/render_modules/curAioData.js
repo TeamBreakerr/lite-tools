@@ -1,5 +1,5 @@
 import { Logs } from "./logs.js";
-import { findShortestPathAndValue } from "./findShortestPathAndValue.js";
+import { waitForInstance } from "./domWaitFor.js";
 const log = new Logs("peer管理模块");
 
 let curAioData = null;
@@ -10,16 +10,15 @@ const eventList = [];
  * 监听聊天对象变动
  * @returns {void}
  */
-function initCurAioData() {
-  const findObj = findShortestPathAndValue(app, "curAioData");
-  if (!findObj?.value?.chatType) {
+async function initCurAioData() {
+  const { value: findObj } = await waitForInstance(".aio.vue-component", "proxy.aioStore");
+  if (!findObj?.curAioData) {
     setTimeout(initCurAioData, 500);
-    log("等待数据初始化");
     return;
   }
   log("获取到curAioData", findObj);
-  curAioData = findObj.value;
-  Object.defineProperty(findObj.parent, "curAioData", {
+  curAioData = findObj.curAioData;
+  Object.defineProperty(findObj, "curAioData", {
     enumerable: true,
     configurable: true,
     get() {
