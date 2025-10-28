@@ -6,6 +6,7 @@ import { createComparator } from "@/common/createComparator";
 import { updateTopFuncBar, updateChatFuncBar } from "@/renderer/modules/funcBarManager";
 import { observeMutations } from "@/renderer/utils/observeMutations";
 import { setupHandleMessages } from "@/renderer/modules/handleMessages";
+import { onComponentMount } from "@/renderer/modules/vueComponentTracker";
 
 import type { Config } from "@/types/config";
 import type { LiteTools } from "@/preload";
@@ -43,7 +44,11 @@ async function setupMainPage() {
 
     updateRecallConfig(config);
   });
-
+  onComponentMount((component) => {
+    if (configStore.value.interface.hiddenLockBtn && component?.vnode?.key === "锁定") {
+      component.vnode.el.remove();
+    }
+  });
   observeMutations(
     document.querySelector(".nav.sidebar__nav")!,
     (mutationsList) => {
