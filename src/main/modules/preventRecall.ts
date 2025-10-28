@@ -365,7 +365,7 @@ class MsgStore {
       log("从内存消息中找到数据", msgId);
       this.recentMessages.delete(msgId);
       this.activeRecallCache.set(msgId, fromRecent);
-      const recallData = MsgStore.createRecallData(fromRecent);
+      const recallData = MsgStore.createRecallData(message);
       fromRecent.lt_recall = recallData;
       if (settingWindow && settingWindow?.isDestroyed() === false) {
         settingWindow.webContents.send("lite_tools.updateRecallCacheSize", this.recallCacheSize);
