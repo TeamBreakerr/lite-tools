@@ -1,8 +1,5 @@
 import { webContents } from "electron";
 import { randomUUID } from "crypto";
-import { createLogger } from "@/main/utils/createLogger";
-
-const log = createLogger("dispatchIpcEvent");
 
 function dispatchIpcEvent(
   webContentId: number,
@@ -88,7 +85,6 @@ function dispatchIpcEvent(
       payload,
     ]
   );
-  log("emitData", emitData);
   return resolve;
 }
 
