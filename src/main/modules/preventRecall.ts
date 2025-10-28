@@ -61,6 +61,8 @@ class MsgStore {
   private readonly MAX_RECALL_CACHE_SIZE = 100000;
   // 本地持久化文件路径
   private LOCAL_DATA_PATH!: string;
+  // 实例是否就绪
+  private isReady = false;
 
   constructor() {
     this.init();
@@ -74,6 +76,7 @@ class MsgStore {
     this.initIpcEvent();
     this.loadActiveRecallCacheBuffer();
     this.loadPersistedFiles();
+    this.isReady = true;
 
     log("init done");
   }
@@ -128,6 +131,7 @@ class MsgStore {
     let userInfos: Map<string, any>;
     try {
       const response = await getUserInfo(Array.from(unknownUids));
+      log("getUserInfo", response);
       userInfos = response.detail;
     } catch {
       userInfos = new Map();
@@ -157,7 +161,7 @@ class MsgStore {
         });
       }
     }
-    log("return getAllRecallChatList", chatList.size);
+    log("返回获取所有聊天列表数量", chatList.size);
 
     return chatList;
   }
@@ -338,6 +342,10 @@ class MsgStore {
     return size;
   }
 
+  get ready() {
+    return this.isReady;
+  }
+
   addMessageToCache(message: Message) {
     // 不是完整消息
     if (!message.elements.length) {
@@ -357,6 +365,8 @@ class MsgStore {
       log("从内存消息中找到数据", msgId);
       this.recentMessages.delete(msgId);
       this.activeRecallCache.set(msgId, fromRecent);
+      const recallData = MsgStore.createRecallData(fromRecent);
+      fromRecent.lt_recall = recallData;
       if (settingWindow && settingWindow?.isDestroyed() === false) {
         settingWindow.webContents.send("lite_tools.updateRecallCacheSize", this.recallCacheSize);
       }
@@ -389,6 +399,7 @@ class MsgStore {
 const msgStore = new MsgStore();
 
 function preventRecall(msgList: Message[]) {
+  if (!msgStore.ready) return;
   const recallDatas: RecallData[] = [];
   for (let index = 0; index < msgList.length; index++) {
     const message = msgList[index];
@@ -402,9 +413,7 @@ function preventRecall(msgList: Message[]) {
       const recallMsg = msgStore.findRecallMsg(message);
       if (recallMsg) {
         log("找到撤回消息，完成替换", recallMsg.msgId);
-        const recallData = MsgStore.createRecallData(message);
         msgList[index] = recallMsg;
-        msgList[index].lt_recall = recallData;
         recallDatas.push({
           id: recallMsg.msgId,
         });
