@@ -65,10 +65,10 @@ class MsgStore {
   private isReady = false;
 
   constructor() {
-    this.init();
+    this.setup();
   }
 
-  private async init() {
+  private async setup() {
     log("initing...");
     await configManager.ready;
 
@@ -128,14 +128,15 @@ class MsgStore {
         unknownUids.add(msg.peerUid);
       }
     }
-    let userInfos: Map<string, any>;
-    try {
-      const response = await getUserInfo(Array.from(unknownUids));
-      log("getUserInfo", response);
-      userInfos = response.detail;
-    } catch {
-      userInfos = new Map();
+    let userInfos = new Map<string, any>();
+    if (unknownUids.size > 0) {
+      try {
+        const res = await getUserInfo([...unknownUids]);
+        log("getUserInfo", res);
+        userInfos = res.detail;
+      } catch {}
     }
+
     for (const message of allMessages) {
       const uid = message.peerUid;
       let cache = this.allCaches.get(uid);
@@ -150,10 +151,13 @@ class MsgStore {
           continue;
         }
         const info = message.chatType === 2 ? null : userInfos.get(uid);
-        const peerName =
-          message.chatType === 2
-            ? message.peerName
-            : info?.simpleInfo?.coreInfo?.remark || info?.simpleInfo?.coreInfo?.nick || "未知用户";
+        let peerName;
+        if (message.chatType === 2) {
+          peerName = message.peerName;
+        } else {
+          const coreInfo = info?.simpleInfo?.coreInfo;
+          peerName = coreInfo?.remark || coreInfo?.nick || "未知用户";
+        }
         chatList.set(uid, {
           peerName,
           chatType: message.chatType,
