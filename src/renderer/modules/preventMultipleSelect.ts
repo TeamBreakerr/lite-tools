@@ -1,13 +1,9 @@
 import { configStore } from "@/renderer/modules/configStore.js";
-import { createLogger } from "@/renderer/utils/createLogger";
-
-const log = createLogger("阻止滑动选择");
 
 let listenTarget = false;
 let interception = false;
 
 function setupPreventMutipleSelect(className: string) {
-  log("加载");
   const app = document.querySelector("#app") as HTMLElement;
   app.addEventListener("pointerdown", (event) => {
     if (configStore.value.interface.preventSelect && (event.buttons === 1 || event.buttons === 4)) {
