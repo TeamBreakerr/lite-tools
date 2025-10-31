@@ -61,6 +61,8 @@ class MsgStore {
   private readonly MAX_RECALL_CACHE_SIZE = 100000;
   // 本地持久化文件路径
   private LOCAL_DATA_PATH!: string;
+  // 重定向图片路径
+  private LOCAL_REDIRECT_PIC_PATH!: string;
   // 实例是否就绪
   private isReady = false;
 
@@ -82,12 +84,19 @@ class MsgStore {
   }
 
   private initLocalDataPath() {
-    this.LOCAL_DATA_PATH = path.join(dataPath, "messageRecall", configManager.uid);
-    if (!existsSync(this.LOCAL_DATA_PATH)) {
-      mkdirSync(this.LOCAL_DATA_PATH, { recursive: true });
+    const base = path.join(dataPath, "messageRecall", configManager.uid);
+    const redirectDir = path.join(base, "redirectPic");
+    const cacheFile = path.join(base, "activeRecallCache.bin");
+
+    this.LOCAL_DATA_PATH = base;
+    this.LOCAL_REDIRECT_PIC_PATH = redirectDir;
+
+    if (!existsSync(redirectDir)) {
+      mkdirSync(redirectDir, { recursive: true });
     }
-    if (!existsSync(path.join(this.LOCAL_DATA_PATH, "activeRecallCache.bin"))) {
-      writeFileSync(path.join(this.LOCAL_DATA_PATH, "activeRecallCache.bin"), Buffer.alloc(0));
+
+    if (!existsSync(cacheFile)) {
+      writeFileSync(cacheFile, Buffer.alloc(0));
     }
   }
 
