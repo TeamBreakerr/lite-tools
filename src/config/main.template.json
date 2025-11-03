@@ -93,5 +93,8 @@
     {
       "name": "等待栏目初始化..."
     }
-  ]
+  ],
+  "global": {
+    "rkeyServerUrl": "https://rkey.furrycloud.top"
+  }
 }
