@@ -28,6 +28,9 @@
       "cacheHistory": false,
       "stealthMode": false,
       "redirectPicPath": false,
+      "MAX_PERSISTED_FILES": 5,
+      "MAX_MESSAGES_PER_FILE": 1000,
+      "MAX_RECALL_CACHE_SIZE": 100000,
       "customTextColor": {
         "light": "#ff6666",
         "dark": "#c70000"
