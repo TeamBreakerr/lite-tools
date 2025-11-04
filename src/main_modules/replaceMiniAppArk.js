@@ -1,6 +1,7 @@
 import { findEvent } from "./findEvent.js";
 import { checkChatType } from "./checkChatType.js";
 import { replaceArk } from "./replaceArk.js";
+import { config } from "./config.js";
 
 const log = (...args) => {
   if (global.cacheLogs) {
@@ -16,6 +17,7 @@ const log = (...args) => {
  * @return {void} 此函数不返回任何值。
  */
 function replaceMiniAppArk(args) {
+  if (!config.message.convertMiniPrgmArk) return;
   // 接收到获取历史消息列表
   const msgList = args[2]?.msgList;
   if (msgList && msgList.length && checkChatType(msgList[0])) {
