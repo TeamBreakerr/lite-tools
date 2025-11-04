@@ -7,7 +7,7 @@ import { checkChatType } from "./checkChatType.js";
 import { showWebPreview } from "./showWebPreview.js";
 import { Logs } from "./logs.js";
 // import { findShortestPathAndValue } from "./findShortestPathAndValue.js";
-import { waitForInstance } from "./domWaitFor.js";
+import { getInstanceSync } from "./domWaitFor.js";
 const log = new Logs("消息列表处理");
 
 /**
@@ -68,12 +68,15 @@ let showMsgElapsedTime = options.message.showMsgElapsedTime;
 /**
  * 处理当前可见的消息列表
  */
-async function processingMsgList() {
+function processingMsgList() {
   // 消息列表数组
   // const findObj = findShortestPathAndValue(app, "msgListRef");
   // const msgListRef = {} ?? findObj.value;
 
-  const { value: msgList } = await waitForInstance(".container-content .container .aio .group-chat", "proxy.curMsgListData");
+  const { value: msgList } = getInstanceSync(".container-content .container .aio .group-chat", "proxy.curMsgListData") || {};
+  if (!msgList?.length) {
+    return;
+  }
   const msgListRef = {
     curMsgs: msgList,
   };
@@ -538,11 +541,13 @@ function messageToleft(component) {
  * 初始化当前已加载的消息元素
  * @param {Boolean} recursion 是否递归检测
  */
-const initMessageList = async (recursion = true) => {
+const initMessageList = (recursion = true) => {
   // const findObj = findShortestPathAndValue(app, "curMsgs");
   // const curMsgs = findObj.value;
-  const { value: curMsgs } = await waitForInstance(".aio .group-chat", "proxy.curMsgListData");
-
+  const { value: curMsgs } = getInstanceSync(".aio .group-chat", "proxy.curMsgListData");
+  if (!curMsgs?.length) {
+    return;
+  }
   const curMsgsLength = curMsgs.length;
   // 没有找到消息列表数组且兼容选项未启用时，调用自身防抖函数并直接退出
   if (!curMsgs.length && recursion) {

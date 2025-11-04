@@ -112,4 +112,25 @@ function waitForInstance(selector, propPath, timeout) {
   })
 }
 
-export { waitForElement, waitForInstance }
+/**
+ * 同步版本：立即检查 Vue 实例属性
+ * 找不到则返回 null，不等待
+ */
+function getInstanceSync(selector, propPath) {
+  const element = document.querySelector(selector)
+  if (!element) return null
+
+  const vueInstances = element.__VUE__
+  if (!vueInstances?.length) return null
+
+  for (const instance of new Set(vueInstances)) {
+    const value = getByPath(instance, propPath)
+    if (value !== undefined) {
+      return { element, instance, value }
+    }
+  }
+
+  return null
+}
+
+export { waitForElement, waitForInstance, getInstanceSync }
