@@ -4,17 +4,17 @@ const appIdToName = new Map([
 ]);
 
 function convertMiniArkToWebArk(msgList: any[]) {
-  msgList.forEach((msgItem) => {
-    let msg_seq = msgItem.msgSeq;
-    msgItem.elements.forEach((msgElements: any) => {
-      if (msgElements?.arkElement?.bytesData) {
-        const json = JSON.parse(msgElements.arkElement.bytesData);
+  for (const msgItem of msgList) {
+    const msg_seq = msgItem.msgSeq;
+    for (const msgElement of msgItem.elements) {
+      if (msgElement?.arkElement?.bytesData) {
+        const json = JSON.parse(msgElement.arkElement.bytesData);
         if (json?.prompt?.includes("[QQ小程序]")) {
-          msgElements.arkElement.bytesData = replaceArk(json, msg_seq);
+          msgElement.arkElement.bytesData = replaceArk(json, msg_seq);
         }
       }
-    });
-  });
+    }
+  }
 }
 
 function replaceArk(json: any, msg_seq: any) {

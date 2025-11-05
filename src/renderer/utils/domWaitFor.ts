@@ -23,7 +23,7 @@ function ensureObserver() {
     observer = new MutationObserver(() => {
       for (let i = waiters.length - 1; i >= 0; i--) {
         const waiter = waiters[i];
-        const element = document.querySelector<HTMLElement>(waiter.selector) as any;
+        const element = document.querySelector<HTMLElement>(waiter.selector);
 
         if (element) {
           if (waiter.propPath) {
@@ -87,9 +87,13 @@ function waitForElement(selector: string, timeout?: number): Promise<HTMLElement
 /**
  * 等待 Vue 实例指定属性出现
  */
-function waitForInstance(selector: string, propPath: string, timeout?: number): Promise<{ element: HTMLElement; instance: any; value: any }> {
+function waitForInstance(
+  selector: string,
+  propPath: string,
+  timeout?: number
+): Promise<{ element: HTMLElement; instance: any; value: any }> {
   return new Promise((resolve, reject) => {
-    const element = document.querySelector(selector) as any;
+    const element = document.querySelector<HTMLElement>(selector);
     if (element) {
       const vueInstances = element.__VUE__;
       if (vueInstances?.length) {

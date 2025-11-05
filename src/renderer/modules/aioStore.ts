@@ -57,7 +57,9 @@ class AioStore {
   }
 
   notify() {
-    this.listeners.forEach((listener) => listener(this.curAioData));
+    for (const listener of this.listeners) {
+      listener(this.curAioData);
+    }
   }
 
   onChange(listener: (val: any) => void) {

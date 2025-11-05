@@ -14,13 +14,14 @@ function setupSideBar() {
   IpcInterceptor.onIpcReceiveEvents("nodeIKernelConfigMgrService/saveSideBarConfig", (meat, _, channel, payload) => {
     const sideBarConfig = payload[1]?.payload?.[0]?.config as SideBarConfig[];
     const config = configManager.value;
-    sideBarConfig?.forEach((item) => {
-      config.sideBar.top.forEach((el) => {
-        if (el.id === item.barId) {
-          el.enabled = item.status === 1;
-        }
-      });
-    });
+    const topMap = new Map(config.sideBar.top.map((item) => [item.id, item]));
+    for (const { barId, status } of sideBarConfig ?? []) {
+      const el = topMap.get(barId);
+      if (el) {
+        el.enabled = status === 1;
+      }
+    }
+
     configManager.updateConfig(config);
   });
 
@@ -30,23 +31,23 @@ function setupSideBar() {
       log("初始化侧边栏", payload.payload.config);
       const sideBarConfig = payload.payload.config as SideBarConfig[];
       const config = configManager.value;
-      sideBarConfig.forEach((item: any) => {
+      for (const item of sideBarConfig) {
         const findItem = config.sideBar.top.find((i) => i.id === item.barId);
         if (findItem !== undefined) {
           findItem.enabled = item.status === 1;
         }
-      });
+      }
       configManager.updateConfig(config);
     } else {
       log("更新侧边栏", payload.payload.config);
       const sideBarConfig = payload.payload.config as SideBarConfig[];
       const config = configManager.value;
-      sideBarConfig.forEach((item: any) => {
+      for (const item of sideBarConfig) {
         const findItem = config.sideBar.top.find((i) => i.id === item.barId);
         if (findItem !== undefined) {
           item.status = findItem.enabled ? 1 : 2;
         }
-      });
+      }
     }
   });
 
@@ -60,9 +61,9 @@ function setupSideBar() {
           log("侧边栏数量不匹配，执行初始化", rawSideBar.length, config.sideBar.top.length);
           isInitSideBar = true;
         }
-        rawSideBar.forEach((item: any) => {
+        for (const item of rawSideBar) {
           item.isFixed = false;
-        });
+        }
         const sideBar = rawSideBar.map((item: any) => {
           return {
             id: item.id,

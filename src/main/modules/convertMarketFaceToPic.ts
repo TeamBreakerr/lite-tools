@@ -7,18 +7,18 @@ const faceFilePaths = new Set<string>();
 const awaitIsFileExist = new Map<string, Function>();
 
 function convertMarketFaceToPic(msgList: any[], webContentId: number) {
-  msgList.forEach((msgItem) => {
-    msgItem.elements.forEach((msgElements: any) => {
-      if (msgElements?.marketFaceElement) {
-        downloadMarketFace(msgElements.marketFaceElement, webContentId);
-        msgElements.picElement = replaceMarketFace(msgElements.marketFaceElement);
-        msgElements.marketFaceElement = null;
-        msgElements.elementType = 2;
+  for (const msgItem of msgList) {
+    for (const msgElement of msgItem.elements) {
+      if (msgElement?.marketFaceElement) {
+        downloadMarketFace(msgElement.marketFaceElement, webContentId);
+        msgElement.picElement = replaceMarketFace(msgElement.marketFaceElement);
+        msgElement.marketFaceElement = null;
+        msgElement.elementType = 2;
         msgItem.msgType = 2;
         msgItem.subMsgType = 4096;
       }
-    });
-  });
+    }
+  }
 }
 
 function replaceMarketFace(marketFaceElement: any): object {

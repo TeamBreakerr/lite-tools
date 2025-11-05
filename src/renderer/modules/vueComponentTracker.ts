@@ -30,21 +30,29 @@ function QwQSetupVueComponentTracker() {
   window.addEventListener("vue:component-mount", (e) => {
     const event = e as CustomEvent;
     const component = event.detail;
-    mountedCallbacks.forEach((fn) => safeCall(fn, "mountedCallbacks", component));
+    for (const fn of mountedCallbacks) {
+      safeCall(fn, "mountedCallbacks", component);
+    }
   });
   window.addEventListener("vue:component-unmount", (e) => {
     const event = e as CustomEvent;
     const component = event.detail;
-    unmountedCallbacks.forEach((fn) => safeCall(fn, "unmountedCallbacks", component));
+    for (const fn of unmountedCallbacks) {
+      safeCall(fn, "unmountedCallbacks", component);
+    }
   });
 }
 
 function LLonVueComponentMount(component: any) {
-  mountedCallbacks.forEach((fn) => safeCall(fn, "mountedCallbacks", component));
+  for (const fn of mountedCallbacks) {
+    safeCall(fn, "mountedCallbacks", component);
+  }
 }
 
 function LLonVueComponentUnmount(component: any) {
-  unmountedCallbacks.forEach((fn) => safeCall(fn, "unmountedCallbacks", component));
+  for (const fn of unmountedCallbacks) {
+    safeCall(fn, "unmountedCallbacks", component);
+  }
 }
 
 export {

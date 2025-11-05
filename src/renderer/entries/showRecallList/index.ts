@@ -69,13 +69,13 @@ async function getRecallMessagesByUid(peerUid: string) {
     const picList = getPicList(message.elements);
     if (picList.length) {
       const imgListEl = recallMsgItemEl.querySelector(".msg-img-list")!;
-      picList.forEach((pic) => {
+      for (const pic of picList) {
         const picEl = parser.parseFromString(recallImgItem, "text/html").querySelector(".msg-img-item")!;
         const imgEl = picEl.querySelector("img")!;
         imgEl.src = `appimg://${pic}`;
         imgEl.setAttribute("alt", "加载失败");
         imgListEl.appendChild(picEl);
-      });
+      }
     }
     if (!textContent.length && !picList.length) {
       recallMsgItemEl.querySelector(".msg-text")!.innerHTML = `<blue>[不支持的消息类型]</blue>`;
@@ -136,21 +136,21 @@ function formatChineseDate(date: Date): string {
 
 function getTextContent(elements: any[]) {
   let textContent = "";
-  elements.forEach((element) => {
+  for (const element of elements) {
     if (element.textElement && element.textElement.content) {
       textContent += element.textElement.content;
     }
-  });
+  }
   return textContent;
 }
 
 function getPicList(elements: any[]) {
   const picList: any[] = [];
-  elements.forEach((element) => {
+  for (const element of elements) {
     if (element.picElement && element.picElement.sourcePath) {
       picList.push(element.picElement.sourcePath);
     }
-  });
+  }
   return picList;
 }
 

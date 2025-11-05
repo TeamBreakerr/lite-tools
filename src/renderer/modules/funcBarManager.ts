@@ -23,7 +23,7 @@ async function updateTopFuncBar() {
   );
   await instance.proxy.$nextTick();
   const value = instance.props.items;
-  value.forEach((item: any) => {
+  for (const item of value) {
     const id = element.querySelector(`.bar-icon [aria-label="${item.label}"] svg use`)?.getAttribute("xlink:href");
     const key = `${item.label}_${id}`;
     if (id) {
@@ -32,7 +32,7 @@ async function updateTopFuncBar() {
         id,
       });
     }
-  });
+  }
   if (
     topFuncMap.size >= configStore.value.topFuncBar.length &&
     !isFuncCountEqual(topFuncMap, configStore.value.topFuncBar)
@@ -67,7 +67,7 @@ async function updateChatFuncBar() {
 
     await instance.proxy.$nextTick();
 
-    value.forEach((item: any) => {
+    for (const item of value) {
       const id = element.querySelector(`.bar-icon [aria-label="${item.label}"] svg use`)?.getAttribute("xlink:href");
       const key = `${item.label}_${id}`;
       if (id) {
@@ -76,7 +76,7 @@ async function updateChatFuncBar() {
           id,
         });
       }
-    });
+    }
 
     if (
       chatFuncMap.size >= configStore.value.chatFuncBar.length &&
@@ -111,7 +111,7 @@ async function updateChatFuncBar() {
 }
 
 function hiddenFuncBtn(element: HTMLElement, funcBar: FuncBar[], preparatory = false) {
-  funcBar.forEach((item) => {
+  for (const item of funcBar) {
     const findEl = Array.from(element.querySelectorAll(`.bar-icon use`))
       .find((element) => {
         return element.getAttribute("xlink:href") === item.id;
@@ -120,7 +120,7 @@ function hiddenFuncBtn(element: HTMLElement, funcBar: FuncBar[], preparatory = f
     if (findEl) {
       findEl.style.display = item.enabled ? "flex" : "none";
     }
-  });
+  }
 }
 
 function isFuncCountEqual(a: Map<string, FuncBar>, b: FuncBar[]) {

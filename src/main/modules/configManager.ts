@@ -125,7 +125,9 @@ class ConfigManager {
   updateConfig(newConfig: Config) {
     Object.assign(this.config, newConfig);
     fs.writeFileSync(this.currentConfigPath, JSON.stringify(this.config, null, 2), "utf-8");
-    this.listeners.forEach((listener) => listener(this.config));
+    for (const listener of this.listeners) {
+      listener(this.config);
+    }
     globalBroadcast("lite_tools.configChanged", this.config);
   }
 

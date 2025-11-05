@@ -21,6 +21,7 @@ declare global {
   interface Element {
     lt_slot?: HTMLElement;
     __VUE__?: any[];
+    __vue_app__?: any;
   }
 }
 

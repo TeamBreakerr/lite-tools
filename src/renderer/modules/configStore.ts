@@ -24,7 +24,9 @@ class ConfigStore {
   }
 
   private notify() {
-    this.listeners.forEach((listener) => listener(this.config));
+    for (const listener of this.listeners) {
+      listener(this.config);
+    }
   }
 
   private async setupConfig() {

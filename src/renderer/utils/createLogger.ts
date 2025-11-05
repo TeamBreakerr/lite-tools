@@ -36,10 +36,10 @@ class Logs {
         this.cachedLogs = [];
         return;
       }
-      this.cachedLogs.forEach((logArgs) => {
+      for (const logArgs of this.cachedLogs) {
         console.log(`[${this.moduleName}]`, ...logArgs);
         this.saveToLogList(logArgs);
-      });
+      }
       this.cachedLogs = [];
     }
   };
@@ -53,7 +53,9 @@ class Logs {
 window.lt_logs = () => {
   logsReady.then(() => {
     if (config?.debug.console) {
-      logList.forEach((el) => console.log(`[${el.name}]`, ...el.log));
+      for (const el of logList) {
+        console.log(`[${el.name}]`, ...el.log);
+      }
       console.log("[日志模块]", "log-end");
     } else {
       console.log("[日志模块]", "当前没有启用debug");

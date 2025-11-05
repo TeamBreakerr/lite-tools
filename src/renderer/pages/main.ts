@@ -102,11 +102,11 @@ function updateTopSideBar(config: Config) {
 
 function updateBottomSideBar(config: Config) {
   const sideBarLower = document.querySelector<HTMLElement>(".sidebar-wrapper .sidebar__lower")!;
-  config.sideBar.bottom.forEach((item) => {
+  for (const item of config.sideBar.bottom) {
     sideBarLower
       .querySelector<HTMLElement>(`.func-menu__item_wrap:has([aria-label="${item.name}"])`)
       ?.style.setProperty("display", item.enabled ? "flex" : "none");
-  });
+  }
 }
 
 function setupIpcToBroadcast() {

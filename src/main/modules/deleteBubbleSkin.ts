@@ -1,5 +1,5 @@
 function deleteBubbleSkin(msgList: any[]) {
-  msgList.forEach((msgItem) => {
+  for (const msgItem of msgList) {
     if (msgItem.msgAttrs.get(0)?.vasMsgInfo?.bubbleInfo) {
       msgItem.msgAttrs.get(0).vasMsgInfo.bubbleInfo = {
         bubbleId: 0,
@@ -8,7 +8,7 @@ function deleteBubbleSkin(msgList: any[]) {
         canConvertToText: null,
       };
     }
-  });
+  }
 }
 
 export { deleteBubbleSkin };

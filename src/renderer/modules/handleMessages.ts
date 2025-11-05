@@ -63,22 +63,22 @@ async function setupHandleMessages() {
     "proxy.curMsgListData"
   );
   log(msgList);
-  msgList.forEach((item: any) => {
-    const el = document.getElementById(item.msgId)?.firstElementChild as any;
-    if (el && el?.__VUE__[0]) {
+  for (const item of msgList) {
+    const el = document.getElementById(item.msgId)?.firstElementChild;
+    if (el && el?.__VUE__?.[0]) {
       handleMessages(el.__VUE__[0]);
     }
-  });
+  }
 }
 
 function initIpcEvent() {
   lite_tools.onRecallMessagesFound((recallDatas) => {
-    recallDatas.forEach((recallData) => {
-      const recallMsg = document.getElementById(recallData.id.toString())?.firstElementChild as any;
-      if (recallMsg && recallMsg?.__VUE__[0]) {
+    for (const recallData of recallDatas) {
+      const recallMsg = document.getElementById(recallData.id.toString())?.firstElementChild;
+      if (recallMsg && recallMsg?.__VUE__?.[0]) {
         processMessages(recallMsg.__VUE__[0]);
       }
-    });
+    }
   });
 }
 
