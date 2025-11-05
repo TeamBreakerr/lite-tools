@@ -604,7 +604,7 @@ class MsgStore {
     if (!hit) return null;
 
     // 命中 recentMessages 的情况
-    if (this.recentMessages.has(msgId)) {
+    if (this.recentMessages.has(msgId) && !this.activeRecallCache.has(msgId)) {
       hit.lt_recall = MsgStore.createRecallData(message);
       this.processMsgImages(hit);
       this.recentMessages.delete(msgId);
