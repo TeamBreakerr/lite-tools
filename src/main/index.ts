@@ -4,6 +4,7 @@ import { setupHandleMessages } from "@/main/modules/handleMessages";
 import { setupIpcMain } from "@/main/modules/ipcMain";
 import { setupSideBar } from "@/main/modules/sideBar";
 import { captureWindow } from "@/main/utils/captureWindow";
+import { setupIpcInterceptor } from "@/main/modules/ipcInterceptor";
 import type { BrowserWindow } from "electron";
 
 const log = createLogger("lt_main");
@@ -23,6 +24,7 @@ function setupMain(uid: string) {
     setupHandleMessages();
     setupIpcMain();
     setupSideBar();
+    setupIpcInterceptor();
   } catch (err) {
     log("初始化出错", err);
   }

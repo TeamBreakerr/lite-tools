@@ -48,6 +48,9 @@ async function setupMainPage() {
     if (configStore.value.interface.hiddenLockBtn && component?.vnode?.key === "锁定") {
       component.vnode.el.remove();
     }
+    if (configStore.value.interface.hiddenUpdateBtnAndNotice && component?.vnode?.key === "检查更新") {
+      component.vnode.el.remove();
+    }
   });
   observeMutations(
     document.querySelector(".nav.sidebar__nav")!,
