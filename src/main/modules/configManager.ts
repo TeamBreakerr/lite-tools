@@ -19,7 +19,7 @@ class ConfigManager {
   private listeners: Set<ConfigListener> = new Set();
   private readyPromise: Promise<void>;
   private resolveReady: () => void;
-  private userConfigRegistry = new UserConfigRegistry(path.join(configPath, "UserConfigRegistry.json"));
+  private userConfigRegistry: UserConfigRegistry;
 
   constructor() {
     const { promise, resolve } = Promise.withResolvers<void>();
@@ -27,6 +27,7 @@ class ConfigManager {
     this.resolveReady = resolve;
     this.setupPath();
     this.setupIpcEvent();
+    this.userConfigRegistry = new UserConfigRegistry(path.join(configPath, "UserConfigRegistry.json"));
   }
 
   private setupIpcEvent() {
@@ -48,7 +49,6 @@ class ConfigManager {
     try {
       if (!fs.existsSync(configPath)) {
         fs.mkdirSync(path.join(configPath, "configs"), { recursive: true });
-        fs.mkdirSync(path.join(configPath, "messageRecall"), { recursive: true });
       }
       if (!fs.existsSync(dataPath)) {
         fs.mkdirSync(dataPath, { recursive: true });
