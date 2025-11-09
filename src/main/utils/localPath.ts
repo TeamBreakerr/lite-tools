@@ -1,16 +1,17 @@
 import path from "node:path";
+import packageJson from "package.json";
 
 let configPath: string;
 let dataPath: string;
 let pluginPath: string;
 if ("qwqnt" in globalThis) {
-  configPath = path.join(qwqnt.framework.paths.configs, "lite_tools");
-  dataPath = path.join(qwqnt.framework.paths.data, "lite_tools");
-  pluginPath = path.join(qwqnt.framework.plugins.lite_tools.meta.path);
+  configPath = path.join(qwqnt.framework.paths.configs, packageJson.name);
+  dataPath = path.join(qwqnt.framework.paths.data, packageJson.name);
+  pluginPath = path.join(qwqnt.framework.plugins[packageJson.name].meta.path);
 } else if ("LiteLoader" in globalThis) {
-  configPath = path.join(LiteLoader.plugins.lite_tools.path.data, "configs");
-  dataPath = path.join(LiteLoader.plugins.lite_tools.path.data, "data");
-  pluginPath = path.join(LiteLoader.plugins.lite_tools.path.plugin);
+  configPath = path.join(LiteLoader.plugins[packageJson.name].path.data, "configs");
+  dataPath = path.join(LiteLoader.plugins[packageJson.name].path.data, "data");
+  pluginPath = path.join(LiteLoader.plugins[packageJson.name].path.plugin);
 }
 
 export { configPath, dataPath, pluginPath };
