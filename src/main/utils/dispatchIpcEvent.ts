@@ -1,5 +1,14 @@
-import { webContents } from "electron";
+import { WebContents, webContents, ipcMain } from "electron";
 import { randomUUID } from "crypto";
+import { createLogger } from "@/main/utils/createLogger";
+
+const log = createLogger("dispatchIpcEvent");
+
+interface FakeIpcEvent {
+  sender: WebContents | null;
+  reply?: (...args: any[]) => void;
+  returnValue?: any;
+}
 
 function dispatchIpcEvent(
   webContentId: number,
@@ -55,36 +64,33 @@ function dispatchIpcEvent(
     resolve = Promise.resolve(null);
   }
 
-  const emitData = [
-    ipcFromRenderer,
-    {
-      peerId: webContentId,
-      callbackId,
-      ...event,
-    },
-    payload,
-  ];
-
-  webContent.emit(
-    "-ipc-message",
-    {
-      frameId: 1,
-      frameTreeNodeId: 2,
-      sender: webContent,
-      processId: 5,
-      senderFrame: {},
-    },
-    false,
-    ipcFromRenderer,
-    [
-      {
-        peerId: webContentId,
-        callbackId,
-        ...event,
+  const listeners = ipcMain.listeners(ipcFromRenderer);
+  if (listeners.length !== 0) {
+    const fakeEvent: FakeIpcEvent = {
+      sender: webContent ?? null,
+      reply(...replyArgs: any[]) {
+        if (fakeEvent.sender) fakeEvent.sender.send(ipcFromRenderer, ...replyArgs);
       },
-      payload,
-    ]
-  );
+    };
+
+    for (const fn of listeners) {
+      try {
+        fn(
+          fakeEvent,
+          {
+            peerId: webContentId,
+            callbackId,
+            ...event,
+          },
+          payload
+        );
+      } catch (err) {
+        log(`[emitFakeIpc:send] handler error`, err);
+      }
+    }
+  } else {
+    resolve = Promise.resolve(null);
+  }
   return resolve;
 }
 
