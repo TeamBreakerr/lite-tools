@@ -19,7 +19,7 @@ type Message = any;
 type PicElement = any;
 type ChatPeerUid = string;
 type ChatName = string;
-type RecallChatList = Map<ChatPeerUid, { peerName: ChatName; chatType: number; peerUin: string }>;
+type RecallChatList = Map<ChatPeerUid, { peerName: ChatName; chatType: number; peerUin: string; msgTime: number }>;
 type RecallCache = Map<MsgId, Message>;
 type FilePath = string;
 type PersistedFiles = { time: number; path: FilePath; info: { version: number; msgCount: number } }[];
@@ -94,7 +94,6 @@ class MsgStore {
     log("initing...");
     await configManager.ready;
 
-    // 从配置文件读取常量
     this.MAX_PERSISTED_FILES = configManager.value.message.preventRecall.MAX_PERSISTED_FILES;
     this.MAX_MESSAGES_PER_FILE = configManager.value.message.preventRecall.MAX_MESSAGES_PER_FILE;
     this.MAX_RECALL_CACHE_SIZE = configManager.value.message.preventRecall.MAX_RECALL_CACHE_SIZE;
@@ -126,11 +125,10 @@ class MsgStore {
   }
 
   private initIpcEvent() {
-    ipcMain.handle("lite_tools.getAllRecallChatList", (event) => {
+    ipcMain.handle("lite_tools.getAllRecallChatList", async (event) => {
       return this.getAllRecallChatList();
     });
     ipcMain.handle("lite_tools.getRecallMessagesByUid", (event, peerUid) => {
-      log("getRecallMessagesByUid", peerUid);
       return this.getRecallMessagesByUid(peerUid);
     });
     ipcMain.handle("lite_tools.getRecallCacheSize", (event) => {
@@ -198,12 +196,18 @@ class MsgStore {
           peerName,
           chatType: message.chatType,
           peerUin: message.peerUin,
+          msgTime: parseInt(message.msgTime),
         });
+      } else {
+        chatList.get(uid)!.msgTime = parseInt(message.msgTime);
       }
     }
     log("返回获取所有聊天列表数量", chatList.size);
 
-    return chatList;
+    // 根据消息时间排序
+    const sortedChatList = new Map([...chatList].sort((a, b) => b[1].msgTime - a[1].msgTime));
+
+    return sortedChatList;
   }
 
   private getRecallMessagesByUid(peerUid: string) {
@@ -226,15 +230,12 @@ class MsgStore {
       this.recallMsgListWindow.setMenuBarVisibility(false);
       const htmlPath = path.join(pluginPath, `/dist/renderer/entries/showRecallList/index.html`);
       this.recallMsgListWindow.loadFile(htmlPath);
-      log("加载页面");
       this.recallMsgListWindow.webContents.on("before-input-event", (_, input) => {
         if (input.key == "F5" && input.type == "keyUp") {
-          log("刷新页面");
           this.recallMsgListWindow!.loadFile(htmlPath);
         }
       });
       this.recallMsgListWindow.on("closed", () => {
-        log("窗口被关闭");
         this.recallMsgListWindow = null;
         this.allCaches.clear();
       });
