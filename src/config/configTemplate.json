@@ -165,6 +165,7 @@
     "IMAGE_HTTP_HOST_NT": "https://multimedia.nt.qq.com.cn"
   },
   "rkeyAPI": "",
+  "rkeyToken": "",
   "proxy": {
     "enabled": false,
     "url": ""
