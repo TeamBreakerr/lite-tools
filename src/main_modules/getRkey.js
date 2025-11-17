@@ -39,7 +39,13 @@ export async function getRkey(chatType) {
 async function fetchRkey() {
   try {
     log("正在更新rkey", config.rkeyAPI);
-    const respone = await fetch(config.rkeyAPI).then((res) => res.json());
+    const fetchOptions = {};
+    if (config.rkeyToken) {
+      fetchOptions.headers = {
+        Authorization: config.rkeyToken,
+      };
+    }
+    const respone = await fetch(config.rkeyAPI, fetchOptions).then((res) => res.json());
     // 适配两种接口返回值
     const newRkey = respone?.data?.private_rkey ? respone.data : respone;
     if (typeof newRkey.group_rkey === "string" && typeof newRkey.private_rkey === "string") {

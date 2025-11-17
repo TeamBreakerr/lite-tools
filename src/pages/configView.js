@@ -570,6 +570,14 @@ async function onConfigView(view) {
     debounceSetOptions();
   });
 
+  // rkey Token
+  const rkeyToken = view.querySelector(".rkey-token");
+  rkeyToken.value = options.rkeyToken;
+  rkeyToken.addEventListener("input", (e) => {
+    options.rkeyToken = e.target.value;
+    debounceSetOptions();
+  });
+
   // 代理地址
   const proxyUrl = view.querySelector(".proxy-url");
   proxyUrl.value = options.proxy.url;
