@@ -8,6 +8,14 @@ import type { LiteTools } from "@/preload";
 
 declare const lite_tools: LiteTools;
 
+interface MessageElement extends HTMLElement {
+  lt_slot: SlotElement;
+}
+
+interface SlotElement extends HTMLElement {
+  updatePosition?: () => void;
+}
+
 const log = createLogger("handleMessages");
 
 const processedInstances = new WeakSet<any>();
@@ -95,23 +103,26 @@ function handleMessages(component: any) {
 
 function processMessages(component: any) {
   if (!checkChatType(component.props.msgRecord) || !component.vnode.el?.classList?.contains?.("message")) return;
-  const messageEl = component.vnode.el as HTMLElement;
+  const messageEl = component.vnode.el as MessageElement;
   const msgRecord = component.props.msgRecord;
   const slot = insertSlot(messageEl, msgRecord);
+  if (!slot) {
+    return;
+  }
   if (configStore.value.message.showSendTime.enabled) {
     insertTime(slot, msgRecord);
   }
   if (configStore.value.message.preventRecall.enabled) {
     insertRecallTag(slot, msgRecord);
   }
+  slot.updatePosition?.();
 }
 
-function insertSlot(messageEl: HTMLElement, msgRecord: any) {
+function insertSlot(messageEl: MessageElement, msgRecord: any) {
   if (messageEl.lt_slot) {
     return messageEl.lt_slot;
   }
   const slot = createSlot();
-  messageEl.lt_slot = slot;
   if (
     msgRecord.elements.some(
       (item: any) =>
@@ -119,20 +130,52 @@ function insertSlot(messageEl: HTMLElement, msgRecord: any) {
         (item.elementType === ElementType.faceElement && [1, 2].includes(item.faceElement.faceType))
     )
   ) {
+    messageEl.lt_slot = slot;
     slot.classList.add("embed");
     messageEl.querySelector(".message-content:is(.mix-message__inner,.reply-message__inner)")?.appendChild(slot);
-  } else {
-    if (!msgRecord.elements.some((item: any) => ignoreElementType.includes(item.elementType))) {
-      slot.classList.add("outside");
-      if (!messageEl.querySelector(".content-status.no-copy")) {
-        const div = document.createElement("div");
-        div.classList.add("content-status", "no-copy", "lt-add");
-        messageEl.querySelector(".message-content__wrapper")?.insertAdjacentElement("afterend", div);
+    return slot;
+  } else if (
+    msgRecord.elements.length === 1 &&
+    msgRecord.elements[0].elementType === ElementType.picElement &&
+    [0, 1].includes(msgRecord.elements[0].picElement.picSubType)
+  ) {
+    messageEl.lt_slot = slot;
+    const isFace = msgRecord.elements[0].picElement.picSubType === 1;
+    slot.classList.add("embed-image");
+    messageEl.querySelector(".message-content.mix-message__inner")?.appendChild(slot);
+    slot.updatePosition = async () => {
+      const { value: width } = await waitForInstance(
+        messageEl.querySelector<HTMLElement>(".message-content.mix-message__inner .image.pic-element")!,
+        "proxy.size.width"
+      );
+      slot.classList.add("f-show");
+      const _width = isFace ? Math.min(150, width) : width;
+      log("图片宽度", _width, slot.offsetWidth, slot.classList);
+      if (_width <= slot.offsetWidth + 20) {
+        slot.classList.remove("embed-image");
+        slot.classList.add("outside");
+        if (!messageEl.querySelector(".content-status.no-copy")) {
+          const div = document.createElement("div");
+          div.classList.add("content-status", "no-copy", "lt-add");
+          messageEl.querySelector(".message-content__wrapper")?.insertAdjacentElement("afterend", div);
+        }
+        messageEl.querySelector(".content-status.no-copy")?.appendChild(slot);
       }
-      messageEl.querySelector(".content-status.no-copy")?.appendChild(slot);
+      slot.classList.remove("f-show");
+    };
+    return slot;
+  } else if (!msgRecord.elements.some((item: any) => ignoreElementType.includes(item.elementType))) {
+    messageEl.lt_slot = slot;
+    slot.classList.add("outside");
+    if (!messageEl.querySelector(".content-status.no-copy")) {
+      const div = document.createElement("div");
+      div.classList.add("content-status", "no-copy", "lt-add");
+      messageEl.querySelector(".message-content__wrapper")?.insertAdjacentElement("afterend", div);
     }
+    messageEl.querySelector(".content-status.no-copy")?.appendChild(slot);
+    return slot;
   }
-  return slot;
+  return null;
 }
 
 function createSlot() {
@@ -144,7 +187,7 @@ function createSlot() {
   float.classList.add("lt-float");
   slot.append(spacer, float);
   slots.set(slot, { spacer, float });
-  return slot;
+  return slot as SlotElement;
 }
 
 function insertTime(slot: HTMLElement, msgRecord: any) {
