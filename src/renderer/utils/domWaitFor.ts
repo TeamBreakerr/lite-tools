@@ -1,5 +1,6 @@
 type Waiter = {
-  selector: string;
+  selector?: string | null;
+  element?: HTMLElement | null;
   resolve: (result: any) => void;
   reject?: (err: Error) => void;
   timeoutId?: number;
@@ -23,7 +24,7 @@ function ensureObserver() {
     observer = new MutationObserver(() => {
       for (let i = waiters.length - 1; i >= 0; i--) {
         const waiter = waiters[i];
-        const element = document.querySelector<HTMLElement>(waiter.selector);
+        const element = waiter.element || document.querySelector<HTMLElement>(waiter.selector!);
 
         if (element) {
           if (waiter.propPath) {
@@ -88,12 +89,13 @@ function waitForElement(selector: string, timeout?: number): Promise<HTMLElement
  * 等待 Vue 实例指定属性出现
  */
 function waitForInstance(
-  selector: string,
+  elOrSelector: string | HTMLElement,
   propPath: string,
   timeout?: number
 ): Promise<{ element: HTMLElement; instance: any; value: any }> {
   return new Promise((resolve, reject) => {
-    const element = document.querySelector<HTMLElement>(selector);
+    const element =
+      typeof elOrSelector === "string" ? document.querySelector<HTMLElement>(elOrSelector)! : elOrSelector;
     if (element) {
       const vueInstances = element.__VUE__;
       if (vueInstances?.length) {
@@ -103,13 +105,19 @@ function waitForInstance(
         }
       }
     }
-
-    const waiter: Waiter = { selector, propPath, resolve, reject };
+    const selector = typeof elOrSelector === "string" ? elOrSelector : null;
+    const waiter: Waiter = {
+      element,
+      selector,
+      propPath,
+      resolve,
+      reject,
+    };
     if (timeout !== undefined) {
       waiter.timeoutId = window.setTimeout(() => {
         const index = waiters.indexOf(waiter);
         if (index !== -1) waiters.splice(index, 1);
-        reject?.(new Error(`waitForInstance timeout: ${selector} -> ${propPath}`));
+        reject?.(new Error(`waitForInstance timeout: ${propPath}`));
         if (waiters.length === 0 && observer) {
           observer.disconnect();
           observer = null;
