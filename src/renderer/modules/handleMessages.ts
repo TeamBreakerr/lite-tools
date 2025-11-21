@@ -13,7 +13,7 @@ interface MessageElement extends HTMLElement {
 }
 
 interface SlotElement extends HTMLElement {
-  updatePosition?: () => void;
+  updatePosition?: () => Promise<void>;
 }
 
 const log = createLogger("handleMessages");
@@ -115,7 +115,18 @@ function processMessages(component: any) {
   if (configStore.value.message.preventRecall.enabled) {
     insertRecallTag(slot, msgRecord);
   }
-  slot.updatePosition?.();
+
+  const addRepeat = () => {
+    if (configStore.value.message.repeatMessage.enabled) {
+      insertRepeatBtn(slot, msgRecord, messageEl);
+    }
+  };
+
+  if (slot.updatePosition) {
+    slot.updatePosition().then(addRepeat);
+  } else {
+    addRepeat();
+  }
 }
 
 function insertSlot(messageEl: MessageElement, msgRecord: any) {
@@ -125,9 +136,9 @@ function insertSlot(messageEl: MessageElement, msgRecord: any) {
   const slot = createSlot();
   if (
     msgRecord.elements.some(
-      (item: any) =>
-        embedElementType.includes(item.elementType) ||
-        (item.elementType === ElementType.faceElement && [1, 2].includes(item.faceElement.faceType))
+      (element: any) =>
+        embedElementType.includes(element.elementType) ||
+        (element.elementType === ElementType.faceElement && [1, 2].includes(element.faceElement.faceType))
     )
   ) {
     messageEl.lt_slot = slot;
@@ -151,7 +162,7 @@ function insertSlot(messageEl: MessageElement, msgRecord: any) {
       );
       slot.classList.add("f-show");
       const { width, height } = size;
-      const maxSize = Math.max(width, height);
+      const maxSize = Math.max(width, height, 150);
       const faceScale = 150 / maxSize;
       const faceWidth = width * faceScale;
       const _width = isFace ? Math.min(150, faceWidth) : width;
@@ -194,7 +205,7 @@ function createSlot() {
   return slot as SlotElement;
 }
 
-function insertTime(slot: HTMLElement, msgRecord: any) {
+function insertTime(slot: SlotElement, msgRecord: any) {
   if (slot.querySelector(".lt-time")) return;
   const time = document.createElement("span");
   time.classList.add("lt-time");
@@ -205,6 +216,41 @@ function insertTime(slot: HTMLElement, msgRecord: any) {
   const { spacer, float } = slots.get(slot) ?? {};
   spacer?.insertAdjacentElement("beforeend", time);
   float?.insertAdjacentElement("beforeend", clone);
+}
+
+function insertRepeatBtn(slot: SlotElement, msgRecord: any, messageEl: MessageElement) {
+  if (messageEl.querySelector(".lt-repeat")) return;
+
+  if (
+    msgRecord.elements.some((element: any) => {
+      return [ElementType.textElement, ElementType.picElement].includes(element.elementType);
+    })
+  ) {
+    const id = randomId();
+    messageEl.insertAdjacentText("afterend", id);
+    log("插入id", id);
+    if (slot.classList.contains("outside")) {
+      const btn = document.createElement("span");
+      btn.classList.add("lt-repeat");
+      btn.textContent = "+1";
+      const { float } = slots.get(slot) ?? {};
+      float?.insertAdjacentElement("beforeend", btn);
+    } else {
+      const privateSlot = createSlot();
+      privateSlot.classList.add("outside");
+      if (!messageEl.querySelector(".content-status.no-copy")) {
+        const div = document.createElement("div");
+        div.classList.add("content-status", "no-copy", "lt-add");
+        messageEl.querySelector(".message-content__wrapper")?.insertAdjacentElement("afterend", div);
+      }
+      const btn = document.createElement("span");
+      btn.classList.add("lt-repeat");
+      btn.textContent = "+1";
+      privateSlot.querySelector(".lt-float")?.appendChild(btn);
+      log("插入外部插槽");
+      messageEl.querySelector(".content-status.no-copy")?.appendChild(privateSlot);
+    }
+  }
 }
 
 function getSendTime(sendTime: number) {
@@ -220,7 +266,7 @@ function getSendTime(sendTime: number) {
   }).format(new Date(sendTime));
 }
 
-function insertRecallTag(slot: HTMLElement, msgRecord: any) {
+function insertRecallTag(slot: SlotElement, msgRecord: any) {
   if (msgRecord.lt_recall) {
     if (slot.querySelector(".lt-recall")) return;
     const span = document.createElement("span");
@@ -255,6 +301,10 @@ function formatChineseDate(date: Date): string {
   }, {});
 
   return `${parts.year}年${parts.month}月${parts.day}日 ${parts.hour}:${parts.minute}:${parts.second}`;
+}
+
+function randomId() {
+  return Math.random().toString(36).slice(2);
 }
 
 export { setupHandleMessages };
