@@ -3,7 +3,7 @@ import { configManager } from "@/main/modules/configManager";
 
 const log = createLogger("ipcInterceptor");
 
-export function setupIpcInterceptor() {
+function setupIpcInterceptor() {
   IpcInterceptor.interceptIpcSendEvents("nodeIKernelUnitedConfigListener/onUnitedConfigUpdate", (...args) => {
     log("onUnitedConfigUpdate", args);
     if (
@@ -16,3 +16,5 @@ export function setupIpcInterceptor() {
     }
   });
 }
+
+export { setupIpcInterceptor };
