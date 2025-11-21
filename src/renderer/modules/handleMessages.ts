@@ -155,10 +155,6 @@ function insertSlot(messageEl: MessageElement, msgRecord: any) {
       const faceScale = 150 / maxSize;
       const faceWidth = width * faceScale;
       const _width = isFace ? Math.min(150, faceWidth) : width;
-      // 随机uuid
-      const id = Math.random().toString(36).slice(-8);
-      log("图片宽度", _width, slot.offsetWidth + 30, id);
-      messageEl.insertAdjacentText("afterend", id);
       if (_width <= slot.offsetWidth + 30) {
         slot.classList.remove("embed-image");
         slot.classList.add("outside");

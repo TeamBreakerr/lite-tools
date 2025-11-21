@@ -1,0 +1,232 @@
+// 全局变量
+:root {
+  --lt-slot-outside-bg: rgba(0, 0, 0, 0.18);
+  --lt-slot-embed-image-bg: rgba(0, 0, 0, 0.3);
+  --lt-custom-status-width: 76px;
+  --lt-slot-outside-text-color: rgba(255, 255, 255, 1);
+}
+
+// 阻止撤回标记自定义颜色-亮色
+@media (prefers-color-scheme: light) {
+  .lt-custom-recall-color {
+    --lt-slot-recall-text-color: var(--lt-recall-color-light);
+  }
+}
+
+// 阻止撤回标记自定义颜色-暗色
+@media (prefers-color-scheme: dark) {
+  .lt-custom-recall-color {
+    --lt-slot-recall-text-color: var(--lt-recall-color-dark);
+  }
+}
+
+// 如果启用了插入时间，则隐藏默认的时间
+.message:has(.lt-time) {
+  .send-time {
+    display: none;
+  }
+}
+
+// 插槽样式
+.lt-slot {
+  user-select: none;
+  // 图片插槽
+  &.embed-image {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 14px;
+    user-select: none;
+    &.f-show {
+      .lt-time {
+        display: block !important;
+      }
+    }
+    .lt-spacer {
+      display: none;
+    }
+    .lt-float {
+      width: auto;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      z-index: 10;
+      text-align: center;
+      & > *:not(:first-child) {
+        padding-left: 0;
+      }
+      & > * {
+        padding: 2px 6px;
+        background-color: var(--lt-slot-embed-image-bg);
+        color: var(--lt-slot-outside-text-color);
+        white-space: nowrap;
+      }
+
+      .lt-time {
+        display: none;
+      }
+      .lt-recall {
+        color: var(--lt-slot-recall-text-color, var(--lt-slot-outside-text-color));
+      }
+    }
+  }
+  // 内部插槽
+  &.embed {
+    float: right;
+    font-size: 12px;
+    line-height: 11px;
+    width: auto;
+    user-select: none;
+    .lt-spacer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      visibility: hidden;
+      & > * {
+        margin-left: 3px;
+        &:first-child {
+          margin-left: 6px;
+        }
+      }
+    }
+    .lt-float {
+      width: auto;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      & > * {
+        margin-left: 3px;
+        color: inherit;
+        &:first-child {
+          margin-left: 6px;
+        }
+      }
+      .lt-time {
+        opacity: 0.6;
+      }
+      .lt-recall {
+        color: var(--lt-slot-recall-text-color, inherit);
+        opacity: var(--lt-slot-recall-text-color, 0.6);
+      }
+    }
+  }
+  // 外部插槽
+  &.outside {
+    margin-top: 6px;
+    border-radius: 5px;
+    overflow: hidden;
+
+    font-size: 12px;
+    line-height: 14px;
+    width: auto;
+    user-select: none;
+    align-self: flex-start;
+    justify-items: flex-start;
+
+    .lt-spacer {
+      width: auto;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      z-index: 10;
+      text-align: center;
+      & > *:not(:first-child) {
+        padding-left: 0;
+      }
+      & > * {
+        padding: 2px 6px;
+        background-color: var(--lt-slot-outside-bg);
+        color: var(--lt-slot-outside-text-color);
+      }
+      .lt-time {
+        display: none;
+      }
+      .lt-recall {
+        color: var(--lt-slot-recall-text-color, var(--lt-slot-outside-text-color));
+      }
+    }
+    .lt-float {
+      display: none;
+    }
+  }
+}
+
+// 鼠标悬浮显示时间
+.message:has(.lt-time):hover {
+  .lt-slot:is(.outside, .embed-image) {
+    .lt-time {
+      display: block;
+    }
+  }
+}
+
+// 移除空的链接信息元素和给链接信息块添加间距
+.message:has(.lt-slot.embed) {
+  .link-info {
+    &:not(:has(.link-info__area)) {
+      display: none;
+    }
+    margin-bottom: 8px;
+  }
+}
+
+// 覆盖默认样式
+.message-container:has(.content-status .lt-slot) {
+  display: grid;
+  grid-auto-rows: min-content;
+  grid-template-areas:
+    "checkbox avatar . nickname nickname nickname"
+    "checkbox avatar . content status status"
+    "checkbox avatar . tips . .";
+  grid-template-columns: auto var(--avatar_size_2) 8px auto calc(var(--avatar_size_2) + 36px) 1fr;
+  justify-content: start;
+  transition-duration: 0.3s;
+  padding: 8px 20px;
+  // 移除语音消息的padding和margin
+  .message-content__wrapper {
+    .ptt-message__container.ptt-message {
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+  }
+  // 语音消息
+  &.ptt-message:has(.container--others) {
+    grid-template-columns: auto var(--avatar_size_2) 8px auto calc(var(--avatar_size_2) + 36px) 1fr;
+  }
+  // 自己的消息
+  &.message-container--align-right {
+    grid-template-areas:
+      "checkbox nickname nickname nickname . avatar"
+      "checkbox . status content . avatar"
+      "checkbox . . tips . avatar";
+    grid-template-columns: auto 1fr auto auto 8px var(--avatar_size_2);
+    justify-content: end;
+    justify-items: end;
+    .content-status {
+      justify-self: stretch;
+    }
+  }
+}
+
+// 测试样式
+.test {
+  .message-container {
+    & > * {
+      background-image: linear-gradient(to right, #0af 1px, transparent 1px),
+        linear-gradient(to bottom, #0af 1px, transparent 1px);
+      background-size: calc(100% - 1px) calc(100% - 1px);
+    }
+  }
+  .message-container:has(.content-status .lt-slot) {
+    background-color: antiquewhite;
+  }
+  .content-status.no-copy:has(.lt-slot) {
+    background-color: aquamarine;
+  }
+}
