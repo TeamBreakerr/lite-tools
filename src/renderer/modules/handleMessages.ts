@@ -140,18 +140,26 @@ function insertSlot(messageEl: MessageElement, msgRecord: any) {
     [0, 1].includes(msgRecord.elements[0].picElement.picSubType)
   ) {
     messageEl.lt_slot = slot;
-    const isFace = msgRecord.elements[0].picElement.picSubType === 1;
+    const isFace =
+      msgRecord.elements[0].picElement.picSubType === 1 || msgRecord.elements[0].picElement.picType === 2000;
     slot.classList.add("embed-image");
     messageEl.querySelector(".message-content.mix-message__inner")?.appendChild(slot);
     slot.updatePosition = async () => {
-      const { value: width } = await waitForInstance(
+      const { value: size } = await waitForInstance(
         messageEl.querySelector<HTMLElement>(".message-content.mix-message__inner .image.pic-element")!,
-        "proxy.size.width"
+        "proxy.size"
       );
       slot.classList.add("f-show");
-      const _width = isFace ? Math.min(150, width) : width;
-      log("图片宽度", _width, slot.offsetWidth, slot.classList);
-      if (_width <= slot.offsetWidth + 20) {
+      const { width, height } = size;
+      const maxSize = Math.max(width, height);
+      const faceScale = 150 / maxSize;
+      const faceWidth = width * faceScale;
+      const _width = isFace ? Math.min(150, faceWidth) : width;
+      // 随机uuid
+      const id = Math.random().toString(36).slice(-8);
+      log("图片宽度", _width, slot.offsetWidth + 30, id);
+      messageEl.insertAdjacentText("afterend", id);
+      if (_width <= slot.offsetWidth + 30) {
         slot.classList.remove("embed-image");
         slot.classList.add("outside");
         if (!messageEl.querySelector(".content-status.no-copy")) {
