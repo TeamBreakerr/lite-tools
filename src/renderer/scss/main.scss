@@ -1,6 +1,5 @@
 // 全局变量
 :root {
-  --lt-slot-outside-bg: rgba(0, 0, 0, 0.18);
   --lt-slot-embed-image-bg: rgba(0, 0, 0, 0.3);
   --lt-custom-status-width: 76px;
   --lt-slot-outside-text-color: rgba(255, 255, 255, 1);
@@ -8,6 +7,9 @@
 
 // 阻止撤回标记自定义颜色-亮色
 @media (prefers-color-scheme: light) {
+  :root {
+    --lt-slot-outside-bg: rgba(0, 0, 0, 0.18);
+  }
   .lt-custom-recall-color {
     --lt-slot-recall-text-color: var(--lt-recall-color-light);
   }
@@ -15,6 +17,9 @@
 
 // 阻止撤回标记自定义颜色-暗色
 @media (prefers-color-scheme: dark) {
+  :root {
+    --lt-slot-outside-bg: rgba(255, 255, 255, 0.18);
+  }
   .lt-custom-recall-color {
     --lt-slot-recall-text-color: var(--lt-recall-color-dark);
   }
@@ -121,15 +126,13 @@
     margin-top: 6px;
     border-radius: 5px;
     overflow: hidden;
-
     font-size: 12px;
     line-height: 14px;
     width: auto;
     user-select: none;
     align-self: flex-start;
     justify-items: flex-start;
-
-    .lt-spacer {
+    .lt-float {
       width: auto;
       display: flex;
       align-items: center;
@@ -151,16 +154,49 @@
         color: var(--lt-slot-recall-text-color, var(--lt-slot-outside-text-color));
       }
     }
-    .lt-float {
+    .lt-spacer {
       display: none;
     }
   }
 }
 
-// 鼠标悬浮显示时间
+// 复读按钮
+.lt-repeat {
+  letter-spacing: -2px;
+  padding: 2px 4px !important;
+  background-color: var(--lt-slot-outside-bg);
+  color: var(--lt-slot-outside-text-color);
+  cursor: pointer;
+  text-align: center;
+  display: none;
+  transition: background-color 150ms;
+  &:hover {
+    background-color: color(from var(--lt-slot-outside-bg) srgb r g b / 0.3) !important;
+  }
+  &:active {
+    background-color: color(from var(--lt-slot-outside-bg) srgb r g b / 0.45) !important;
+  }
+}
+
+// 移除图片元素的底部间距
+.message-container:has(.lt-slot) {
+  .pic-element {
+    margin-bottom: 0 !important;
+  }
+}
+
+// 已经被撤回的消息隐藏复读按钮
+.message:has(.lt-recall) {
+  .lt-repeat {
+    display: none !important;
+  }
+}
+
+// 鼠标悬浮显示时间和复读按钮
 .message:has(.lt-time):hover {
   .lt-slot:is(.outside, .embed-image) {
-    .lt-time {
+    .lt-time,
+    .lt-repeat {
       display: block;
     }
   }
@@ -203,13 +239,15 @@
   &.message-container--align-right {
     grid-template-areas:
       "checkbox nickname nickname nickname . avatar"
-      "checkbox . status content . avatar"
-      "checkbox . . tips . avatar";
+      "checkbox status status content . avatar"
+      "checkbox . tips tips . avatar";
     grid-template-columns: auto 1fr auto auto 8px var(--avatar_size_2);
     justify-content: end;
     justify-items: end;
-    .content-status {
-      justify-self: stretch;
+
+    // 调整位置
+    .lt-repeat {
+      order: -1;
     }
   }
 }
