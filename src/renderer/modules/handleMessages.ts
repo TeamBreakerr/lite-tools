@@ -154,7 +154,7 @@ function insertSlot(messageEl: MessageElement, msgRecord: any) {
     const isFace =
       msgRecord.elements[0].picElement.picSubType === 1 || msgRecord.elements[0].picElement.picType === 2000;
     slot.classList.add("embed-image");
-    messageEl.querySelector(".message-content.mix-message__inner")?.appendChild(slot);
+    messageEl.querySelector(".message-content.mix-message__inner .image.pic-element")?.appendChild(slot);
     slot.updatePosition = async () => {
       const { value: size } = await waitForInstance(
         messageEl.querySelector<HTMLElement>(".message-content.mix-message__inner .image.pic-element")!,
@@ -226,9 +226,9 @@ function insertRepeatBtn(slot: SlotElement, msgRecord: any, messageEl: MessageEl
       return [ElementType.textElement, ElementType.picElement].includes(element.elementType);
     })
   ) {
-    const id = randomId();
-    messageEl.insertAdjacentText("afterend", id);
-    log("插入id", id);
+    // const id = randomId();
+    // messageEl.insertAdjacentText("afterend", id);
+    // log("插入id", id);
     if (slot.classList.contains("outside")) {
       const btn = document.createElement("span");
       btn.classList.add("lt-repeat");

@@ -38,7 +38,7 @@
   // 图片插槽
   &.embed-image {
     position: absolute;
-    bottom: 10px;
+    bottom: 8px;
     right: 10px;
     border-radius: 5px;
     overflow: hidden;
@@ -175,13 +175,6 @@
   }
   &:active {
     background-color: color(from var(--lt-slot-outside-bg) srgb r g b / 0.45) !important;
-  }
-}
-
-// 移除图片元素的底部间距
-.message-container:has(.lt-slot) {
-  .pic-element {
-    margin-bottom: 0 !important;
   }
 }
 
