@@ -3,6 +3,8 @@ import { checkChatType } from "@/common/checkChatType";
 import { createLogger } from "@/renderer/utils/createLogger";
 import { waitForInstance } from "@/renderer/utils/domWaitFor";
 import { configStore } from "@/renderer/modules/configStore";
+import { forwardMessage } from "@/renderer/utils/nativeCall";
+import { aioStore } from "@/renderer/modules/aioStore";
 
 import type { LiteTools } from "@/preload";
 
@@ -226,13 +228,33 @@ function insertRepeatBtn(slot: SlotElement, msgRecord: any, messageEl: MessageEl
       return [ElementType.textElement, ElementType.picElement].includes(element.elementType);
     })
   ) {
-    // const id = randomId();
-    // messageEl.insertAdjacentText("afterend", id);
-    // log("插入id", id);
+    let doubleClick = false;
+    const btn = document.createElement("span");
+    const msgId = msgRecord.msgId;
+    btn.classList.add("lt-repeat");
+    btn.textContent = "+1";
+    btn.addEventListener("click", () => {
+      const peer = {
+        chatType: aioStore.value.chatType,
+        guildId: "",
+        peerUid: aioStore.value.header.uid,
+      };
+      if (configStore.value.message.repeatMessage.doubleClick) {
+        setTimeout(() => {
+          doubleClick = false;
+        }, 500);
+        if (doubleClick) {
+          log("复读消息", peer);
+          forwardMessage(peer, peer, [msgId]);
+          doubleClick = false;
+        }
+        doubleClick = true;
+      } else {
+        log("复读消息", peer);
+        forwardMessage(peer, peer, [msgId]);
+      }
+    });
     if (slot.classList.contains("outside")) {
-      const btn = document.createElement("span");
-      btn.classList.add("lt-repeat");
-      btn.textContent = "+1";
       const { float } = slots.get(slot) ?? {};
       float?.insertAdjacentElement("beforeend", btn);
     } else {
@@ -243,9 +265,6 @@ function insertRepeatBtn(slot: SlotElement, msgRecord: any, messageEl: MessageEl
         div.classList.add("content-status", "no-copy", "lt-add");
         messageEl.querySelector(".message-content__wrapper")?.insertAdjacentElement("afterend", div);
       }
-      const btn = document.createElement("span");
-      btn.classList.add("lt-repeat");
-      btn.textContent = "+1";
       privateSlot.querySelector(".lt-float")?.appendChild(btn);
       log("插入外部插槽");
       messageEl.querySelector(".content-status.no-copy")?.appendChild(privateSlot);
@@ -301,10 +320,6 @@ function formatChineseDate(date: Date): string {
   }, {});
 
   return `${parts.year}年${parts.month}月${parts.day}日 ${parts.hour}:${parts.minute}:${parts.second}`;
-}
-
-function randomId() {
-  return Math.random().toString(36).slice(2);
 }
 
 export { setupHandleMessages };

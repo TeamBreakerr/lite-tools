@@ -4,9 +4,6 @@ import type { LiteTools } from "@/preload/index";
 declare const lite_tools: LiteTools;
 
 const log = createLogger("nativeCall");
-const webContentId = lite_tools.getWebContentId() || 3;
-
-log("获取到当前窗口Id", webContentId);
 
 /**
  *
