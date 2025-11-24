@@ -80,6 +80,7 @@ async function initRecallOptions(view: HTMLDivElement, config: Config) {
   const localRecallMsgCache = view.querySelector<HTMLInputElement>(".local-recall-msg-num")!;
   const light = view.querySelector<HTMLInputElement>(".custom-text-color-lite")!;
   const dark = view.querySelector<HTMLInputElement>(".custom-text-color-dark")!;
+  const openRedirectPicPathBtn = view.querySelector(".open-redirect-pic-path")!;
   view.querySelector(".clear-localStorage-recall-msg")!.addEventListener("click", () => {
     lite_tools.clearRecallCache();
   });
@@ -92,6 +93,9 @@ async function initRecallOptions(view: HTMLDivElement, config: Config) {
     (size) => (localRecallMsgCache.innerText = `清除所有本地保存的撤回数据，当前保存有 ${size} 条消息`)
   );
   localRecallMsgCache.innerText = `清除所有本地保存的撤回数据，当前保存有 ${await lite_tools.getRecallCacheSize()} 条消息`;
+  openRedirectPicPathBtn.addEventListener("click", () => {
+    lite_tools.openRedirectPicPath();
+  });
   light.addEventListener("change", () => {
     config.message.preventRecall.customTextColor.light = light.value;
     configStore.setConfig(config);

@@ -1,4 +1,4 @@
-import { ipcMain, dialog, BrowserWindow } from "electron";
+import { ipcMain, dialog, BrowserWindow, shell } from "electron";
 import { serialize, deserialize } from "node:v8";
 import { deflateSync, inflateSync } from "node:zlib";
 import path from "node:path";
@@ -139,6 +139,9 @@ class MsgStore {
     });
     ipcMain.on("lite_tools.openRecallMsgList", (event) => {
       this.openRecallMsgList();
+    });
+    ipcMain.on("lite_tools.openRedirectPicPath", (event) => {
+      shell.openPath(this.LOCAL_REDIRECT_PIC_PATH);
     });
   }
 

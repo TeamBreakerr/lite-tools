@@ -18,12 +18,12 @@ const exposeFunctions = {
   getRecallCacheSize: (): Promise<number> => ipcRenderer.invoke("lite_tools.getRecallCacheSize"),
   clearRecallCache: () => ipcRenderer.send("lite_tools.clearRecallCache"),
   openRecallMsgList: () => ipcRenderer.send("lite_tools.openRecallMsgList"),
-
+  openRedirectPicPath: () => ipcRenderer.send("lite_tools.openRedirectPicPath"),
   // ipc转broadcast
   onBroadcast: (callback: (channelName: any, payload: any) => void) =>
     ipcRenderer.on("lite_tools.broadcast", (_, channelName, payload) => callback(channelName, payload)),
   sendBroadcast: (channelName: any, payload: any) => ipcRenderer.send("lite_tools.broadcast", channelName, payload),
-
+  // 原生接口调用
   nativeCall: (event: any, payload: any, awaitCallback?: boolean | string | string[]) => {
     const callbackId = crypto.randomUUID();
     const webContentId = ipcRenderer.sendSync("lite_tools.getWebContentId");
