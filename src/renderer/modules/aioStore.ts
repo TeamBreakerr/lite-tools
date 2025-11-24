@@ -22,6 +22,10 @@ class AioStore {
     this.resolveReady = resolve;
   }
 
+  get value() {
+    return this.curAioData;
+  }
+
   get ready() {
     if (this.status === InitStatus.Uninitialized) {
       this.status = InitStatus.Initializing;
