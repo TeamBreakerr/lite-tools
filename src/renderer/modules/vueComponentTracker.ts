@@ -26,7 +26,7 @@ function offComponentUnmount(fn: ListenerCallback) {
   unmountedCallbacks.delete(fn);
 }
 
-function QwQSetupVueComponentTracker() {
+function qwqSetupVueComponentTracker() {
   window.addEventListener("vue:component-mount", (e) => {
     const event = e as CustomEvent;
     const component = event.detail;
@@ -62,5 +62,5 @@ export {
   offComponentUnmount,
   LLonVueComponentMount,
   LLonVueComponentUnmount,
-  QwQSetupVueComponentTracker,
+  qwqSetupVueComponentTracker,
 };
