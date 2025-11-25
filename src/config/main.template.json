@@ -4,6 +4,7 @@
     "mainConsole": false
   },
   "interface": {
+    "goBackMainList": false,
     "imageViewerOptimization": false,
     "deleteBubbleSkin": false,
     "preventSelect": false,

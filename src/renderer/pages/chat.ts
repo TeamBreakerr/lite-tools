@@ -4,6 +4,7 @@ import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/configStore";
 import { updateTopFuncBar, updateChatFuncBar } from "@/renderer/modules/funcBarManager";
 import { setupHandleMessages } from "@/renderer/modules/handleMessages";
+import { waitForInstance } from "@/renderer/utils/domWaitFor";
 
 import type { Config } from "@/types/config";
 
@@ -16,6 +17,7 @@ async function setupChatPage() {
   log("initialized");
   setupPreventMutipleSelect("chat-msg-area");
   setupHandleMessages();
+  setupGoBackMainList();
   updateTopFuncBar();
   updateChatFuncBar();
   updateRecallConfig(configStore.value);
@@ -27,6 +29,18 @@ async function setupChatPage() {
     updateTopFuncBar();
     updateChatFuncBar();
     updateRecallConfig(config);
+  });
+}
+
+function setupGoBackMainList() {
+  document.addEventListener("mouseup", async (event) => {
+    if (event.button === 3 && configStore.value.interface.goBackMainList) {
+      if (!document.querySelector(".recent-contact-list--wrapper")) return;
+      const { value: goBackMainList } = await waitForInstance(".recent-contact-list--wrapper", "proxy.goBackMainList");
+      event.preventDefault();
+      event.stopPropagation();
+      goBackMainList();
+    }
   });
 }
 

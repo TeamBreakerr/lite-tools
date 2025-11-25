@@ -10,6 +10,7 @@ import { onComponentMount } from "@/renderer/modules/vueComponentTracker";
 
 import type { Config } from "@/types/config";
 import type { LiteTools } from "@/preload";
+import { waitForInstance } from "@/renderer/utils/domWaitFor";
 
 declare const lite_tools: LiteTools;
 
@@ -28,6 +29,7 @@ async function setupMainPage() {
   updateRecallConfig(configStore.value);
   setupHandleMessages();
   setupIpcToBroadcast();
+  setupGoBackMainList();
   aioStore.onChange(() => {
     updateTopFuncBar();
     updateChatFuncBar();
@@ -64,6 +66,20 @@ async function setupMainPage() {
     },
     { childList: true, autoDisconnect: 5000 }
   );
+}
+
+async function setupGoBackMainList() {
+  const { value: goBackMainList } = await waitForInstance(
+    ".two-col-layout__aside .recent-contact .list-toggler",
+    "proxy.goBackMainList"
+  );
+  document.addEventListener("mouseup", (event) => {
+    if (event.button === 3 && configStore.value.interface.goBackMainList) {
+      event.preventDefault();
+      event.stopPropagation();
+      goBackMainList();
+    }
+  });
 }
 
 function updateRecallConfig(config: Config) {
