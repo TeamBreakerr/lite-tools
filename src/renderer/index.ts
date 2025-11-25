@@ -6,6 +6,7 @@ document.head.appendChild(document.createElement("style")).appendChild(document.
 // pages
 import { setupMainPage } from "@/renderer/pages/main";
 import { setupChatPage } from "@/renderer/pages/chat";
+import { setupImageViewer } from "@/renderer/pages/imageViewer";
 
 const log = createLogger("renderer");
 
@@ -24,6 +25,7 @@ export async function main() {
     case "#/forward":
       break;
     case "#/image-viewer":
+      setupImageViewer();
       break;
     case "#/setting/settings/common":
       break;

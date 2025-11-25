@@ -4,6 +4,7 @@
     "mainConsole": false
   },
   "interface": {
+    "imageViewerOptimization": false,
     "deleteBubbleSkin": false,
     "preventSelect": false,
     "hiddenWeatherBtn": false,
