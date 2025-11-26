@@ -251,6 +251,32 @@
   }
 }
 
+// 移除vip彩色昵称
+.lt-remove-vip-color {
+  .recent-contact {
+    .viewport-list {
+      .recent-contact-item {
+        .item__content {
+          .main-info {
+            .text-ellipsis {
+              color: unset !important;
+            }
+          }
+        }
+      }
+    }
+  }
+  .aio {
+    .chat-header {
+      .panel-header__title {
+        .chat-header__contact-name {
+          color: unset !important;
+        }
+      }
+    }
+  }
+}
+
 // 测试样式
 .test {
   .message-container {

@@ -21,6 +21,7 @@ async function setupChatPage() {
   updateTopFuncBar();
   updateChatFuncBar();
   updateRecallConfig(configStore.value);
+  updateInterface(configStore.value);
   aioStore.onChange(() => {
     updateTopFuncBar();
     updateChatFuncBar();
@@ -29,7 +30,12 @@ async function setupChatPage() {
     updateTopFuncBar();
     updateChatFuncBar();
     updateRecallConfig(config);
+    updateInterface(config);
   });
+}
+
+function updateInterface(config: Config) {
+  document.body.classList.toggle("lt-remove-vip-color", config.interface.removeVipColor);
 }
 
 function setupGoBackMainList() {

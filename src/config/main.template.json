@@ -11,7 +11,8 @@
     "hiddenWeatherBtn": false,
     "hiddenClassicBtn": false,
     "hiddenLockBtn": false,
-    "hiddenUpdateBtnAndNotice": false
+    "hiddenUpdateBtnAndNotice": false,
+    "removeVipColor": false
   },
   "message": {
     "miniArkToWebArk": false,

@@ -43,7 +43,6 @@ async function setupMainPage() {
     updateBottomSideBar(config);
     updateTopFuncBar();
     updateChatFuncBar();
-
     updateRecallConfig(config);
   });
   onComponentMount((component) => {
@@ -95,6 +94,7 @@ function updateInterface(config: Config) {
   document
     .querySelector<HTMLElement>(".window-control-area .narrow-toggler")
     ?.style.setProperty("display", config.interface.hiddenClassicBtn ? "none" : "flex");
+  document.body.classList.toggle("lt-remove-vip-color", config.interface.removeVipColor);
   const controlAreaWidth = document.querySelector<HTMLElement>(".window-control-area")?.offsetWidth;
   if (controlAreaWidth) {
     document
