@@ -65,6 +65,11 @@
     ],
     "bottom": [
       {
+        "name": "调色盘",
+        "id": -1,
+        "enabled": true
+      },
+      {
         "name": "邮箱",
         "id": -1,
         "enabled": true

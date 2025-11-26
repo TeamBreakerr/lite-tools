@@ -8,76 +8,88 @@ const log = createLogger("funcBarManager");
 const topFuncMap = new Map() as Map<string, FuncBar>;
 const chatFuncMap = new Map() as Map<string, FuncBar>;
 
-let closeObserver: ReturnType<typeof observeMutations> | null = null;
+let closeTopObserver: ReturnType<typeof observeMutations> | null = null;
+let closeChatObserver: ReturnType<typeof observeMutations> | null = null;
 
 async function updateTopFuncBar() {
   await configStore.ready;
-
+  const funcs = Array.from(document.querySelectorAll<HTMLElement>(".panel-header__action .func-bar-native>div")).filter(
+    (item) => item.style.display !== "none"
+  );
+  log("updateTopFuncBar", funcs);
   if (configStore.value.topFuncBar.length > 1) {
-    hiddenFuncBtn(await waitForElement(".panel-header__action .func-bar"), configStore.value.topFuncBar, true);
+    log("hiddenFuncBtn-top");
+    hiddenFuncBtn(funcs, configStore.value.topFuncBar);
   }
 
-  const { element, instance } = await waitForInstance(
-    `.panel-header__action .func-bar:has([aria-label="更多"])`,
-    "props.items"
-  );
-  await instance.proxy.$nextTick();
-  const value = instance.props.items;
-  for (const item of value) {
-    const id = element.querySelector(`.bar-icon [aria-label="${item.label}"] svg use`)?.getAttribute("xlink:href");
-    const key = `${item.label}_${id}`;
-    if (id) {
-      topFuncMap.set(key, {
-        name: item.label,
+  initTopFuncBar(funcs);
+  function initTopFuncBar(funcs: HTMLElement[]) {
+    funcs.forEach((element) => {
+      const id = element.id;
+      const name = element.querySelector(".icon-item")!.getAttribute("aria-label")!;
+      topFuncMap.set(id, {
+        name,
         id,
       });
+    });
+    if (
+      topFuncMap.size >= configStore.value.topFuncBar.length &&
+      !isFuncCountEqual(topFuncMap, configStore.value.topFuncBar)
+    ) {
+      configStore.value.topFuncBar = Array.from(topFuncMap.values()).map((item) => {
+        return {
+          ...item,
+          enabled: configStore.value.topFuncBar.find((i) => i.id === item.id)?.enabled ?? true,
+        };
+      });
+      log("更新顶部栏目", configStore.value.topFuncBar);
+      configStore.setConfig(configStore.value);
     }
   }
-  if (
-    topFuncMap.size >= configStore.value.topFuncBar.length &&
-    !isFuncCountEqual(topFuncMap, configStore.value.topFuncBar)
-  ) {
-    configStore.value.topFuncBar = Array.from(topFuncMap.values()).map((item) => {
-      return {
-        ...item,
-        enabled: configStore.value.topFuncBar.find((i) => i.name === item.name)?.enabled ?? true,
-      };
-    });
-    log("更新顶部栏目", configStore.value.chatFuncBar);
-    configStore.setConfig(configStore.value);
-  }
-  hiddenFuncBtn(element, configStore.value.topFuncBar);
+
+  closeTopObserver?.();
+  closeTopObserver = observeMutations(
+    document.querySelector(".panel-header__action .func-bar-native")!,
+    () => {
+      const funcs = Array.from(
+        document.querySelectorAll<HTMLElement>(".panel-header__action .func-bar-native>div")
+      ).filter((item) => item.style.display !== "none");
+      initTopFuncBar(funcs);
+      hiddenFuncBtn(funcs, configStore.value.topFuncBar);
+    },
+    {
+      attributeFilter: ["style"],
+      attributes: true,
+      subtree: true,
+      childList: true,
+      autoDisconnect: 1000,
+    }
+  );
+
+  hiddenFuncBtn(funcs, configStore.value.topFuncBar);
 }
 
 async function updateChatFuncBar() {
   await configStore.ready;
-
+  const funcs = Array.from(document.querySelectorAll<HTMLElement>(".chat-func-bar .func-bar-native>div")).filter(
+    (item) => item.style.display !== "none"
+  );
+  log("updateChatFuncBar", funcs);
   if (configStore.value.chatFuncBar.length > 1) {
-    hiddenFuncBtn(
-      await waitForElement(".chat-input-area .chat-func-bar.shortcuts"),
-      configStore.value.chatFuncBar,
-      true
-    );
+    log("hiddenFuncBtn-chat");
+    hiddenFuncBtn(funcs, configStore.value.chatFuncBar);
   }
-  async function initChatFuncBar() {
-    const { element, instance, value } = await waitForInstance(
-      ".chat-input-area .chat-func-bar.shortcuts",
-      "proxy.list"
-    );
 
-    await instance.proxy.$nextTick();
-
-    for (const item of value) {
-      const id = element.querySelector(`.bar-icon [aria-label="${item.label}"] svg use`)?.getAttribute("xlink:href");
-      const key = `${item.label}_${id}`;
-      if (id) {
-        chatFuncMap.set(key, {
-          name: item.label,
-          id,
-        });
-      }
-    }
-
+  initChatFuncBar(funcs);
+  function initChatFuncBar(funcs: HTMLElement[]) {
+    funcs.forEach((element) => {
+      const id = element.id;
+      const name = element.querySelector(".icon-item")!.getAttribute("aria-label")!;
+      chatFuncMap.set(id, {
+        name,
+        id,
+      });
+    });
     if (
       chatFuncMap.size >= configStore.value.chatFuncBar.length &&
       !isFuncCountEqual(chatFuncMap, configStore.value.chatFuncBar)
@@ -85,46 +97,47 @@ async function updateChatFuncBar() {
       configStore.value.chatFuncBar = Array.from(chatFuncMap.values()).map((item) => {
         return {
           ...item,
-          enabled: configStore.value.chatFuncBar.find((i) => i.name === item.name)?.enabled ?? true,
+          enabled: configStore.value.chatFuncBar.find((i) => i.id === item.id)?.enabled ?? true,
         };
       });
       log("更新聊天栏目", configStore.value.chatFuncBar);
       configStore.setConfig(configStore.value);
     }
-    return element;
   }
-  const element = await initChatFuncBar();
 
-  closeObserver?.();
-
-  closeObserver = observeMutations(
-    element.querySelector(".func-bar:first-child")!,
+  closeChatObserver?.();
+  closeChatObserver = observeMutations(
+    document.querySelector(".chat-func-bar .func-bar-native:first-child")!,
     () => {
-      initChatFuncBar();
-      hiddenFuncBtn(element, configStore.value.chatFuncBar);
+      const funcs = Array.from(document.querySelectorAll<HTMLElement>(".chat-func-bar .func-bar-native>div")).filter(
+        (item) => item.style.display !== "none"
+      );
+      initChatFuncBar(funcs);
+      hiddenFuncBtn(funcs, configStore.value.chatFuncBar);
     },
     {
+      attributeFilter: ["style"],
+      attributes: true,
+      subtree: true,
       childList: true,
+      autoDisconnect: 1000,
     }
   );
-  hiddenFuncBtn(element, configStore.value.chatFuncBar);
+
+  hiddenFuncBtn(funcs, configStore.value.chatFuncBar);
 }
 
-function hiddenFuncBtn(element: HTMLElement, funcBar: FuncBar[], preparatory = false) {
-  for (const item of funcBar) {
-    const findEl = Array.from(element.querySelectorAll(`.bar-icon use`))
-      .find((element) => {
-        return element.getAttribute("xlink:href") === item.id;
-      })
-      ?.closest<HTMLElement>(`.bar-icon${!preparatory ? `:has([aria-label^="${item.name.slice(0, 2)}"])` : ``}`);
-    if (findEl) {
-      findEl.style.display = item.enabled ? "flex" : "none";
+function hiddenFuncBtn(elements: HTMLElement[], funcBar: FuncBar[]) {
+  const map = new Map(funcBar.map((v) => [v.id, v.enabled]));
+  for (const el of elements) {
+    if (map.has(el.id)) {
+      el.classList.toggle("lt-disabled", !map.get(el.id)!);
     }
   }
 }
 
 function isFuncCountEqual(a: Map<string, FuncBar>, b: FuncBar[]) {
-  const mapB = new Map(b.map((item) => [`${item.name}_${item.id}`, item]));
+  const mapB = new Map(b.map((item) => [item.id, item]));
   if (a.size !== mapB.size) return false;
   return [...mapB.keys()].every((id) => a.has(id));
 }

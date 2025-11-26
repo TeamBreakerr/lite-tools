@@ -1,6 +1,7 @@
 type Options = {
   autoDisconnect?: number;
   attributes?: boolean;
+  attributeFilter?: string[];
   characterData?: boolean;
   childList?: boolean;
   subtree?: boolean;
@@ -19,6 +20,7 @@ function observeMutations(target: HTMLElement, callback: ObserverCallback, optio
 
   observer.observe(target, {
     attributes: options.attributes ?? false,
+    attributeFilter: options.attributeFilter ?? undefined,
     characterData: options.characterData ?? false,
     childList: options.childList ?? false,
     subtree: options.subtree ?? false,
