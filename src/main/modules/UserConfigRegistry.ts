@@ -5,10 +5,12 @@ import configTemplate from "@/config/main.template.json";
 
 export class UserConfigRegistry {
   private userConfigRegistryPath: string;
+  private configPath: string;
   private list: Map<string, string>;
 
-  constructor(path: string) {
-    this.userConfigRegistryPath = path;
+  constructor(configPath: string) {
+    this.configPath = configPath;
+    this.userConfigRegistryPath = path.join(this.configPath, "UserConfigRegistry.json");
     this.list = new Map();
     this.load();
   }
@@ -34,7 +36,12 @@ export class UserConfigRegistry {
   }
 
   get(uid: string) {
-    return this.list.get(uid);
+    const configPath = this.list.get(uid);
+    if (configPath) {
+      return configPath;
+    } else {
+      return this.create(uid);
+    }
   }
 
   set(uid: string, configPath: string) {
@@ -47,8 +54,12 @@ export class UserConfigRegistry {
     this.save();
   }
 
-  create(uid: string, baseDir: string) {
-    const configPath = path.join(baseDir, "configs", `${uid}.json`);
+  create(uid: string) {
+    const dir = path.join(this.configPath, "configs");
+    const configPath = path.join(dir, `${uid}.json`);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
     if (!fs.existsSync(configPath)) {
       fs.writeFileSync(configPath, JSON.stringify(configTemplate, null, 2), "utf-8");
     }

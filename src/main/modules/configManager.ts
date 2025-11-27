@@ -27,7 +27,7 @@ class ConfigManager {
     this.resolveReady = resolve;
     this.setupPath();
     this.setupIpcEvent();
-    this.userConfigRegistry = new UserConfigRegistry(path.join(configPath, "UserConfigRegistry.json"));
+    this.userConfigRegistry = new UserConfigRegistry(configPath);
   }
 
   private setupIpcEvent() {
