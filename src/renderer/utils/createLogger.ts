@@ -63,6 +63,9 @@ window.lt_logs = () => {
   });
 };
 
-export function createLogger(moduleName: string) {
+export function createLogger(moduleName: string, mute = false) {
+  if (mute) {
+    return () => {};
+  }
   return new Logs(moduleName).logToConsole;
 }

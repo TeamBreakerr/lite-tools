@@ -18,7 +18,7 @@ interface SlotElement extends HTMLElement {
   updatePosition?: () => Promise<void>;
 }
 
-const log = createLogger("handleMessages");
+const log = createLogger("handleMessages", true);
 
 const processedInstances = new WeakSet<any>();
 const slots = new WeakMap<HTMLElement, { spacer: HTMLElement; float: HTMLElement }>();
