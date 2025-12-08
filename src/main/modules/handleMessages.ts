@@ -7,7 +7,7 @@ import { convertMiniArkToWebArk } from "@/main/modules/convertMiniArkToWebArk";
 import { convertMarketFaceToPic } from "@/main/modules/convertMarketFaceToPic";
 import { preventRecall } from "@/main/modules/preventRecall";
 
-const log = createLogger("handleMessages");
+const log = createLogger("handleMessages",true);
 
 function handleMessages(...args: any[]) {
   try {

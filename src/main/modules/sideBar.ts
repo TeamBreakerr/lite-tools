@@ -8,7 +8,7 @@ type SideBarConfig = {
 };
 
 function setupSideBar() {
-  const log = createLogger("sideBar");
+  const log = createLogger("sideBar",true);
   log("load");
   let isInitSideBar = false;
   IpcInterceptor.onIpcReceiveEvents("nodeIKernelConfigMgrService/saveSideBarConfig", (meat, _, channel, payload) => {

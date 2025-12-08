@@ -12,7 +12,7 @@ import { pluginPath } from "@/main/utils/localPath";
 import { getUserInfo } from "@/main/utils/nativeCall";
 import { getImageUrl } from "@/main/utils/getImageUrl";
 
-const log = createLogger("preventRecall");
+const log = createLogger("preventRecall",true);
 
 type MsgId = string;
 type Message = any;
