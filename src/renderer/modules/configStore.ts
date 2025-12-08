@@ -59,7 +59,7 @@ class ConfigStore {
   }
 
   get ready() {
-    if (this.status === InitStatus.Uninitialized && lite_tools.isInitialized()) {
+    if (this.status === InitStatus.Uninitialized && lite_tools.isInitialized() && location.hash !== "#/blank") {
       this.status = InitStatus.Initializing;
       this.setupConfig();
     }
