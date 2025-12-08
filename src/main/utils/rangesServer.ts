@@ -33,33 +33,50 @@ class RangesServer {
   setFilePath(path: string) {
     this.filePath = path;
   }
-  startServer() {
-    return new Promise<number>((res, rej) => {
-      if (!this.filePath) return rej("没有提供文件地址");
+  async startServer(): Promise<number> {
+    log("尝试启动http服务");
 
-      if (this.server.listening) {
-        const addr = this.server.address() as AddressInfo;
-        return res(addr.port);
-      }
+    if (!this.filePath) throw new Error("没有提供文件地址");
 
-      this.server.on("listening", () => {
+    if (this.server.listening) {
+      const addr = this.server.address() as AddressInfo;
+      log("http服务运行中", this.port);
+      return addr.port;
+    }
+
+    return await new Promise<number>((resolve, reject) => {
+      const onListening = () => {
         const addr = this.server.address() as AddressInfo;
         this.port = addr.port;
-        log("http服务已启动", this.port);
-        res(addr.port);
-      });
+        log("http启动成功", this.port);
+        cleanup();
+        resolve(addr.port);
+      };
 
-      this.server.on("error", (err) => {
-        rej(err);
-      });
+      const onError = (err: Error) => {
+        log("http服务启动失败", err);
+        cleanup();
+        reject(err);
+      };
+
+      const cleanup = () => {
+        this.server.off("listening", onListening);
+        this.server.off("error", onError);
+      };
+
+      this.server.on("listening", onListening);
+      this.server.on("error", onError);
 
       this.server.listen(0);
     });
   }
   stopServer() {
     if (this.server.listening) {
-      log("http服务已停止");
+      log("关闭http服务");
+      this.port = 0;
       this.server.close();
+    } else {
+      log("http服务未启动");
     }
   }
   private httpListener(request: IncomingMessage, response: ServerResponse) {
