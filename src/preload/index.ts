@@ -3,6 +3,7 @@ import type { Config } from "@/types/config";
 import type { RecallData } from "@/main/modules/preventRecall";
 
 const exposeFunctions = {
+  // 配置相关
   updateConfig: (config: Config) => ipcRenderer.send("lite_tools.updateConfig", config),
   getConfig: async (): Promise<Config> => ipcRenderer.invoke("lite_tools.getConfig"),
   isIndependent: (): boolean => ipcRenderer.sendSync("lite_tools.isIndependent"),
@@ -10,6 +11,8 @@ const exposeFunctions = {
   onConfigChange: (callback: (config: Config) => void) =>
     ipcRenderer.on("lite_tools.configChanged", (_, config: Config) => callback(config)),
   getWebContentId: (): number => ipcRenderer.sendSync("lite_tools.getWebContentId"),
+  showOpenDialog: (options: Electron.OpenDialogOptions): Promise<Electron.OpenDialogReturnValue> =>
+    ipcRenderer.invoke("lite_tools.showOpenDialog", options),
   // 防撤回相关
   onRecallMessagesFound: (callback: (recallDatas: RecallData[]) => void) =>
     ipcRenderer.on("lite_tools.recallMessagesFound", (_, recallDatas: RecallData[]) => callback(recallDatas)),

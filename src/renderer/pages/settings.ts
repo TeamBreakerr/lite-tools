@@ -4,6 +4,7 @@ import settingsCss from "@/renderer/scss/settings.scss";
 import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/configStore";
 import { isQwQ } from "@/renderer/utils/loaderInspector";
+import { normalizePathsSimple } from "@/common/normalizePathsSimple";
 import type { Config } from "@/types/config";
 import type { LiteTools } from "@/preload/index";
 
@@ -54,28 +55,113 @@ async function initSettings(view: HTMLDivElement, config: Config) {
   // 初始化下拉菜单
   initSelectMenu(view, config);
   // 初始化精简功能
-  const sidebarEl = view.querySelector(".sideBar ul") as HTMLElement;
-  const topFuncBarEl = view.querySelector(".topFuncBar ul") as HTMLElement;
-  const chatFuncBarEl = view.querySelector(".chatFuncBar ul") as HTMLElement;
-  createOptionItems(config, config.sideBar.top, sidebarEl, "sideBar.top", "enabled");
-  createOptionItems(config, config.sideBar.bottom, sidebarEl, "sideBar.bottom", "enabled");
-  if (config.topFuncBar.length > 1) {
-    topFuncBarEl.querySelector(".first-tips")?.remove();
-  }
-  createOptionItems(config, config.topFuncBar, topFuncBarEl, "topFuncBar", "enabled");
-  if (config.chatFuncBar.length > 1) {
-    chatFuncBarEl.querySelector(".first-tips")?.remove();
-  }
-  createOptionItems(config, config.chatFuncBar, chatFuncBarEl, "chatFuncBar", "enabled");
-  configStore.onChange((config) => {
-    updateOptionItems(config.sideBar.top, sidebarEl, "sideBar.top", "enabled");
-    updateOptionItems(config.sideBar.bottom, sidebarEl, "sideBar.bottom", "enabled");
-  });
+  initSidebar(view, config);
   // 初始化撤回相关选项
   initRecallOptions(view, config);
+  // 初始化输入框
+  initInput(view, config);
+  // 初始化按钮
+  initButton(view, config);
   log("初始化设置页面完成");
 }
 
+// 初始化按钮
+function initButton(view: HTMLDivElement, config: Config) {
+  view.querySelectorAll<HTMLButtonElement>("button").forEach((el) => {
+    const configPath = el.dataset.config;
+    if (!configPath) return;
+
+    const value = getValueByPath(config, configPath);
+    if (value === undefined) {
+      el.classList.add("error-button");
+      el.setAttribute("placeholder", "配置项不存在");
+      return;
+    }
+
+    const chooseType = el.dataset.choose;
+
+    // 校验类型，若不符合要求直接跳过，避免嵌套
+    if (chooseType && ["file", "files", "folder"].includes(chooseType)) {
+      el.addEventListener("click", async () => {
+        const fileExt = el.dataset.fileExt?.split(",") ?? ["*"];
+
+        // 1. 根据类型动态生成 properties
+        const properties: Electron.OpenDialogOptions["properties"] = ["dontAddToRecent"];
+
+        if (chooseType === "folder") {
+          properties.push("openDirectory");
+        } else {
+          properties.push("openFile");
+          if (chooseType === "files") {
+            properties.push("multiSelections");
+          }
+        }
+
+        const filters = chooseType === "folder" ? [] : [{ name: "Files", extensions: fileExt }];
+
+        const result = await lite_tools.showOpenDialog({
+          title: chooseType === "folder" ? "选择文件夹" : "选择文件",
+          properties: properties,
+          filters: filters,
+        });
+
+        // 4. 处理结果
+        if (!result.canceled && result.filePaths.length > 0) {
+          const filePaths = normalizePathsSimple(result.filePaths);
+          log("选中的路径:", configPath, filePaths);
+
+          if (chooseType === "file") {
+            setValueByPath(config, configPath, filePaths[0]);
+            configStore.setConfig(config);
+            dispatchEvent(view, configPath, filePaths[0]);
+          } else {
+            setValueByPath(config, configPath, filePaths);
+            configStore.setConfig(config);
+            dispatchEvent(view, configPath, filePaths);
+          }
+        }
+      });
+    }
+  });
+}
+
+// 初始化输入框
+function initInput(view: HTMLDivElement, config: Config) {
+  view.querySelectorAll<HTMLInputElement>("input").forEach((el) => {
+    const configPath = el.getAttribute("data-config");
+    if (!configPath) return;
+
+    const value = getValueByPath(config, configPath);
+    if (value === undefined) {
+      el.classList.add("error-input");
+      el.value = "";
+      el.setAttribute("placeholder", "配置项不存在");
+      return;
+    }
+    el.value = value;
+    view.addEventListener(configPath, (e) => {
+      const event = e as CustomEvent<string>;
+      el.value = event.detail;
+    });
+    if (el.hasAttribute("readonly")) {
+      if (el.hasAttribute("data-clear")) {
+        el.addEventListener("click", () => {
+          setValueByPath(config, configPath, "");
+          configStore.setConfig(config);
+          dispatchEvent(view, configPath, "");
+        });
+      }
+    } else {
+      el.addEventListener("change", () => {
+        setValueByPath(config, configPath, el.value);
+        configStore.setConfig(config);
+        dispatchEvent(view, configPath, el.value);
+      });
+    }
+  });
+}
+
+// 初始化撤回
 async function initRecallOptions(view: HTMLDivElement, config: Config) {
   const localRecallMsgCache = view.querySelector<HTMLInputElement>(".local-recall-msg-num")!;
   const light = view.querySelector<HTMLInputElement>(".custom-text-color-lite")!;
@@ -106,6 +192,27 @@ async function initRecallOptions(view: HTMLDivElement, config: Config) {
   });
 }
 
+// 初始化精简功能
+function initSidebar(view: HTMLDivElement, config: Config) {
+  const sidebarEl = view.querySelector(".sideBar ul") as HTMLElement;
+  const topFuncBarEl = view.querySelector(".topFuncBar ul") as HTMLElement;
+  const chatFuncBarEl = view.querySelector(".chatFuncBar ul") as HTMLElement;
+  createOptionItems(config, config.sideBar.top, sidebarEl, "sideBar.top", "enabled");
+  createOptionItems(config, config.sideBar.bottom, sidebarEl, "sideBar.bottom", "enabled");
+  if (config.topFuncBar.length > 1) {
+    topFuncBarEl.querySelector(".first-tips")?.remove();
+  }
+  createOptionItems(config, config.topFuncBar, topFuncBarEl, "topFuncBar", "enabled");
+  if (config.chatFuncBar.length > 1) {
+    chatFuncBarEl.querySelector(".first-tips")?.remove();
+  }
+  createOptionItems(config, config.chatFuncBar, chatFuncBarEl, "chatFuncBar", "enabled");
+  configStore.onChange((config) => {
+    updateOptionItems(config.sideBar.top, sidebarEl, "sideBar.top", "enabled");
+    updateOptionItems(config.sideBar.bottom, sidebarEl, "sideBar.bottom", "enabled");
+  });
+}
+
 // 派发事件
 function dispatchEvent(el: HTMLElement, configPath: string, detail: any) {
   const event = new CustomEvent(configPath, { detail });
@@ -127,27 +234,27 @@ function initWrap(view: HTMLDivElement) {
 function initSwitchButton(view: HTMLDivElement, config: Config) {
   view.querySelectorAll(".q-switch").forEach((el) => {
     const configPath = el.getAttribute("data-config");
-    if (configPath) {
-      const configValue = getValueByPath(config, configPath);
-      if (configValue !== undefined) {
-        el.classList.toggle("is-active", configValue);
-        // 初始化时触发一次事件
-        dispatchEvent(view, configPath, configValue);
-        // 添加事件
-        el.addEventListener("click", function () {
-          const newValue = el.classList.toggle("is-active");
-          log("更新配置项", configPath, newValue);
-          setValueByPath(config, configPath, newValue);
-          configStore.setConfig(config);
-          dispatchEvent(view, configPath, newValue);
-          // 彩蛋触发函数
-          // switchButtons();
-        });
-      } else {
-        el.classList.add("error-switch");
-        el.setAttribute("title", "配置项不存在");
-      }
+    if (!configPath) return;
+
+    const configValue = getValueByPath(config, configPath);
+    if (configValue === undefined) {
+      el.classList.add("error-switch");
+      el.setAttribute("title", "配置项不存在");
+      return;
     }
+    el.classList.toggle("is-active", configValue);
+    // 初始化时触发一次事件
+    dispatchEvent(view, configPath, configValue);
+    // 添加事件
+    el.addEventListener("click", function () {
+      const newValue = el.classList.toggle("is-active");
+      log("更新配置项", configPath, newValue);
+      setValueByPath(config, configPath, newValue);
+      configStore.setConfig(config);
+      dispatchEvent(view, configPath, newValue);
+      // 彩蛋触发函数
+      // switchButtons();
+    });
   });
 }
 
@@ -165,43 +272,43 @@ function initSelectMenu(view: HTMLDivElement, config: Config) {
   view.querySelectorAll(".setting-select").forEach((el) => {
     const item = el as HTMLElement;
     const configPath = item.getAttribute("data-config");
-    if (configPath) {
-      // 初始化选项
-      const configValue = getValueByPath(config, configPath);
-      if (configValue !== undefined) {
-        const findEl = Array.from(item.querySelectorAll(".setting-item")).find(
-          (item) => item.getAttribute("data-value") === configValue
-        ) as HTMLElement;
-        const showVlaue = findEl?.innerText ?? configValue;
+    if (!configPath) return;
+
+    // 初始化选项
+    const configValue = getValueByPath(config, configPath);
+    if (configValue === undefined) {
+      el.classList.add("error-switch");
+      el.setAttribute("title", "配置项不存在");
+      return;
+    }
+    const findEl = Array.from(item.querySelectorAll(".setting-item")).find(
+      (item) => item.getAttribute("data-value") === configValue
+    ) as HTMLElement;
+    const showVlaue = findEl?.innerText ?? configValue;
+    item.querySelector("input.setting-input")?.setAttribute("value", showVlaue);
+    item.querySelector("div.setting-view")?.setAttribute("data-value", showVlaue);
+    // 初始化时触发一次事件
+    dispatchEvent(view, configPath, configValue);
+    // 添加监听
+    item.addEventListener("click", function (event) {
+      const target = event.target as HTMLElement;
+      log("点击下拉菜单", target.classList);
+      if (target.classList.contains("setting-item")) {
+        const newValue = target.getAttribute("data-value");
+        const showVlaue = target.innerText;
+        log("更新下拉配置项", item, configPath, newValue);
+        setValueByPath(config, configPath, newValue);
+        configStore.setConfig(config);
         item.querySelector("input.setting-input")?.setAttribute("value", showVlaue);
         item.querySelector("div.setting-view")?.setAttribute("data-value", showVlaue);
-        // 初始化时触发一次事件
-        dispatchEvent(view, configPath, configValue);
-        // 添加监听
-        item.addEventListener("click", function (event) {
-          const target = event.target as HTMLElement;
-          log("点击下拉菜单", target.classList);
-          if (target.classList.contains("setting-item")) {
-            const newValue = target.getAttribute("data-value");
-            const showVlaue = target.innerText;
-            log("更新下拉配置项", item, configPath, newValue);
-            setValueByPath(config, configPath, newValue);
-            configStore.setConfig(config);
-            item.querySelector("input.setting-input")?.setAttribute("value", showVlaue);
-            item.querySelector("div.setting-view")?.setAttribute("data-value", showVlaue);
-            dispatchEvent(view, configPath, newValue);
-          }
-          view.querySelectorAll(".setting-select")!.forEach((item) => {
-            if (item === el) return;
-            item.querySelector(".setting-option")!.classList.remove("show");
-          });
-          item.querySelector(".setting-option")!.classList.toggle("show");
-        });
-      } else {
-        el.classList.add("error-switch");
-        el.setAttribute("title", "配置项不存在");
+        dispatchEvent(view, configPath, newValue);
       }
-    }
+      view.querySelectorAll(".setting-select")!.forEach((item) => {
+        if (item === el) return;
+        item.querySelector(".setting-option")!.classList.remove("show");
+      });
+      item.querySelector(".setting-option")!.classList.toggle("show");
+    });
   });
 }
 
