@@ -151,6 +151,15 @@
   .select-background-wallpaper-clear {
     cursor: not-allowed;
   }
+  input {
+    &[data-clear] {
+      cursor: not-allowed;
+    }
+    &.error-input {
+      cursor: not-allowed;
+      background-color: var(--lt-btn-danger-bg) !important;
+    }
+  }
   .vertical-list-item {
     &.fl-d {
       flex-direction: column;
@@ -221,7 +230,7 @@
     }
   }
 
-  /* 模态框 */
+  // 模态框
   .config_view .modal-window {
     display: flex;
     justify-content: center;
@@ -238,7 +247,7 @@
   .config_view .modal-dialog {
     width: 480px;
     border-radius: 8px;
-    /* Linux样式兼容：--fg_white */
+    // Linux样式兼容：--fg_white
     background-color: var(--bg_bottom_standard, var(--fg_white));
   }
 
@@ -250,11 +259,11 @@
   }
 
   .config_view .modal-dialog main {
-    padding: 0px 16px;
+    padding: 0 16px;
   }
 
   .config_view .modal-dialog main p {
-    margin: 8px 0px;
+    margin: 8px 0;
   }
 
   .config_view .modal-dialog footer {
@@ -270,23 +279,23 @@
     margin: 8px;
   }
 
-  /* 版本号 */
+  // 版本号
   .config_view .versions .wrap {
     display: flex;
     justify-content: space-between;
-    padding: 16px 0px;
+    padding: 16px 0;
   }
 
   .config_view .versions .wrap > div {
     flex: 1;
-    margin: 0px 10px;
+    margin: 0 10px;
     border-radius: 8px;
     text-align: center;
   }
 
   .input-text {
     align-self: normal;
-    height: 24px;
+    height: 28px;
     flex: 1;
     border-radius: 4px;
     margin-right: 16px;
@@ -460,30 +469,30 @@
     }
   }
 
-  /* 外边距 */
+  // 外边距
   .plugin-config-view {
     margin: 20px;
   }
 
-  /* 每节的标题 */
+  // 每节的标题
   h1 {
     color: var(--text_primary);
     font-weight: var(--font-bold);
     font-size: min(var(--font_size_3), 18px);
     line-height: min(var(--line_height_3), 24px);
-    padding: 0px 16px;
+    padding: 0 16px;
     margin-bottom: 8px;
   }
 
   .wrap {
-    /* Linux样式兼容：--fg_white */
+    // Linux样式兼容：--fg_white
     background-color: var(--fill_light_primary, var(--fg_white));
     border-radius: 8px;
     font-size: min(var(--font_size_3), 18px);
     line-height: min(var(--line_height_3), 24px);
     margin-bottom: 20px;
     // overflow: hidden;
-    padding: 0px 16px;
+    padding: 0 16px;
     width: 100%;
     box-sizing: border-box;
   }
@@ -508,12 +517,13 @@
     transform: rotate(0deg);
   }
 
-  /* 纵向列表条目 */
+  // 纵向列表条目
   .vertical-list-item {
-    padding: 12px 0px;
+    padding: 12px 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    // 撤回提示自定义颜色
     .custom-color {
       display: flex;
       align-items: center;
@@ -554,7 +564,14 @@
     }
   }
 
-  /* 水平分割线 */
+  .select-path {
+    padding: 0 0 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  // 水平分割线
   .horizontal-dividing-line {
     border: unset;
     margin: unset;
@@ -562,7 +579,7 @@
     background-color: rgba(127, 127, 127, 0.15);
   }
 
-  /* 纵向分割线 */
+  // 纵向分割线
   .vertical-dividing-line {
     border: unset;
     margin: unset;
@@ -570,12 +587,12 @@
     background-color: rgba(127, 127, 127, 0.15);
   }
 
-  /* 按钮布局 */
+  // 按钮布局
   .ops-btns {
     display: flex;
   }
 
-  /* 副文本 */
+  // 副文本
   .secondary-text {
     color: var(--text_secondary);
     font-size: min(var(--font_size_2), 16px);
@@ -583,47 +600,48 @@
     margin-top: 4px;
   }
 
-  /* 隐藏 */
+  // 隐藏
   .hidden {
     display: none !important;
   }
 
-  /* 禁用 */
+  // 禁用
   .disabled {
     pointer-events: none;
     opacity: 0.5;
   }
 
-  /* 选择框按钮-文本 */
+  // 选择框按钮-文本
   .q-pulldown-menu-button .content {
     width: 80px;
   }
 
-  /* 选择框按钮-图标 */
+  // 选择框按钮-图标
   .q-pulldown-menu-button .icon {
     width: 16px;
     height: 16px;
   }
 
-  /* 选择框选项菜单 */
+  // 选择框选项菜单
   .q-context-menu {
     z-index: 4000;
     margin-top: 5px;
     width: 122px;
   }
 
-  /* 选择框选项菜单-图标 */
+  // 选择框选项菜单-图标
   .q-context-menu .icon {
     display: none;
     width: 1em;
     height: 1em;
   }
 
-  /* 选择框选项菜单-选择后图标 */
+  // 选择框选项菜单-选择后图标
   .q-context-menu .selected .icon {
     display: block !important;
   }
 
+  // 危险按钮
   .q-button--danger {
     background-color: var(--lt-btn-danger-bg);
     border-color: var(--lt-btn-danger-border);
@@ -640,11 +658,18 @@
       color: var(--lt-text-danger-color-hover);
     }
   }
+  .error-button {
+    cursor: disabled !important;
+    background-color: var(--lt-btn-danger-bg) !important;
+    border-color: var(--lt-btn-danger-border) !important;
+    color: var(--lt-text-danger-color) !important;
+  }
   red {
     color: var(--text-error);
     font-weight: bold;
     margin: 0 2px;
   }
+  // 消息后缀列表
   .tail-ruls-list {
     width: 100%;
     height: auto;
