@@ -313,6 +313,136 @@
       </li>
     </ul>
   </div>
+  <!-- 背景功能 -->
+  <div class="wrap background">
+    <div class="vertical-list-item title">
+      <h2>背景调整</h2>
+      <svg class="icon is-fold" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 8L12 17L3 8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
+      </svg>
+    </div>
+    <ul class="hidden">
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>自定义背景</h2>
+          <span class="secondary-text">
+            仅支持单张图片/视频<br />
+            使用前需要启用官方 <strong>极简白</strong> 主题
+          </span>
+        </div>
+        <div class="q-switch" data-config="interface.wallpaper.enabled">
+          <span class="q-switch__handle"></span>
+        </div>
+      </li>
+      <li class="select-path vertical-list-item">
+        <input
+          placeholder="请选择文件"
+          readonly
+          data-clear
+          title="移除路径"
+          class="select-file input-text text_color"
+          type="text"
+          spellcheck="false"
+          data-config="interface.wallpaper.path"
+        />
+        <div class="ops-btns">
+          <button
+            class="q-button q-button--small q-button--secondary select-file"
+            data-config="interface.wallpaper.path"
+            data-choose="file"
+            data-file-ext="jpg,png,jpeg,gif,webp,mp4,webm"
+          >
+            选择
+          </button>
+        </div>
+      </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>背景透明</h2>
+          <span class="secondary-text">移除背景底色</span>
+        </div>
+        <div class="q-switch" data-config="interface.wallpaper.removeOverlay">
+          <span class="q-switch__handle"></span>
+        </div>
+      </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>媒体透明度</h2>
+          <span class="secondary-text">背景图片/视频的透明度，范围为 0-100</span>
+        </div>
+        <div class="slot-input-box">
+          <input
+            placeholder="50"
+            class="slot-input text_color"
+            data-config="interface.wallpaper.opacity"
+            type="number"
+            spellcheck="false"
+          />
+        </div>
+      </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>容器透明度</h2>
+          <span class="secondary-text">前景容器的透明度，范围为 0-100</span>
+        </div>
+        <div class="slot-input-box">
+          <input
+            placeholder="50"
+            class="slot-input text_color"
+            data-config="interface.wallpaper.containerOpacity"
+            type="number"
+            spellcheck="false"
+          />
+        </div>
+      </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>磨砂效果</h2>
+          <span class="secondary-text">提升文本可读性，会降低性能</span>
+        </div>
+      </li>
+      <li class="vertical-list-item sub-item">
+        <div>
+          <h2>联系人列表</h2>
+        </div>
+        <div class="q-switch" data-config="interface.wallpaper.blur.recentContact">
+          <span class="q-switch__handle"></span>
+        </div>
+      </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item sub-item">
+        <div>
+          <h2>群聊成员</h2>
+        </div>
+        <div class="q-switch" data-config="interface.wallpaper.blur.groupBox">
+          <span class="q-switch__handle"></span>
+        </div>
+      </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item sub-item">
+        <div>
+          <h2>消息气泡</h2>
+        </div>
+        <div class="q-switch" data-config="interface.wallpaper.blur.message">
+          <span class="q-switch__handle"></span>
+        </div>
+      </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item sub-item">
+        <div>
+          <h2>输入框</h2>
+        </div>
+        <div class="q-switch" data-config="interface.wallpaper.blur.chatInputArea">
+          <span class="q-switch__handle"></span>
+        </div>
+      </li>
+    </ul>
+  </div>
   <h1>精简</h1>
   <div class="wrap sideBar">
     <div class="vertical-list-item title">

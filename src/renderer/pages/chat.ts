@@ -5,6 +5,7 @@ import { configStore } from "@/renderer/modules/configStore";
 import { updateTopFuncBar, updateChatFuncBar } from "@/renderer/modules/funcBarManager";
 import { setupHandleMessages } from "@/renderer/modules/handleMessages";
 import { waitForInstance } from "@/renderer/utils/domWaitFor";
+import { wallpaperManager } from "@/renderer/modules/wallpaperManager";
 
 import type { Config } from "@/types/config";
 
@@ -13,6 +14,7 @@ const log = createLogger("chat");
 async function setupChatPage() {
   log("await init");
   await configStore.ready;
+  log("获取到配置", configStore.value);
   await aioStore.ready;
   log("initialized");
   setupPreventMutipleSelect("chat-msg-area");
@@ -22,6 +24,7 @@ async function setupChatPage() {
   updateChatFuncBar();
   updateRecallConfig(configStore.value);
   updateInterface(configStore.value);
+  wallpaperManager.setup();
   aioStore.onChange(() => {
     updateTopFuncBar();
     updateChatFuncBar();

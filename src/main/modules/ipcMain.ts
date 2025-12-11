@@ -1,4 +1,4 @@
-import { ipcMain } from "electron";
+import { ipcMain, dialog, BrowserWindow } from "electron";
 import { mainWindow } from "@/main/utils/captureWindow";
 
 function setupIpcMain() {
@@ -10,6 +10,10 @@ function setupIpcMain() {
     if (mainWindow && mainWindow?.webContents?.send) {
       mainWindow.webContents.send("lite_tools.broadcast", channelName, payload);
     }
+  });
+  ipcMain.handle("lite_tools.showOpenDialog", (event, options: Electron.OpenDialogOptions) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    return dialog.showOpenDialog(win!, options);
   });
 }
 

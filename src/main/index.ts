@@ -5,6 +5,7 @@ import { setupIpcMain } from "@/main/modules/ipcMain";
 import { setupSideBar } from "@/main/modules/sideBar";
 import { captureWindow } from "@/main/utils/captureWindow";
 import { setupIpcInterceptor } from "@/main/modules/ipcInterceptor";
+import { setupWallpaper } from "@/main/modules/wallpaper";
 import type { BrowserWindow } from "electron";
 
 const log = createLogger("lt_main");
@@ -25,6 +26,7 @@ function setupMain(uid: string) {
     setupIpcMain();
     setupSideBar();
     setupIpcInterceptor();
+    setupWallpaper();
   } catch (err) {
     log("初始化出错", err);
   }

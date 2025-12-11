@@ -8,9 +8,23 @@ type FuncBar = {
   enabled?: boolean;
 };
 
+type ObjectFit = "cover" | "contain" | "fill";
+type CoverArea = "chat" | "full";
+
+type Wallpaper = {
+  enabled: boolean;
+  imagePath: string;
+  objectFit: ObjectFit;
+  coverArea: CoverArea;
+  opacity: `${number}`;
+};
+
 type ExtendedConfig = Omit<BaseConfig, "chatFuncBar" | "topFuncBar"> & {
   topFuncBar: FuncBar[];
   chatFuncBar: FuncBar[];
+  interface: Omit<BaseConfig["interface"], "wallpaper"> & {
+    wallpaper: Wallpaper;
+  };
 };
 
 type Config = ExtendedConfig;

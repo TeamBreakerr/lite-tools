@@ -165,8 +165,11 @@
       flex-direction: column;
       align-items: flex-start;
     }
+    &:has(+ .sub-item) {
+      padding-bottom: 0;
+    }
     &.sub-item {
-      margin-left: 16px;
+      margin-left: 2em;
     }
     & > *:last-child {
       flex-shrink: 0;
@@ -577,6 +580,9 @@
     margin: unset;
     height: 1px;
     background-color: rgba(127, 127, 127, 0.15);
+    &:has(+ .sub-item) {
+      margin-left: 2em;
+    }
   }
 
   // 纵向分割线

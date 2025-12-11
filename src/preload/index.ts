@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { Config } from "@/types/config";
 import type { RecallData } from "@/main/modules/preventRecall";
+import type { WallpaperData } from "@/renderer/modules/wallpaperManager";
 
 const exposeFunctions = {
   // 配置相关
@@ -13,6 +14,10 @@ const exposeFunctions = {
   getWebContentId: (): number => ipcRenderer.sendSync("lite_tools.getWebContentId"),
   showOpenDialog: (options: Electron.OpenDialogOptions): Promise<Electron.OpenDialogReturnValue> =>
     ipcRenderer.invoke("lite_tools.showOpenDialog", options),
+  // 背景相关
+  onWallpaperChanged: (callback: (data: WallpaperData) => void) =>
+    ipcRenderer.on("lite_tools.wallpaperChanged", (_, data) => callback(data)),
+  getWallpaperData: () => ipcRenderer.send("lite_tools.getWallpaperData"),
   // 防撤回相关
   onRecallMessagesFound: (callback: (recallDatas: RecallData[]) => void) =>
     ipcRenderer.on("lite_tools.recallMessagesFound", (_, recallDatas: RecallData[]) => callback(recallDatas)),

@@ -12,7 +12,20 @@
     "hiddenClassicBtn": false,
     "hiddenLockBtn": false,
     "hiddenUpdateBtnAndNotice": false,
-    "removeVipColor": false
+    "removeVipColor": false,
+    "wallpaper": {
+      "enabled": false,
+      "removeOverlay": false,
+      "path": "",
+      "opacity": "50",
+      "containerOpacity": "50",
+      "blur": {
+        "message": false,
+        "chatInputArea": false,
+        "recentContact": false,
+        "groupBox": false
+      }
+    }
   },
   "message": {
     "miniArkToWebArk": false,

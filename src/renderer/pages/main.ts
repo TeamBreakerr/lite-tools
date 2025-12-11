@@ -7,10 +7,11 @@ import { updateTopFuncBar, updateChatFuncBar } from "@/renderer/modules/funcBarM
 import { observeMutations } from "@/renderer/utils/observeMutations";
 import { setupHandleMessages } from "@/renderer/modules/handleMessages";
 import { onComponentMount } from "@/renderer/modules/vueComponentTracker";
+import { waitForInstance } from "@/renderer/utils/domWaitFor";
+import { wallpaperManager } from "@/renderer/modules/wallpaperManager";
 
 import type { Config } from "@/types/config";
 import type { LiteTools } from "@/preload";
-import { waitForInstance } from "@/renderer/utils/domWaitFor";
 
 declare const lite_tools: LiteTools;
 
@@ -20,7 +21,6 @@ async function setupMainPage() {
   log("await init");
   await configStore.ready;
   await aioStore.ready;
-  log("initialized");
   const topSideBarhasChanged = createComparator(configStore.value.sideBar.top);
   setupPreventMutipleSelect("chat-msg-area");
   updateTopSideBar(configStore.value);
@@ -30,6 +30,7 @@ async function setupMainPage() {
   setupHandleMessages();
   setupIpcToBroadcast();
   setupGoBackMainList();
+  wallpaperManager.setup();
   aioStore.onChange(() => {
     updateTopFuncBar();
     updateChatFuncBar();
@@ -65,6 +66,7 @@ async function setupMainPage() {
     },
     { childList: true, autoDisconnect: 5000 }
   );
+  log("initialized");
 }
 
 async function setupGoBackMainList() {
