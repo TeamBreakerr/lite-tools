@@ -50,6 +50,9 @@ async function setupMainPage() {
     if (configStore.value.interface.hiddenLockBtn && component?.vnode?.key === "锁定") {
       component.vnode.el.remove();
     }
+    if (configStore.value.interface.hiddenLogoutBtn && component?.vnode?.key === "退出账号") {
+      component.vnode.el.remove();
+    }
     if (configStore.value.interface.hiddenUpdateBtnAndNotice && component?.vnode?.key === "检查更新") {
       component.vnode.el.remove();
     }

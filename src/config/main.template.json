@@ -11,6 +11,7 @@
     "hiddenWeatherBtn": false,
     "hiddenClassicBtn": false,
     "hiddenLockBtn": false,
+    "hiddenLogoutBtn": false,
     "hiddenUpdateBtnAndNotice": false,
     "removeVipColor": false,
     "wallpaper": {
