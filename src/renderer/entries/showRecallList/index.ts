@@ -1,9 +1,9 @@
 import "@/renderer/entries/showRecallList/index.scss";
 import type { Lt_showRecallList } from "@/renderer/entries/showRecallList/preload";
-import recallGroupItem from "@/assets/html/recallGroupItem.html";
-import recallMsgItem from "@/assets/html/recallMsgItem.html";
-import recallImgItem from "@/assets/html/recallImgItem.html";
-import recallTail from "@/assets/html/recallTail.html";
+import recallGroupItem from "@/assets/html/recall/recallGroupItem.html";
+import recallMsgItem from "@/assets/html/recall/recallMsgItem.html";
+import recallImgItem from "@/assets/html/recall/recallImgItem.html";
+import recallTail from "@/assets/html/recall/recallTail.html";
 
 declare const lt_showRecallList: Lt_showRecallList;
 
