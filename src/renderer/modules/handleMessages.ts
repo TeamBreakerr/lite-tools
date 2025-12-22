@@ -18,7 +18,7 @@ interface SlotElement extends HTMLElement {
   updatePosition?: () => Promise<void>;
 }
 
-const log = createLogger("handleMessages", true);
+const log = createLogger("handleMessages");
 
 const processedInstances = new WeakSet<any>();
 const slots = new WeakMap<HTMLElement, { spacer: HTMLElement; float: HTMLElement }>();
@@ -63,16 +63,20 @@ const TIME_FORMAT_MAPPING: Record<string, "numeric" | "2-digit"> = {
   "2": "2-digit",
 };
 
+let aioData: any;
+
 async function setupHandleMessages() {
   await configStore.ready;
   log("注册事件");
   onComponentMount(handleMessages);
   initIpcEvent();
-  const { value: msgList } = await waitForInstance(
+  const { instance, value: msgList } = await waitForInstance(
     ".container-content .container .aio .group-chat",
     "proxy.curMsgListData"
   );
-  log(msgList);
+  aioData = instance.proxy;
+
+  // log(msgList);
   for (const item of msgList) {
     const el = document.getElementById(item.msgId)?.firstElementChild;
     if (el && el?.__VUE__?.[0]) {
@@ -97,14 +101,47 @@ function enabledSlot() {
 }
 
 function handleMessages(component: any) {
-  if (enabledSlot() && component?.vnode?.el && component?.props?.msgRecord && !processedInstances.has(component)) {
+  if (component?.vnode?.el && component?.props?.msgRecord && !processedInstances.has(component)) {
+    if (!checkChatType(component.props.msgRecord) || !component.vnode.el?.classList?.contains?.("message")) return;
     processedInstances.add(component);
-    processMessages(component);
+    // 消息合并-有卡顿
+    if (0) {
+      mergeMessage(component);
+    }
+    if (enabledSlot()) {
+      processMessages(component);
+    }
+  }
+}
+
+function mergeMessage(component: any) {
+  const messageEl = component.vnode.el as MessageElement;
+  const msgRecord = component.props.msgRecord;
+  for (let i = 0; i < aioData.curMsgListData.length; i++) {
+    const item = aioData.curMsgListData[i];
+    if (item.msgId === msgRecord.msgId) {
+      item._ltMsgEl = messageEl as HTMLElement;
+    }
+    if (item._ltMsgEl) {
+      if (aioData.curMsgListData[i - 1]?.senderUid === item?.senderUid) {
+        item._ltMsgEl.classList.add("lt-msg-child");
+        item._ltMsgEl.classList.remove("lt-msg-main");
+      } else {
+        item._ltMsgEl.classList.add("lt-msg-main");
+        item._ltMsgEl.classList.remove("lt-msg-child");
+        if (!item._ltMsgEl.querySelector(".avatar-sticky") && item._ltMsgEl.querySelector(".avatar-span")) {
+          const avatarEl = item._ltMsgEl.querySelector(".avatar-span .avatar");
+          const el = document.createElement("div");
+          el.classList.add("avatar-sticky");
+          el.append(avatarEl!);
+          item._ltMsgEl.querySelector(".avatar-span").appendChild(el);
+        }
+      }
+    }
   }
 }
 
 function processMessages(component: any) {
-  if (!checkChatType(component.props.msgRecord) || !component.vnode.el?.classList?.contains?.("message")) return;
   const messageEl = component.vnode.el as MessageElement;
   const msgRecord = component.props.msgRecord;
   const slot = insertSlot(messageEl, msgRecord);
@@ -266,7 +303,7 @@ function insertRepeatBtn(slot: SlotElement, msgRecord: any, messageEl: MessageEl
         messageEl.querySelector(".message-content__wrapper")?.insertAdjacentElement("afterend", div);
       }
       privateSlot.querySelector(".lt-float")?.appendChild(btn);
-      log("插入外部插槽");
+      // log("插入外部插槽");
       messageEl.querySelector(".content-status.no-copy")?.appendChild(privateSlot);
     }
   }

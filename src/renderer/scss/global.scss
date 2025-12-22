@@ -293,3 +293,53 @@
     background-color: aquamarine;
   }
 }
+
+// 消息合并样式
+.lt-msg-main {
+  .message__timestamp {
+    margin-top: 8px !important;
+  }
+  .message-container {
+    transition: unset !important;
+    padding-bottom: 0 !important;
+  }
+  .avatar-span {
+    position: relative;
+    .avatar-sticky {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: auto;
+      height: var(--sticky-height, 0px);
+      background-color: red;
+      .avatar {
+        position: sticky !important;
+        top: 10px;
+        bottom: 10px;
+        left: 0;
+      }
+    }
+  }
+}
+
+.ml-list,
+.avatar-span {
+  overflow: unset !important;
+}
+
+.lt-msg-child {
+  .message__timestamp {
+    margin-top: 8px !important;
+  }
+  .avatar-span {
+    visibility: hidden !important;
+  }
+  .user-name {
+    display: none !important;
+  }
+  .message-container {
+    transition: unset !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+}
