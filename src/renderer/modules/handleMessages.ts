@@ -174,6 +174,7 @@ function insertSlot(messageEl: MessageElement, msgRecord: any) {
   }
   const slot = createSlot();
   if (
+    msgRecord.elements.length > 1 ||
     msgRecord.elements.some(
       (element: any) =>
         embedElementType.includes(element.elementType) ||
