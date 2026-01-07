@@ -1,5 +1,6 @@
 import { forwardMessage } from "@/renderer/utils/nativeCall";
 import { configStore } from "@/renderer/modules/configStore";
+import { aioStore } from "@/renderer/modules/aioStore";
 
 import { ElementType } from "./ElementTypeEnum";
 import { createSlot } from "./messageSlot";
@@ -8,7 +9,7 @@ import type { MessageElement, SlotElement } from "./type";
 
 const repeatElementType = [ElementType.textElement, ElementType.picElement];
 
-function insertRepeatBtn(aioStore: any, slot: SlotElement, msgRecord: any, messageEl: MessageElement) {
+function insertRepeatBtn(slot: SlotElement, msgRecord: any, messageEl: MessageElement) {
   if (messageEl.querySelector(".lt-repeat")) return;
 
   if (

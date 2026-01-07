@@ -77,7 +77,7 @@ function enhanceMessage(component: any) {
 
   Promise.resolve(slot.updatePosition?.()).then(() => {
     if (configStore.value.message.repeatMessage.enabled) {
-      insertRepeatBtn(aioData, slot, msgRecord, messageEl);
+      insertRepeatBtn(slot, msgRecord, messageEl);
     }
   });
 }
