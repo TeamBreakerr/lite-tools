@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM"],
+    "types": ["node", "electron", "@qwqnt/types"]
+  },
+  "include": ["**/*"],
+  "exclude": ["node_modules", "dist"]
+}

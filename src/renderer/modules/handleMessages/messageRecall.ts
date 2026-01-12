@@ -1,9 +1,6 @@
 import { formatChineseDate } from "@/renderer/modules/handleMessages/formatChineseDate";
 
-import type { LiteTools } from "@/preload";
 import type { SlotElement } from "./type";
-
-declare const lite_tools: LiteTools;
 
 function insertRecallTag(slot: SlotElement, msgRecord: any) {
   if (msgRecord.lt_recall) {

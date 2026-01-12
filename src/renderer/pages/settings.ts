@@ -6,9 +6,6 @@ import { configStore } from "@/renderer/modules/configStore";
 import { isQwQ } from "@/renderer/utils/loaderInspector";
 import { normalizePathsSimple } from "@/common/normalizePathsSimple";
 import type { Config } from "@/types/config";
-import type { LiteTools } from "@/preload/index";
-
-declare const lite_tools: LiteTools;
 
 type OptionItem = {
   name: string;

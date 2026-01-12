@@ -1,10 +1,7 @@
 import { configStore } from "@/renderer/modules/configStore";
 import { createComparator } from "@/common/createComparator";
 import { createLogger } from "@/renderer/utils/createLogger";
-import type { LiteTools } from "@/preload";
 import type { Config } from "@/types/config";
-
-declare const lite_tools: LiteTools;
 
 type WallpaperData = {
   type: "image" | "video";
