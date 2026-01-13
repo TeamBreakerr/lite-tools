@@ -22,7 +22,8 @@
   "main": "./dist/main/index.js",
   "scripts": {
     "build": "ts-node -P ./tsconfig.json scripts/build.ts",
-    "dev": "ts-node -P ./tsconfig.json scripts/build.ts --watch"
+    "dev": "ts-node -P ./tsconfig.json scripts/build.ts --watch",
+    "check:types": "tsc --build --watch --noEmit"
   },
   "keywords": [],
   "packageManager": "pnpm@10.16.0",
@@ -35,6 +36,6 @@
     "esbuild-sass-plugin": "^3.3.1",
     "sass": "^1.89.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   }
 }
