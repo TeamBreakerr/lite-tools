@@ -5,5 +5,5 @@
     "lib": ["ESNext", "DOM"],
     "types": ["node", "electron", "@qwqnt/types"]
   },
-  "include": ["**/*", "../types/**/*", "../common/**/*", "../renderer/types/plugins.ts"]
+  "include": ["**/*", "../types/**/*", "../config/**/*", "../common/**/*"]
 }
