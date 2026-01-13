@@ -1,9 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "composite": true,
     "lib": ["ESNext", "DOM"],
     "types": ["@qwqnt/types"]
   },
-  "include": ["**/*", "../types/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["**/*", "../types/**/*", "../config/**/*", "../common/**/*"]
 }

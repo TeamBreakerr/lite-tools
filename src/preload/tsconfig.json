@@ -1,9 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "composite": true,
     "lib": ["ESNext", "DOM"],
     "types": ["node", "electron", "@qwqnt/types"]
   },
-  "include": ["**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["**/*", "../types/**/*", "../common/**/*", "../renderer/types/plugins.ts"]
 }

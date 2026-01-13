@@ -1,3 +1,4 @@
+// src/types/config.d.ts
 import configJson from "@/config/main.template.json";
 
 type BaseConfig = typeof configJson;
@@ -27,6 +28,10 @@ type ExtendedConfig = Omit<BaseConfig, "chatFuncBar" | "topFuncBar"> & {
   };
 };
 
-type Config = ExtendedConfig;
+declare global {
+  type Config = ExtendedConfig;
+  type FuncBar = FuncBar;
+  type BaseConfig = BaseConfig;
+}
 
-export type { FuncBar, Config, BaseConfig };
+export {};

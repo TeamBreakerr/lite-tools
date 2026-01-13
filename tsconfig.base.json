@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "ESNext",
+    "module": "ESNext",
     "moduleResolution": "Node",
 
     "strict": true,
@@ -17,7 +18,9 @@
     "paths": {
       "@/*": ["src/*"]
     },
-
-    "noEmit": true
-  }
+    "declaration": true, // 配合 composite 需要
+    "declarationMap": true
+    // "noEmit": true
+  },
+  "exclude": ["node_modules", "dist"]
 }
