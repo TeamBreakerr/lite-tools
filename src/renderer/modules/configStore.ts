@@ -1,5 +1,3 @@
-import type { Config } from "@/types/config";
-
 type ConfigListener = (config: Config) => void;
 
 enum InitStatus {

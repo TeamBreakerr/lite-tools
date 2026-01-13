@@ -5,7 +5,6 @@ import { configPath, dataPath } from "@/main/utils/localPath";
 import { UserConfigRegistry } from "@/main/modules/UserConfigRegistry";
 import { globalBroadcast } from "@/main/utils/globalBroadcast";
 import configTemplate from "@/config/main.template.json";
-import type { BaseConfig as Config } from "@/types/config";
 
 type ConfigListener = (config: Config) => void;
 
@@ -84,7 +83,7 @@ class ConfigManager {
     return result as T;
   }
 
-  private loadConfig(configPath: string): Config {
+  private loadConfig(configPath: string): BaseConfig {
     try {
       if (!fs.existsSync(configPath)) {
         fs.writeFileSync(configPath, JSON.stringify(configTemplate, null, 2), "utf-8");

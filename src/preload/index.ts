@@ -1,7 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { Config } from "@/types/config";
-import type { RecallData } from "@/main/modules/preventRecall";
-import type { WallpaperData } from "@/renderer/modules/wallpaperManager";
+import type { RecallMsgId } from "@/common/types/preventRecall";
+import type { WallpaperData } from "@/common/types/wallpaper";
 
 const exposeFunctions = {
   // 配置相关
@@ -19,8 +18,8 @@ const exposeFunctions = {
     ipcRenderer.on("lite_tools.wallpaperChanged", (_, data) => callback(data)),
   getWallpaperData: () => ipcRenderer.send("lite_tools.getWallpaperData"),
   // 防撤回相关
-  onRecallMessagesFound: (callback: (recallDatas: RecallData[]) => void) =>
-    ipcRenderer.on("lite_tools.recallMessagesFound", (_, recallDatas: RecallData[]) => callback(recallDatas)),
+  onRecallMessagesFound: (callback: (recallMsgIds: RecallMsgId[]) => void) =>
+    ipcRenderer.on("lite_tools.recallMessagesFound", (_, recallMsgIds: RecallMsgId[]) => callback(recallMsgIds)),
   onUpdateRecallCacheSize: (callback: (size: number) => void) =>
     ipcRenderer.on("lite_tools.updateRecallCacheSize", (_, size: number) => callback(size)),
   getRecallCacheSize: (): Promise<number> => ipcRenderer.invoke("lite_tools.getRecallCacheSize"),

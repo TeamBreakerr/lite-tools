@@ -10,8 +10,6 @@ import { onComponentMount } from "@/renderer/modules/vueComponentTracker";
 import { waitForInstance } from "@/renderer/utils/domWaitFor";
 import { wallpaperManager } from "@/renderer/modules/wallpaperManager";
 
-import type { Config } from "@/types/config";
-
 const log = createLogger("main");
 
 async function setupMainPage() {

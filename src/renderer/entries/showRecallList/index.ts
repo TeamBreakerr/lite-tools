@@ -51,7 +51,7 @@ async function getRecallMessagesByUid(peerUid: string) {
     const recallMsgItemEl = parser.parseFromString(recallMsgItem, "text/html").querySelector<HTMLElement>(".msg-item")!;
     const recallTailEl = parser.parseFromString(recallTail, "text/html").querySelector<HTMLElement>(".tail")!;
     recallTailEl.innerText = message?.lt_recall?.recallTime
-      ? `${formatChineseDate(new Date(message.msgTime * 1000))} 被 ${
+      ? `${formatChineseDate(new Date(parseInt(message.msgTime) * 1000))} 被 ${
           message?.lt_recall?.operatorRemark ||
           message?.lt_recall?.operatorMemRemark ||
           message?.lt_recall?.operatorNick ||

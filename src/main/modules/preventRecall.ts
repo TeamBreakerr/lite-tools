@@ -12,15 +12,15 @@ import { pluginPath } from "@/main/utils/localPath";
 import { getUserInfo } from "@/main/utils/nativeCall";
 import { getImageUrl } from "@/main/utils/getImageUrl";
 
-const log = createLogger("preventRecall",true);
+import type { RecallChatList, RecallData, RecallMsgId } from "@/common/types/preventRecall";
+
+const log = createLogger("preventRecall", true);
 
 type MsgId = string;
-type Message = any;
+type Uid = string;
 type PicElement = any;
-type ChatPeerUid = string;
-type ChatName = string;
-type RecallChatList = Map<ChatPeerUid, { peerName: ChatName; chatType: number; peerUin: string; msgTime: number }>;
 type RecallCache = Map<MsgId, Message>;
+type AllRecallCache = Map<Uid, Message[]>;
 type FilePath = string;
 type PersistedFiles = { time: number; path: FilePath; info: { version: number; msgCount: number } }[];
 type RecallElement = {
@@ -32,10 +32,7 @@ type RecallElement = {
   origMsgSenderRemark: string;
   origMsgSenderMemRemark: string;
 };
-type RecallData = {
-  id: number;
-  recallData?: ReturnType<typeof MsgStore.createRecallData>;
-};
+
 type ChatList = {
   name: string;
   chatType: number;
@@ -68,7 +65,7 @@ class MsgStore {
   // 撤回消息查看窗口
   private recallMsgListWindow: BrowserWindow | null = null;
   // 所有撤回消息缓存，仅用于打开查看撤回消息列表页面时使用
-  private allCaches: RecallCache = new Map();
+  private allCaches: AllRecallCache = new Map();
   private readonly RECALL_CACHE_VERSION = 1;
   private readonly RECALL_CACHE_MAGIC = Buffer.from("LTRECALL");
   // 缓存持久化文件的数量
@@ -147,7 +144,7 @@ class MsgStore {
 
   private async getAllRecallChatList() {
     const chatList: RecallChatList = new Map();
-    const allMessages: any[] = [];
+    const allMessages: Message[] = [];
     this.allCaches.clear();
 
     for (const persistedFile of this.persistedFiles) {
@@ -639,7 +636,7 @@ const msgStore = new MsgStore();
 
 function preventRecall(msgList: Message[]) {
   if (!msgStore.ready) return;
-  const recallDatas: RecallData[] = [];
+  const recallMsgIds: RecallMsgId[] = [];
   for (let index = 0; index < msgList.length; index++) {
     const message = msgList[index];
     const recallInfo = MsgStore.getRecallInfo(message);
@@ -652,18 +649,15 @@ function preventRecall(msgList: Message[]) {
       const recallMsg = msgStore.findRecallMsg(message);
       if (recallMsg) {
         msgList[index] = recallMsg;
-        recallDatas.push({
-          id: recallMsg.msgId,
-        });
+        recallMsgIds.push(recallMsg.msgId);
       }
     } else {
       msgStore.addMessageToCache(message);
     }
   }
-  if (recallDatas.length) {
-    globalBroadcast("lite_tools.recallMessagesFound", recallDatas);
+  if (recallMsgIds.length) {
+    globalBroadcast("lite_tools.recallMessagesFound", recallMsgIds);
   }
 }
 
-export type { RecallData, ChatList, Message, RecallChatList };
 export { preventRecall };

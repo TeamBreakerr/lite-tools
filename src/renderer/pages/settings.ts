@@ -5,7 +5,6 @@ import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/configStore";
 import { isQwQ } from "@/renderer/utils/loaderInspector";
 import { normalizePathsSimple } from "@/common/normalizePathsSimple";
-import type { Config } from "@/types/config";
 
 type OptionItem = {
   name: string;

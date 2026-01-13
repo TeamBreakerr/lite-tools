@@ -3,6 +3,12 @@ import { createLogger } from "@/main/utils/createLogger";
 
 type PicElement = any;
 
+type RkeyData = {
+  private_rkey: string;
+  group_rkey: string;
+  expired_time: number;
+};
+
 const IMAGE_HOST = "https://gchat.qpic.cn";
 const IMAGE_HOST_NT = "https://multimedia.nt.qq.com.cn";
 const log = createLogger("getImageUrl");
@@ -59,7 +65,7 @@ async function getRkey(type: "private_rkey" | "group_rkey") {
     try {
       const res = await fetch(configManager.value.global.rkeyServerUrl);
       const data = await res.json();
-      const { expired_time, private_rkey, group_rkey } = data;
+      const { expired_time, private_rkey, group_rkey } = data as RkeyData;
       rkeyData.expired_time = expired_time * 1000;
       rkeyData.private_rkey = private_rkey;
       rkeyData.group_rkey = group_rkey;
