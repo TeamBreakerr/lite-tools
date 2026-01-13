@@ -1,6 +1,7 @@
 {
   "files": [],
   "references": [
+    { "path": "./src/types" },
     { "path": "./src/common" },
     { "path": "./src/main" },
     { "path": "./src/preload" },

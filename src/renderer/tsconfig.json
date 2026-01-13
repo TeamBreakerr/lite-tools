@@ -2,8 +2,30 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
+    "declaration": true,
+    "strict": true,
+    "rootDir": "./",
+    "outDir": "../../dist/renderer",
     "lib": ["ESNext", "DOM"],
     "types": ["@qwqnt/types"]
   },
-  "include": ["**/*", "../types/**/*", "../config/**/*", "../common/**/*"]
+  "references": [
+    {
+      "path": "../types"
+    },
+    {
+      "path": "../preload"
+    },
+    {
+      "path": "../common"
+    }
+  ],
+  "include": [
+    "**/*",
+    "../types/modules.ts",
+    "../types/global.d.ts",
+    "../types/config.d.ts",
+    "../types/message.d.ts",
+    "../types/peer.d.ts"
+  ]
 }

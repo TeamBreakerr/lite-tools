@@ -5,12 +5,7 @@
     "declaration": true,
     "strict": true,
     "rootDir": "./",
-    "outDir": "../../dist/common"
+    "outDir": "../../dist/types"
   },
-  "references": [
-    {
-      "path": "../types"
-    }
-  ],
-  "include": ["**/*", "../types/peer.d.ts"]
+  "include": ["**/*.d.ts", "**/*.ts"]
 }

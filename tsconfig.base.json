@@ -18,9 +18,9 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "declaration": true, // 配合 composite 需要
+    "declaration": true,
     "declarationMap": true
-    // "noEmit": true
   },
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

@@ -1,9 +1,24 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "rootDir": "./",
+    "outDir": "../../dist/main",
     "composite": true,
     "lib": ["ESNext"],
     "types": ["node", "electron", "@qwqnt/types"]
   },
-  "include": ["**/*", "../types/**/*", "../config/**/*", "../common/**/*"]
+  "references": [
+    {
+      "path": "../types"
+    },
+    {
+      "path": "../common"
+    }
+  ],
+  "include": [
+    "**/*",
+    "../types/config.d.ts",
+    "../types/message.d.ts",
+    "../types/global.d.ts"
+  ]
 }

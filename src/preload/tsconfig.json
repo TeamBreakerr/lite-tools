@@ -2,8 +2,20 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
+    "declaration": true,
+    "strict": true,
+    "rootDir": "./",
+    "outDir": "../../dist/preload",
     "lib": ["ESNext", "DOM"],
     "types": ["node", "electron", "@qwqnt/types"]
   },
-  "include": ["**/*", "../types/**/*", "../config/**/*", "../common/**/*"]
+  "references": [
+    {
+      "path": "../types"
+    },
+    {
+      "path": "../common"
+    }
+  ],
+  "include": ["**/*", "../types/config.d.ts"]
 }
