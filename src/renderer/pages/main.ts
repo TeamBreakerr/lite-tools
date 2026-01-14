@@ -10,11 +10,6 @@ import { onComponentMount } from "@/renderer/modules/vueComponentTracker";
 import { waitForInstance } from "@/renderer/utils/domWaitFor";
 import { wallpaperManager } from "@/renderer/modules/wallpaperManager";
 
-import type { Config } from "@/types/config";
-import type { LiteTools } from "@/preload";
-
-declare const lite_tools: LiteTools;
-
 const log = createLogger("main");
 
 async function setupMainPage() {

@@ -1,15 +1,15 @@
-// RendererEvents
+// global
 declare namespace RendererEvents {
   const onSettingsWindowCreated: (callback: () => void) => void;
 }
 
-// PluginSettings
 interface IQwQNTPlugin {
   name: string;
-  qwqnt: {
-    name: string;
+  qwqnt?: {
+    name?: string;
     icon?: string;
     inject?: {
+      main?: string;
       renderer?: string;
       preload?: string;
     };

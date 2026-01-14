@@ -1,8 +1,5 @@
 import { createLogger } from "@/renderer/utils/createLogger";
 
-import type { LiteTools } from "@/preload/index";
-declare const lite_tools: LiteTools;
-
 const log = createLogger("nativeCall");
 
 /**
@@ -147,11 +144,6 @@ function getFileName(path: string) {
   return name;
 }
 
-/**
- *
- * @param {Peer} peer peer对象
- * @param {Array} messages 消息链
- */
 async function sendMessage(peer: Peer, messages: any[]) {
   log("发送消息", peer, messages);
   lite_tools.nativeCall(

@@ -1,9 +1,6 @@
 import { formatChineseDate } from "@/renderer/modules/handleMessages/formatChineseDate";
 
-import type { LiteTools } from "@/preload";
 import type { SlotElement } from "./type";
-
-declare const lite_tools: LiteTools;
 
 function insertRecallTag(slot: SlotElement, msgRecord: any) {
   if (msgRecord.lt_recall) {
@@ -23,9 +20,9 @@ function insertRecallTag(slot: SlotElement, msgRecord: any) {
 }
 
 function initRecallMessageListener(processMessages: any) {
-  lite_tools.onRecallMessagesFound((recallDatas) => {
-    for (const recallData of recallDatas) {
-      const recallMsg = document.getElementById(recallData.id.toString())?.firstElementChild;
+  lite_tools.onRecallMessagesFound((recallMsgIds) => {
+    for (const recallMsgId of recallMsgIds) {
+      const recallMsg = document.getElementById(recallMsgId)?.firstElementChild;
       if (recallMsg && recallMsg?.__VUE__?.[0]) {
         processMessages(recallMsg.__VUE__[0]);
       }

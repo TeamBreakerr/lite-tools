@@ -7,8 +7,6 @@ import { setupHandleMessages } from "@/renderer/modules/handleMessages";
 import { waitForInstance } from "@/renderer/utils/domWaitFor";
 import { wallpaperManager } from "@/renderer/modules/wallpaperManager";
 
-import type { Config } from "@/types/config";
-
 const log = createLogger("chat");
 
 async function setupChatPage() {

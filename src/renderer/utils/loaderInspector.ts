@@ -1,4 +1,4 @@
-const isQwQ = "qwqnt" in window;
-const isLL = "LiteLoader" in window;
+const isqwq = "qwqnt" in window;
+const isll = "LiteLoader" in window;
 
-export { isQwQ, isLL };
+export { isqwq, isll };

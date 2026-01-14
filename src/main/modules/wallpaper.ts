@@ -4,8 +4,7 @@ import { rangesServer } from "@/main/utils/rangesServer";
 import { configManager } from "@/main/modules/configManager";
 import { globalBroadcast } from "@/main/utils/globalBroadcast";
 import { createLogger } from "@/main/utils/createLogger";
-import type { WallpaperData } from "@/renderer/modules/wallpaperManager";
-import type { Config } from "@/types/config";
+import type { WallpaperData } from "@/common/types/wallpaper";
 
 const log = createLogger("wallpaper");
 

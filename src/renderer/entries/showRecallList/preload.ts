@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { Message, RecallChatList } from "@/main/modules/preventRecall";
+import type { RecallChatList } from "@/common/types/preventRecall";
 
 const exposeFunctions = {
   getAllRecallChatList: (): Promise<RecallChatList> => ipcRenderer.invoke("lite_tools.getAllRecallChatList"),
