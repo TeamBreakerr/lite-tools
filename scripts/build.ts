@@ -1,21 +1,26 @@
 import { build, context, BuildOptions } from "esbuild";
-import { sassPlugin } from "esbuild-sass-plugin";
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { basename, dirname } from "node:path";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from "node:fs";
+import { basename, join, extname, dirname } from "node:path";
 import chokidar from "chokidar";
+import * as sass from "sass";
 
 const isDev = process.argv.includes("--watch");
+
+const SCSS_SRC_DIR = "src/renderer/scss";
+const OUT_CSS_DIR = "dist/css";
 
 // 通用基础配置
 const baseConfig: BuildOptions = {
   bundle: true,
   charset: "utf8",
   minify: !isDev,
+  logLevel: "info",
 };
 
-// 构建目标列表
+// 构建目标列表（移除 SCSS 插件）
 const builds: { config: BuildOptions; watchHtml?: string }[] = [
   {
+    // main
     config: {
       ...baseConfig,
       platform: "node",
@@ -28,6 +33,7 @@ const builds: { config: BuildOptions; watchHtml?: string }[] = [
     },
   },
   {
+    // preload
     config: {
       ...baseConfig,
       platform: "node",
@@ -40,6 +46,7 @@ const builds: { config: BuildOptions; watchHtml?: string }[] = [
     },
   },
   {
+    // renderer-qwq
     config: {
       ...baseConfig,
       platform: "browser",
@@ -48,11 +55,11 @@ const builds: { config: BuildOptions; watchHtml?: string }[] = [
       tsconfig: "src/renderer/tsconfig.json",
       entryPoints: ["src/renderer/index.qwq.ts"],
       outfile: "dist/renderer/index.qwq.js",
-      loader: { ".html": "text" },
-      plugins: [sassPlugin({ type: "css-text" })],
+      loader: { ".html": "text", ".svg": "text" },
     },
   },
   {
+    // renderer-ll
     config: {
       ...baseConfig,
       platform: "browser",
@@ -61,25 +68,24 @@ const builds: { config: BuildOptions; watchHtml?: string }[] = [
       tsconfig: "src/renderer/tsconfig.json",
       entryPoints: ["src/renderer/index.ll.ts"],
       outfile: "dist/renderer/index.ll.js",
-      loader: { ".html": "text" },
-      plugins: [sassPlugin({ type: "css-text" })],
+      loader: { ".html": "text", ".svg": "text" },
     },
   },
   {
+    // renderer-recall
     config: {
       ...baseConfig,
       platform: "browser",
       target: "esnext",
-      format: "esm",
       loader: { ".html": "text" },
       tsconfig: "src/renderer/tsconfig.json",
       entryPoints: ["src/renderer/entries/showRecallList/index.ts"],
       outfile: "dist/renderer/entries/showRecallList/index.js",
-      plugins: [sassPlugin({ type: "style" })],
     },
     watchHtml: "src/renderer/entries/showRecallList/index.html",
   },
   {
+    // renderer-preload
     config: {
       ...baseConfig,
       platform: "node",
@@ -103,8 +109,46 @@ function processHtml(srcPath: string, outPath: string) {
   writeFileSync(outPath, newHtml, "utf-8");
 }
 
+// 编译单个 SCSS 文件
+function compileScssFile(srcFile: string, outDir: string) {
+  const result = sass.compile(srcFile, { style: "expanded" });
+  if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
+  const outFile = join(outDir, basename(srcFile, ".scss") + ".css");
+  writeFileSync(outFile, result.css, "utf-8");
+  console.log(`[SCSS] ${srcFile} → ${outFile}`);
+}
+
+// 批量编译 SCSS
+function compileAllScss() {
+  const files = readdirSync(SCSS_SRC_DIR).filter((f) => extname(f) === ".scss");
+  files.forEach((file) => compileScssFile(join(SCSS_SRC_DIR, file), OUT_CSS_DIR));
+}
+
+// watch SCSS 文件变化
+function watchScss() {
+  chokidar.watch(`${SCSS_SRC_DIR}/*.scss`, { ignoreInitial: true }).on("all", (event, filePath) => {
+    const cssFile = join(OUT_CSS_DIR, basename(filePath, ".scss") + ".css");
+
+    if (event === "unlink") {
+      // 删除对应的 CSS 文件
+      if (existsSync(cssFile)) {
+        unlinkSync(cssFile);
+        console.log(`[SCSS] Deleted ${cssFile}`);
+      }
+    } else if (extname(filePath) === ".scss") {
+      // 编译新增或修改的 SCSS
+      console.log(`[SCSS] Update ${basename(filePath)}`);
+      compileScssFile(filePath, OUT_CSS_DIR);
+    }
+  });
+}
+
 // 批量构建
 async function runBuild() {
+  // 先构建 SCSS
+  compileAllScss();
+  if (isDev) watchScss();
+
   if (isDev) {
     console.log("Starting development build...");
     const contexts = await Promise.all(
@@ -113,10 +157,7 @@ async function runBuild() {
         await ctx.watch();
 
         if (watchHtml) {
-          // 初始化一次
-          if (!existsSync(dirname(config.outfile!))) {
-            mkdirSync(dirname(config.outfile!), { recursive: true });
-          }
+          if (!existsSync(dirname(config.outfile!))) mkdirSync(dirname(config.outfile!), { recursive: true });
           chokidar
             .watch(watchHtml, { persistent: true, ignoreInitial: true })
             .on("all", () => processHtml(watchHtml, config.outfile!.replace(/\.js$/, ".html")));
@@ -135,9 +176,7 @@ async function runBuild() {
       await Promise.all(
         builds.map(async ({ config, watchHtml }) => {
           await build(config);
-          if (watchHtml) {
-            processHtml(watchHtml, config.outfile!.replace(/\.js$/, ".html"));
-          }
+          if (watchHtml) processHtml(watchHtml, config.outfile!.replace(/\.js$/, ".html"));
         })
       );
       console.log("Production build completed successfully.");
