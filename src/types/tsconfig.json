@@ -5,7 +5,7 @@
     "declaration": true,
     "strict": true,
     "rootDir": "./",
-    "outDir": "../../dist/types"
+    "outDir": "../../build/types"
   },
   "include": ["**/*.d.ts", "**/*.ts"]
 }

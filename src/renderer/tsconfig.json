@@ -5,7 +5,7 @@
     "declaration": true,
     "strict": true,
     "rootDir": "./",
-    "outDir": "../../dist/renderer",
+    "outDir": "../../build/renderer",
     "lib": ["ESNext", "DOM"],
     "types": ["@qwqnt/types"]
   },
@@ -20,12 +20,5 @@
       "path": "../common"
     }
   ],
-  "include": [
-    "**/*",
-    "../types/modules.ts",
-    "../types/global.d.ts",
-    "../types/config.d.ts",
-    "../types/message.d.ts",
-    "../types/peer.d.ts"
-  ]
+  "include": ["**/*", "../types/*"]
 }

@@ -5,7 +5,7 @@
     "declaration": true,
     "strict": true,
     "rootDir": "./",
-    "outDir": "../../dist/preload",
+    "outDir": "../../build/preload",
     "lib": ["ESNext", "DOM"],
     "types": ["node", "electron", "@qwqnt/types"]
   },
@@ -17,5 +17,5 @@
       "path": "../common"
     }
   ],
-  "include": ["**/*", "../types/config.d.ts"]
+  "include": ["**/*", "../types/*"]
 }
