@@ -3,7 +3,7 @@ import settingsHTML from "@/renderer/views/settings.html";
 import settingsCss from "@/renderer/scss/settings.scss";
 import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/configStore";
-import { isQwQ } from "@/renderer/utils/loaderInspector";
+import { isll } from "@/renderer/utils/loaderInspector";
 import { normalizePathsSimple } from "@/common/normalizePathsSimple";
 
 type OptionItem = {
@@ -23,7 +23,7 @@ async function initSettingView(view: HTMLDivElement) {
   devInfo.className = "wrap";
   devInfo.innerHTML = `
   <div class="vertical-list-item">
-  <p>加载器：${isQwQ ? "QWQNT" : "LiteLoaderQQNT"}</p>
+  <p>加载器：${isll ? "LiteLoaderQQNT" : "QWQNT"}</p>
   <p>插件名称：${packageJson.name}</p>
   <p>插件版本：${packageJson.version}</p>
   </div>
