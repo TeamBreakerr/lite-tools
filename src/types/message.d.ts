@@ -1,6 +1,15 @@
-import { RecallData } from "@/common/types/preventRecall";
-
 declare global {
+
+  export interface RecallData {
+    operatorNick: string;
+    operatorRemark: string;
+    operatorMemRemark: string;
+    origMsgSenderNick: string;
+    origMsgSenderRemark: string;
+    origMsgSenderMemRemark: string;
+    recallTime: string;
+  }
+
   export interface MsgElementPic {
     picSubType: number;
     fileName: string;
@@ -289,7 +298,7 @@ declare global {
     categoryManage: number;
     msgEventInfo: any;
     sourceType: number;
-    lt_recall: RecallData.recallData;
+    lt_recall?: RecallData;
   }
 
   export type MessageList = Message[];

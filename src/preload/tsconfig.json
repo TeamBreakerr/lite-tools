@@ -17,5 +17,5 @@
       "path": "../common"
     }
   ],
-  "include": ["**/*", "../types/*"]
+  "include": ["**/*", "../types/*", "../common/*"]
 }

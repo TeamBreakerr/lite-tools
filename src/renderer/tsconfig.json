@@ -20,5 +20,5 @@
       "path": "../common"
     }
   ],
-  "include": ["**/*", "../types/*"]
+  "include": ["**/*", "../types/*", "../preload/*", "../common/*"]
 }

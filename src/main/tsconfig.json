@@ -1,9 +1,11 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "strict": true,
     "rootDir": "./",
     "outDir": "../../build/main",
-    "composite": true,
     "lib": ["ESNext"],
     "types": ["node", "electron", "@qwqnt/types"]
   },
@@ -15,5 +17,5 @@
       "path": "../common"
     }
   ],
-  "include": ["**/*", "../types/*"]
+  "include": ["**/*", "../types/*", "../common/*"]
 }
