@@ -1,4 +1,3 @@
-import "@/renderer/entries/showRecallList/index.scss";
 import type { Lt_showRecallList } from "@/renderer/entries/showRecallList/preload";
 import recallGroupItem from "@/assets/html/recall/recallGroupItem.html";
 import recallMsgItem from "@/assets/html/recall/recallMsgItem.html";

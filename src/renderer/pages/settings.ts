@@ -1,6 +1,5 @@
 import packageJson from "package.json";
 import settingsHTML from "@/renderer/views/settings.html";
-import settingsCss from "@/renderer/scss/settings.scss";
 import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/configStore";
 import { isll } from "@/renderer/utils/loaderInspector";
@@ -14,7 +13,6 @@ type OptionItem = {
 const log = createLogger("settings");
 
 async function initSettingView(view: HTMLDivElement) {
-  document.head.appendChild(document.createElement("style")).appendChild(document.createTextNode(settingsCss));
   await configStore.ready;
   const config = configStore.value;
   log("获取到配置数据", config);
