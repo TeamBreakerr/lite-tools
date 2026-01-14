@@ -21,9 +21,9 @@
   "license": "AGPL-3.0-only",
   "main": "./dist/main/index.js",
   "scripts": {
-    "build": "tsc -b --emitDeclarationOnly && ts-node -P ./tsconfig.json scripts/build.ts",
+    "build": "ts-node -P ./tsconfig.json scripts/build.ts",
     "dev": "ts-node -P ./tsconfig.json scripts/build.ts --watch",
-    "check:types": "tsc --build --watch --noEmit"
+    "check:types": "tsc --build --emitDeclarationOnly"
   },
   "keywords": [],
   "packageManager": "pnpm@10.16.0",
