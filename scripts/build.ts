@@ -6,8 +6,8 @@ import * as sass from "sass";
 
 const isDev = process.argv.includes("--watch");
 
-const SCSS_SRC_DIR = "src/renderer/scss";
-const OUT_CSS_DIR = "dist/css";
+const SCSS_SRC_DIR = "./src/renderer/scss";
+const OUT_CSS_DIR = "./dist/css";
 
 // 通用基础配置
 const baseConfig: BuildOptions = {
@@ -115,7 +115,7 @@ function compileScssFile(srcFile: string, outDir: string) {
   if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
   const outFile = join(outDir, basename(srcFile, ".scss") + ".css");
   writeFileSync(outFile, result.css, "utf-8");
-  console.log(`[SCSS] ${srcFile} → ${outFile}`);
+  console.log(`[SCSS] ${basename(srcFile)} → ${basename(outFile)}`);
 }
 
 // 批量编译 SCSS
@@ -126,31 +126,36 @@ function compileAllScss() {
 
 // watch SCSS 文件变化
 function watchScss() {
-  chokidar.watch(`${SCSS_SRC_DIR}/*.scss`, { ignoreInitial: true }).on("all", (event, filePath) => {
-    const cssFile = join(OUT_CSS_DIR, basename(filePath, ".scss") + ".css");
-
-    if (event === "unlink") {
-      // 删除对应的 CSS 文件
-      if (existsSync(cssFile)) {
-        unlinkSync(cssFile);
-        console.log(`[SCSS] Deleted ${cssFile}`);
+  console.log("开始监听 scss变动");
+  chokidar
+    .watch(SCSS_SRC_DIR, {
+      ignoreInitial: true,
+      ignored: (path, stats) => {
+        return !!(stats?.isFile() && !path.endsWith(".scss"));
+      },
+    })
+    .on("all", (event, filePath) => {
+      const cssFile = join(OUT_CSS_DIR, basename(filePath, ".scss") + ".css");
+      if (event === "unlink") {
+        // 删除对应的 CSS 文件
+        if (existsSync(cssFile)) {
+          unlinkSync(cssFile);
+          console.log(`[SCSS] Deleted ${cssFile}`);
+        }
+      } else if (extname(filePath) === ".scss") {
+        // 编译新增或修改的 SCSS
+        compileScssFile(filePath, OUT_CSS_DIR);
       }
-    } else if (extname(filePath) === ".scss") {
-      // 编译新增或修改的 SCSS
-      console.log(`[SCSS] Update ${basename(filePath)}`);
-      compileScssFile(filePath, OUT_CSS_DIR);
-    }
-  });
+    });
 }
 
 // 批量构建
 async function runBuild() {
   // 先构建 SCSS
   compileAllScss();
-  if (isDev) watchScss();
-
   if (isDev) {
     console.log("Starting development build...");
+    watchScss();
     const contexts = await Promise.all(
       builds.map(async ({ config, watchHtml }) => {
         const ctx = await context(config);
