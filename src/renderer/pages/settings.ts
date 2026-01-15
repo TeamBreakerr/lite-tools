@@ -1,10 +1,10 @@
 import packageJson from "package.json";
 import settingsHTML from "@/renderer/views/settings.html";
-import settingsCss from "@/renderer/scss/settings.scss";
 import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/configStore";
 import { isll } from "@/renderer/utils/loaderInspector";
 import { normalizePathsSimple } from "@/common/normalizePathsSimple";
+import { styleManager } from "@/renderer/modules/styleManager";
 
 type OptionItem = {
   name: string;
@@ -14,7 +14,8 @@ type OptionItem = {
 const log = createLogger("settings");
 
 async function initSettingView(view: HTMLDivElement) {
-  document.head.appendChild(document.createElement("style")).appendChild(document.createTextNode(settingsCss));
+  styleManager.inject("settings");
+  styleManager.inject("GitHubMarkdownMini");
   await configStore.ready;
   const config = configStore.value;
   log("获取到配置数据", config);
