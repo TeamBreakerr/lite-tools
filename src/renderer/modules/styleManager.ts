@@ -13,13 +13,21 @@ class StyleManager {
       style.dataset.ltCssName = CSS.escape(cssName);
       document.head.appendChild(style);
       if (__DEV__) {
+        let currentStyle = style;
         const loopUpdate = setInterval(() => {
-          if (style.isConnected) {
-            style.href = cssPath + `?t=${new Date().getTime()}`;
-          } else {
+          if (!currentStyle.isConnected) {
             clearInterval(loopUpdate);
+            return;
           }
-        }, 500);
+          const nextStyle = currentStyle.cloneNode() as HTMLLinkElement;
+          nextStyle.href = cssPath + `?t=${Date.now()}`;
+          nextStyle.onload = () => {
+            currentStyle.replaceWith(nextStyle);
+            currentStyle = nextStyle;
+          };
+
+          currentStyle.after(nextStyle);
+        }, 100);
       }
     } else {
       console.error(`[StyleManager] ${cssName}.css not found`);
