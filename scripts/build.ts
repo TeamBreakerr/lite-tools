@@ -59,7 +59,7 @@ const builds: { config: BuildOptions; watchHtml?: string }[] = [
       tsconfig: "src/renderer/tsconfig.json",
       entryPoints: ["src/renderer/index.qwq.ts"],
       outfile: "dist/renderer/index.qwq.js",
-      loader: { ".html": "text", ".svg": "text" },
+      loader: { ".html": "file", ".svg": "file" },
     },
   },
   {
@@ -72,34 +72,35 @@ const builds: { config: BuildOptions; watchHtml?: string }[] = [
       tsconfig: "src/renderer/tsconfig.json",
       entryPoints: ["src/renderer/index.ll.ts"],
       outfile: "dist/renderer/index.ll.js",
-      loader: { ".html": "text", ".svg": "text" },
+      loader: { ".html": "file", ".svg": "file" },
     },
   },
   {
-    // renderer-recall
-    config: {
-      ...baseConfig,
-      platform: "browser",
-      target: "esnext",
-      loader: { ".html": "text" },
-      tsconfig: "src/renderer/tsconfig.json",
-      entryPoints: ["src/renderer/entries/showRecallList/index.ts"],
-      outfile: "dist/renderer/entries/showRecallList/index.js",
-    },
-    watchHtml: "src/renderer/entries/showRecallList/index.html",
-  },
-  {
-    // renderer-preload
+    // preload-recallMsgViewer
     config: {
       ...baseConfig,
       platform: "node",
       target: "node20",
       format: "cjs",
       tsconfig: "src/renderer/tsconfig.json",
-      entryPoints: ["src/renderer/entries/showRecallList/preload.ts"],
-      outfile: "dist/renderer/entries/showRecallList/preload.js",
+      entryPoints: ["src/preload/recallMsgViewer.ts"],
+      outfile: "dist/preload/recallMsgViewer.js",
       external: ["electron"],
     },
+  },
+  {
+    // renderer-recallMsgViewer
+    config: {
+      ...baseConfig,
+      platform: "browser",
+      target: "esnext",
+      format: "iife",
+      tsconfig: "src/renderer/tsconfig.json",
+      entryPoints: ["src/renderer/pages/recallMsgViewer.ts"],
+      outfile: "dist/renderer/pages/recallMsgViewer/index.js",
+      loader: { ".html": "file" },
+    },
+    watchHtml: "src/assets/html/recallMsgViewer/index.html",
   },
 ];
 
