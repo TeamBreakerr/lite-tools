@@ -4,6 +4,7 @@ import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/configStore";
 import { isll } from "@/renderer/utils/loaderInspector";
 import { normalizePathsSimple } from "@/common/normalizePathsSimple";
+import { styleManager } from "@/renderer/modules/styleManager";
 
 type OptionItem = {
   name: string;
@@ -13,6 +14,8 @@ type OptionItem = {
 const log = createLogger("settings");
 
 async function initSettingView(view: HTMLDivElement) {
+  styleManager.inject("settings");
+  styleManager.inject("GitHubMarkdownMini");
   await configStore.ready;
   const config = configStore.value;
   log("获取到配置数据", config);

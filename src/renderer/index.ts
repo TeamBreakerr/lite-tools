@@ -1,5 +1,6 @@
 import { getHash } from "@/renderer/utils/getHash";
 import { createLogger } from "@/renderer/utils/createLogger";
+import { styleManager } from "@/renderer/modules/styleManager";
 
 // pages
 import { setupMainPage } from "@/renderer/pages/main";
@@ -11,6 +12,7 @@ const log = createLogger("renderer");
 log("start");
 
 export async function main() {
+  styleManager.inject("global");
   const hash = await getHash();
   log("hash Update", hash);
   switch (hash) {
