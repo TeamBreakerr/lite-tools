@@ -3,12 +3,11 @@ import { serialize, deserialize } from "node:v8";
 import { deflateSync, inflateSync } from "node:zlib";
 import path from "node:path";
 import fs from "node:fs";
-import { dataPath } from "@/main/utils/localPath";
+import { dataPath, pluginPath } from "@/main/utils/pluginPaths";
 import { settingWindow } from "@/main/utils/captureWindow";
 import { createLogger } from "@/main/utils/createLogger";
 import { configManager } from "@/main/modules/configManager";
 import { globalBroadcast } from "@/main/utils/globalBroadcast";
-import { pluginPath } from "@/main/utils/localPath";
 import { getUserInfo } from "@/main/utils/nativeCall";
 import { getImageUrl } from "@/main/utils/getImageUrl";
 
