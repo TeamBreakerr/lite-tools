@@ -223,11 +223,11 @@ class MsgStore {
         height: 600,
         autoHideMenuBar: true,
         webPreferences: {
-          preload: path.join(pluginPath, `/dist/renderer/entries/showRecallList/preload.js`),
+          preload: path.join(pluginPath, `/dist/preload/recallMsgViewer.js`),
         },
       });
       this.recallMsgListWindow.setMenuBarVisibility(false);
-      const htmlPath = path.join(pluginPath, `/dist/renderer/entries/showRecallList/index.html`);
+      const htmlPath = path.join(pluginPath, `/dist/renderer/pages/recallMsgViewer/index.html`);
       this.recallMsgListWindow.loadFile(htmlPath);
       this.recallMsgListWindow.webContents.on("before-input-event", (_, input) => {
         if (input.key == "F5" && input.type == "keyUp") {
