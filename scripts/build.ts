@@ -15,6 +15,10 @@ const baseConfig: BuildOptions = {
   charset: "utf8",
   minify: !isDev,
   logLevel: "info",
+  treeShaking: true,
+  define: {
+    __DEV__: isDev.toString(),
+  },
 };
 
 // 构建目标列表（移除 SCSS 插件）
