@@ -1,10 +1,12 @@
 import packageJson from "package.json";
-import settingsHTML from "@/renderer/views/settings.html";
+import settingsHTMLPath from "@/renderer/views/settings.html";
 import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/configStore";
 import { isll } from "@/renderer/utils/loaderInspector";
 import { normalizePathsSimple } from "@/common/normalizePathsSimple";
 import { styleManager } from "@/renderer/modules/styleManager";
+import { pluginPath } from "@/renderer/utils/pluginPaths";
+import { join, resolvePath } from "@/renderer/utils/pathUtils";
 
 type OptionItem = {
   name: string;
@@ -19,26 +21,32 @@ async function initSettingView(view: HTMLDivElement) {
   await configStore.ready;
   const config = configStore.value;
   log("获取到配置数据", config);
-
-  const devInfo: HTMLDivElement = document.createElement("div");
-  devInfo.className = "wrap";
-  devInfo.innerHTML = `
+  try {
+    const devInfo: HTMLDivElement = document.createElement("div");
+    devInfo.className = "wrap";
+    devInfo.innerHTML = `
   <div class="vertical-list-item">
   <p>加载器：${isll ? "LiteLoaderQQNT" : "QWQNT"}</p>
   <p>插件名称：${packageJson.name}</p>
   <p>插件版本：${packageJson.version}</p>
   </div>
   `;
-  devInfo.insertAdjacentHTML(
-    "afterbegin",
-    `<div style="color: red;justify-content: center;" class="vertical-list-item">
+    devInfo.insertAdjacentHTML(
+      "afterbegin",
+      `<div style="color: red;justify-content: center;" class="vertical-list-item">
     <p><strong>该版本仅供内部测试，请勿外传</strong></p>
   </div>`
-  );
-  view.insertAdjacentHTML("beforeend", settingsHTML);
-  view.querySelector(".lite-tools-settings")!.insertAdjacentElement("afterbegin", devInfo);
-  log("初始化HTML完成");
-  initSettings(view, config);
+    );
+    const settingsHTML = await (await fetch(resolvePath(join(pluginPath, "dist/renderer", settingsHTMLPath)))).text();
+    view.insertAdjacentHTML("beforeend", settingsHTML);
+    view.querySelector(".lite-tools-settings")!.insertAdjacentElement("afterbegin", devInfo);
+    log("初始化HTML完成");
+    initSettings(view, config);
+  } catch (err: any) {
+    log("初始化出错", err);
+    view.insertAdjacentHTML("beforeend", `<div class="error">初始化配置页面出现错误：</div>`);
+    view.insertAdjacentHTML("beforeend", `<pre class="error">${err}${err?.stack}</pre>`);
+  }
 }
 
 async function initSettings(view: HTMLDivElement, config: Config) {
