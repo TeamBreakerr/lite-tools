@@ -27,7 +27,7 @@ class StyleManager {
           };
 
           currentStyle.after(nextStyle);
-        }, 100);
+        }, 1000);
       }
     } else {
       console.error(`[StyleManager] ${cssName}.css not found`);
