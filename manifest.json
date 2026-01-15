@@ -2,7 +2,7 @@
   "manifest_version": 4,
   "type": "extension",
   "name": "轻量工具箱",
-  "slug": "lite_tools",
+  "slug": "lite-tools",
   "description": "轻量 · 优雅 · 高效",
   "version": "4.0.0-alpha.dev",
   "icon": "./icon.png",
@@ -21,6 +21,6 @@
   },
   "repository": {
     "repo": "xiyuesaves/lite_tools",
-    "branch": "v5-dev-ts"
+    "branch": "dev/v5"
   }
 }
