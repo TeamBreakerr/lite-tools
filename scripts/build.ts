@@ -1,13 +1,17 @@
 import { build, context, BuildOptions } from "esbuild";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from "node:fs";
 import { basename, join, extname, dirname } from "node:path";
+import { execSync } from "node:child_process";
 import chokidar from "chokidar";
 import * as sass from "sass";
+import * as AdmZip from "adm-zip";
 
 const isDev = process.argv.includes("--watch");
+const isAlpha = process.argv.includes("--alpha");
 
 const SCSS_SRC_DIR = "./src/renderer/scss";
 const OUT_CSS_DIR = "./dist/css";
+const packageJson = JSON.parse(readFileSync("package.json", "utf-8"));
 
 // 通用基础配置
 const baseConfig: BuildOptions = {
@@ -19,6 +23,8 @@ const baseConfig: BuildOptions = {
   assetNames: "assets/[name]-[hash]",
   define: {
     __DEV__: isDev.toString(),
+    __VERSION__: `"${packageJson.version}"`,
+    __BUILD_DATE__: `"${new Date().toLocaleDateString("zh-CN", { hour12: false })}"`,
   },
 };
 
@@ -142,13 +148,11 @@ function watchScss() {
     .on("all", (event, filePath) => {
       const cssFile = join(OUT_CSS_DIR, basename(filePath, ".scss") + ".css");
       if (event === "unlink") {
-        // 删除对应的 CSS 文件
         if (existsSync(cssFile)) {
           unlinkSync(cssFile);
           console.log(`[SCSS] Deleted ${cssFile}`);
         }
       } else if (extname(filePath) === ".scss") {
-        // 编译新增或修改的 SCSS
         compileScssFile(filePath, OUT_CSS_DIR);
       }
     });
@@ -156,10 +160,9 @@ function watchScss() {
 
 // 批量构建
 async function runBuild() {
-  // 先构建 SCSS
-  compileAllScss();
   if (isDev) {
     console.log("Starting development build...");
+    compileAllScss();
     watchScss();
     const contexts = await Promise.all(
       builds.map(async ({ config, watchHtml }) => {
@@ -181,20 +184,56 @@ async function runBuild() {
     console.log("Development build started. Watching for changes...");
     return contexts;
   } else {
-    console.log("Starting production build...");
     try {
+      const version = getVersionTag();
+      console.log(`Starting build ${isAlpha ? "alpha" : "release"} version: ${version}`);
+      compileAllScss();
       await Promise.all(
         builds.map(async ({ config, watchHtml }) => {
+
+          // 改写为构建版本号
+          config.define!.__VERSION__ = `"v${version}"`;
+
           await build(config);
           if (watchHtml) processHtml(watchHtml, config.outfile!.replace(/\.js$/, ".html"));
         })
       );
-      console.log("Production build completed successfully.");
+      const zip = new AdmZip();
+      zip.addLocalFolder("dist", "dist/");
+      zip.addFile("package.json", setJsonVersion("package.json", version));
+      zip.addFile("manifest.json", setJsonVersion("manifest.json", version));
+      zip.addLocalFile("LICENSE");
+      // zip.addLocalFile("README.md");
+      zip.writeZip(`dist/lite-tools v${version}.zip`);
+      console.log("Build completed successfully.");
     } catch (err) {
       console.error("Error during production build:", err);
       process.exit(1);
     }
   }
+}
+
+function getVersionTag() {
+  try {
+    const tag = execSync("git describe --tags --exact-match", {
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "ignore"],
+    })
+      .trim()
+      .replace(/^v/, "");
+    if (!/^v?\d+\.\d+\.\d+/.test(tag)) {
+      throw new Error("Invalid version tag");
+    }
+    return tag;
+  } catch {
+    throw new Error("Not found version tag");
+  }
+}
+
+function setJsonVersion(filePath: string, version: string) {
+  const json = JSON.parse(readFileSync(filePath, "utf-8"));
+  json.version = version;
+  return Buffer.from(JSON.stringify(json, null, 2), "utf8");
 }
 
 runBuild().catch((err) => {
