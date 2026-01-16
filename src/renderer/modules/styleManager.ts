@@ -48,7 +48,6 @@ class StyleManager {
     const nextStyle = await this.getFile(`${cssPath}?t=${Date.now()}`);
     if (currentStyle !== nextStyle) {
       style.href = `${cssPath}?t=${Date.now()}`;
-      await new Promise((resolve) => (style.onload = resolve));
       currentStyle = nextStyle;
     }
     setTimeout(() => {
