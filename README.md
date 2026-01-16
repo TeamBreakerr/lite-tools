@@ -20,7 +20,8 @@ LiteLoaderQQNT 本体：[LiteLoaderQQNT](https://github.com/mo-jinran/LiteLoader
 
 > [!NOTE]\
 > 插件正在重构中 \
-> 已确定新版本会缺少部分功能，您可以尝试加入 [qwqnt](https://t.me/QwQ_NT) 群组以获取构建好的 alpha 版本插件，或者尝试自行构建 [dev/v5](https://github.com/xiyuesaves/lite-tools/tree/dev/v5) 分支 \
+> 您可以尝试自行构建 [dev/v5](https://github.com/xiyuesaves/lite-tools/tree/dev/v5) 分支 \
+> 或者加入 [qwqnt](https://t.me/QwQ_NT) 群组以获取构建好的 alpha 版本插件 \
 > 该插件在 Windows 环境下测试开发，理论全平台兼容，但没有条件对 Mac 和 Linux 平台进行测试
 
 > [!Warning]\
