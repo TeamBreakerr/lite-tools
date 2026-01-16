@@ -131,7 +131,6 @@ function compileAllScss() {
 
 // watch SCSS 文件变化
 function watchScss() {
-  console.log("开始监听 scss变动");
   chokidar
     .watch(SCSS_SRC_DIR, {
       ignoreInitial: true,
