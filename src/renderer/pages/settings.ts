@@ -1,5 +1,5 @@
 import packageJson from "package.json";
-import settingsHTMLPath from "@/renderer/views/settings.html";
+import settingsHTMLPath from "@/assets/html/settings/index.html";
 import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/configStore";
 import { isll } from "@/renderer/utils/loaderInspector";
