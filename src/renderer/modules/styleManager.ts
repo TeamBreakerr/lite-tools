@@ -13,21 +13,8 @@ class StyleManager {
       style.dataset.ltCssName = CSS.escape(cssName);
       document.head.appendChild(style);
       if (__DEV__) {
-        let currentStyle = style;
-        const loopUpdate = setInterval(() => {
-          if (!currentStyle.isConnected) {
-            clearInterval(loopUpdate);
-            return;
-          }
-          const nextStyle = currentStyle.cloneNode() as HTMLLinkElement;
-          nextStyle.href = cssPath + `?t=${Date.now()}`;
-          nextStyle.onload = () => {
-            currentStyle.replaceWith(nextStyle);
-            currentStyle = nextStyle;
-          };
-
-          currentStyle.after(nextStyle);
-        }, 1000);
+        const currentStyle = await this.getFile(`${cssPath}?t=${Date.now()}`);
+        this.loopCheck(currentStyle, style, cssPath);
       }
     } else {
       console.error(`[StyleManager] ${cssName}.css not found`);
@@ -43,11 +30,30 @@ class StyleManager {
   }
   async checkFile(cssPath: string) {
     try {
-      await fetch(cssPath);
-      return true;
+      const res = await fetch(cssPath, { method: "HEAD" });
+      return res.ok;
     } catch (err) {
       return false;
     }
+  }
+
+  async getFile(cssPath: string) {
+    return await fetch(cssPath).then((res) => res.text());
+  }
+
+  async loopCheck(currentStyle: string, style: HTMLLinkElement, cssPath: string) {
+    if (!style.isConnected) {
+      return;
+    }
+    const nextStyle = await this.getFile(`${cssPath}?t=${Date.now()}`);
+    if (currentStyle !== nextStyle) {
+      style.href = `${cssPath}?t=${Date.now()}`;
+      await new Promise((resolve) => (style.onload = resolve));
+      currentStyle = nextStyle;
+    }
+    setTimeout(() => {
+      this.loopCheck(currentStyle, style, cssPath);
+    }, 1000);
   }
 }
 
