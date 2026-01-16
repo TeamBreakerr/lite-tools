@@ -26,7 +26,7 @@ async function initSettingView(view: HTMLDivElement) {
     devInfo.className = "wrap";
     devInfo.innerHTML = `
   <div class="vertical-list-item">
-  <p>加载器：${isll ? "LiteLoaderQQNT" : "QWQNT"}</p>
+  <p>加载器：${isll ? "LiteLoaderQQNT" : "QwQNT"}</p>
   <p>插件名称：${packageJson.name}</p>
   <p>插件版本：${packageJson.version}</p>
   </div>
