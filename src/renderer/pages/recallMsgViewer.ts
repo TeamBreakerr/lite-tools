@@ -1,6 +1,5 @@
-import { pluginPath } from "@/renderer/utils/pluginPaths";
-import { join, resolvePath } from "@/renderer/utils/pathUtils";
 import { styleManager } from "@/renderer/modules/styleManager";
+import { importTextAsset } from "@/renderer/utils/importAsset";
 
 import recallGroupItemPath from "@/assets/html/recallMsgViewer/recallGroupItem.html";
 import recallMsgItemPath from "@/assets/html/recallMsgViewer/recallMsgItem.html";
@@ -176,18 +175,11 @@ class RecallList {
 
   static async create() {
     styleManager.inject("recallMsgViewer");
-    const recallGroupItem = await (
-      await fetch(resolvePath(join(pluginPath, "dist/renderer/pages/recallMsgViewer", recallGroupItemPath)))
-    ).text();
-    const recallMsgItem = await (
-      await fetch(resolvePath(join(pluginPath, "dist/renderer/pages/recallMsgViewer", recallMsgItemPath)))
-    ).text();
-    const recallImgItem = await (
-      await fetch(resolvePath(join(pluginPath, "dist/renderer/pages/recallMsgViewer", recallImgItemPath)))
-    ).text();
-    const recallTail = await (
-      await fetch(resolvePath(join(pluginPath, "dist/renderer/pages/recallMsgViewer", recallTailPath)))
-    ).text();
+    const basePath = "renderer/pages/recallMsgViewer";
+    const recallGroupItem = await importTextAsset(basePath, recallGroupItemPath);
+    const recallMsgItem = await importTextAsset(basePath, recallMsgItemPath);
+    const recallImgItem = await importTextAsset(basePath, recallImgItemPath);
+    const recallTail = await importTextAsset(basePath, recallTailPath);
     return new RecallList(recallGroupItem, recallMsgItem, recallImgItem, recallTail);
   }
 }
