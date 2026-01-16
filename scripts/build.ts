@@ -16,6 +16,7 @@ const baseConfig: BuildOptions = {
   minify: !isDev,
   logLevel: "info",
   treeShaking: true,
+  assetNames: "assets/[name]-[hash]",
   define: {
     __DEV__: isDev.toString(),
   },
