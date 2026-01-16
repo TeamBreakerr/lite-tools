@@ -3,6 +3,10 @@
     "console": false,
     "mainConsole": false
   },
+  "localEmoticons": {
+    "enabled": false,
+    "localPath": ""
+  },
   "interface": {
     "goBackMainList": false,
     "imageViewerOptimization": false,
