@@ -18,14 +18,14 @@ LiteLoaderQQNT 本体：[LiteLoaderQQNT](https://github.com/mo-jinran/LiteLoader
 > **不要在国内平台宣传该插件**\
 > **不要在 QQ 官方群聊发送*任何*可以看出你使用了第三方插件的截图**
 
+> [!NOTE]\
+> 插件正在重构中 \
+> 已确定新版本会缺少部分功能，您可以尝试加入 [qwqnt](https://t.me/QwQ_NT) 群组以获取构建好的 alpha 版本插件，或者尝试自行构建 [dev/v5](https://github.com/xiyuesaves/lite-tools/tree/dev/v5) 分支 \
+> 该插件在 Windows 环境下测试开发，理论全平台兼容，但没有条件对 Mac 和 Linux 平台进行测试
+
 > [!Warning]\
 > ~~**请注意** 该插件目前无法在高版本中使用，根据此 [Issue](https://github.com/xiyuesaves/LiteLoaderQQNT-lite_tools/issues/379#issuecomment-2708869340) 中的描述，还能正常使用的版本为 ```29804```~~ \ 
 > ~~该插件进入缓慢维护状态，无法保证所有功能在最新版 QQNT 下的可用性，以及 Bug 的修复时间将被大幅延长。~~
-
-> [!NOTE]\
-> ~~该插件目前已完成高版本适配，但部分功能因新版本无法获取特定参数或受其他限制，仍暂不可用。~~ \
-> 插件正在重构中，已确定新版本会缺少部分功能，您可以尝试加入 [qwqnt](https://t.me/QwQ_NT) 群组以获取构建好的 alpha 版本插件，或者尝试自行构建 [dev/v5](https://github.com/xiyuesaves/lite-tools/tree/dev/v5) 分支 \
-> 该插件在 Windows 环境下测试开发，理论全平台兼容，但没有条件对 Mac 和 Linux 平台进行测试
 
 > [!TIP]\
 > macOS 用户如果需要使用本地表情功能，请将表情文件夹选择在沙盒里，否则每次重启 QQ 都需要重新选择一次表情目录
