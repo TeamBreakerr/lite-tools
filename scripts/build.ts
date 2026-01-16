@@ -21,7 +21,7 @@ const baseConfig: BuildOptions = {
   },
 };
 
-// 构建目标列表（移除 SCSS 插件）
+// 构建目标列表
 const builds: { config: BuildOptions; watchHtml?: string }[] = [
   {
     // main
