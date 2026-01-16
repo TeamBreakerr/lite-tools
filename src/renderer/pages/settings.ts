@@ -1,4 +1,3 @@
-import packageJson from "package.json";
 import settingsHTMLPath from "@/assets/html/settings/index.html";
 import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/configStore";
@@ -27,8 +26,8 @@ async function initSettingView(view: HTMLDivElement) {
     devInfo.innerHTML = `
   <div class="vertical-list-item">
   <p>加载器：${isll ? "LiteLoaderQQNT" : "QwQNT"}</p>
-  <p>插件名称：${packageJson.name}</p>
-  <p>插件版本：${packageJson.version}</p>
+  <p>插件版本：${__VERSION__}</p>
+  <p>构建时间：${__BUILD_DATE__}</p>
   </div>
   `;
     devInfo.insertAdjacentHTML(
@@ -52,7 +51,7 @@ async function initSettingView(view: HTMLDivElement) {
 async function initSettings(view: HTMLDivElement, config: Config) {
   // 显示插件版本信息
   const versionLink = view.querySelector(".version .link") as HTMLElement;
-  versionLink.innerText = packageJson.version;
+  versionLink.innerText = __VERSION__;
   // 初始化折叠
   initWrap(view);
   // 初始化switch按钮
