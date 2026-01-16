@@ -19,7 +19,7 @@ class WallpaperService {
   private currentPath: string | null = null;
 
   setup() {
-    configManager.onConfigUpdate(this.updateWallpaper);
+    configManager.onConfigUpdate(this.updateWallpaper.bind(this));
     ipcMain.on("lite_tools.getWallpaperData", () => {
       log("获取背景数据", this.wallpaperData);
       this.getWallpaperData();
