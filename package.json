@@ -6,7 +6,6 @@
   "type": "commonjs",
   "qwqnt": {
     "name": "轻量工具箱",
-    "settings": "lite_tools",
     "inject": {
       "renderer": "./dist/renderer/index.qwq.js",
       "preload": "./dist/preload/index.js"
@@ -18,6 +17,10 @@
     }
   },
   "author": "xiyuesaves",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xiyuesaves/lite-tools/tree/dev/v5"
+  },
   "license": "AGPL-3.0-only",
   "main": "./dist/main/index.js",
   "scripts": {
