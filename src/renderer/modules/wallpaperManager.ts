@@ -1,6 +1,7 @@
 import { configStore } from "@/renderer/modules/configStore";
 import { createComparator } from "@/common/createComparator";
 import { createLogger } from "@/renderer/utils/createLogger";
+import { styleManager } from "@/renderer/modules/styleManager";
 
 import type { WallpaperData } from "@/common/types/wallpaper";
 
@@ -24,6 +25,7 @@ class WallpaperManager {
 
     if (configStore.value.interface.wallpaper.enabled) {
       this.updateWallpaperEffects();
+      styleManager.inject("wallpaper");
       document.body.classList.add("lt-wallpaper");
     }
 
@@ -61,12 +63,14 @@ class WallpaperManager {
 
     const isEnabled = configStore.value.interface.wallpaper.enabled;
     if (isEnabled) {
+      styleManager.inject("wallpaper");
       document.body.classList.add("lt-wallpaper");
       lite_tools.getWallpaperData();
     } else {
       this.comparedWallpaper({});
       document.body.classList.remove("lt-wallpaper");
       this.handleDisableAnimation();
+      styleManager.remove("wallpaper");
     }
   }
 
