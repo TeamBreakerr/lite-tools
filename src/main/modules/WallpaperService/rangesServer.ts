@@ -3,7 +3,7 @@ import { createServer as createHttpServer } from "http";
 import fs from "fs";
 import { extname } from "path";
 import { createLogger } from "@/main/utils/createLogger";
-const log = createLogger("视频背景服务模块");
+const log = createLogger("视频背景服务模块", true);
 
 import type { AddressInfo } from "net";
 import type { IncomingMessage, ServerResponse } from "http";
@@ -75,8 +75,6 @@ class RangesServer {
       log("关闭http服务");
       this.port = 0;
       this.server.close();
-    } else {
-      log("http服务未启动");
     }
   }
   private httpListener(request: IncomingMessage, response: ServerResponse) {

@@ -5,12 +5,17 @@ class StyleManager {
   private basePath: string = join(pluginPath, "dist", "css");
   async inject(cssName: string) {
     const cssPath = resolvePath(join(this.basePath, `${cssName}.css`));
+    const ltCssName = CSS.escape(cssName);
+    // 不重复添加样式
+    if (document.querySelector(`link[data-lt-css-name="${CSS.escape(cssName)}"]`)) {
+      return;
+    }
     if (await this.checkFile(cssPath)) {
       const style = document.createElement("link");
       style.rel = "stylesheet";
       style.type = "text/css";
       style.href = cssPath;
-      style.dataset.ltCssName = CSS.escape(cssName);
+      style.dataset.ltCssName = ltCssName;
       document.head.appendChild(style);
       if (__DEV__) {
         const currentStyle = await this.getFile(`${cssPath}?t=${Date.now()}`);
