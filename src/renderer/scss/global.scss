@@ -190,7 +190,7 @@
 }
 
 // 鼠标悬浮显示时间和复读按钮
-.message:has(.lt-time):hover {
+.message:has(.lt-time,.lt-repeat):hover {
   .lt-slot:is(.outside, .embed-image) {
     .lt-time,
     .lt-repeat {
