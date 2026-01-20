@@ -281,8 +281,8 @@
 .test {
   .message-container {
     & > * {
-      background-image: linear-gradient(to right, #0af 1px, transparent 1px),
-        linear-gradient(to bottom, #0af 1px, transparent 1px);
+      background-image:
+        linear-gradient(to right, #0af 1px, transparent 1px), linear-gradient(to bottom, #0af 1px, transparent 1px);
       background-size: calc(100% - 1px) calc(100% - 1px);
     }
   }
@@ -291,6 +291,22 @@
   }
   .content-status.no-copy:has(.lt-slot) {
     background-color: aquamarine;
+  }
+}
+
+// 悬浮提示内容
+.lite-tools-toast {
+  .lite-tools-toast-item {
+    opacity: 0;
+    transform: translateY(-30px);
+    height: 0;
+    transition: 500ms;
+    position: relative;
+    &.lite-tools-toast-show {
+      opacity: 1;
+      height: 62px;
+      transform: translateY(0);
+    }
   }
 }
 
