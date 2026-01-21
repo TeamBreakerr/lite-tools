@@ -29,8 +29,6 @@ class StyleManager {
     const style = document.querySelector(`link[data-lt-css-name="${CSS.escape(cssName)}"]`);
     if (style) {
       style.remove();
-    } else {
-      console.error(`[StyleManager] ${cssName} not injected`);
     }
   }
   async checkFile(cssPath: string) {
