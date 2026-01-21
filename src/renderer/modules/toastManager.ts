@@ -60,13 +60,13 @@ class ToastManager {
       return this.container;
     }
 
-    let container = document.querySelector<HTMLElement>(".lite-tools-toast");
+    let container = document.querySelector<HTMLElement>(".lt-toast");
     if (!container) {
       if (!this.toastContentTpl) {
         throw new Error("Toast templates not loaded. Please await toastManager.setup() first.");
       }
       document.body.insertAdjacentHTML("beforeend", this.toastContentTpl);
-      container = document.querySelector<HTMLElement>(".lite-tools-toast");
+      container = document.querySelector<HTMLElement>(".lt-toast");
     }
 
     if (!container) throw new Error("Failed to initialize toast container");
@@ -94,7 +94,7 @@ class ToastManager {
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = htmlString.trim();
 
-    const element = tempDiv.querySelector<ToastHTMLElement>(".lite-tools-toast-item");
+    const element = tempDiv.querySelector<ToastHTMLElement>(".lt-toast-item");
     if (!element) throw new Error("Invalid toast template or structure");
 
     return element;
@@ -119,7 +119,7 @@ class ToastManager {
 
     // 触发重绘
     requestAnimationFrame(() => {
-      toast.classList.add("lite-tools-toast-show");
+      toast.classList.add("lt-toast-show");
     });
 
     // 定义关闭逻辑
@@ -128,7 +128,7 @@ class ToastManager {
         window.clearTimeout(toast._timeoutId);
       }
 
-      toast.classList.remove("lite-tools-toast-show");
+      toast.classList.remove("lt-toast-show");
 
       toast.addEventListener(
         "transitionend",
@@ -149,11 +149,8 @@ class ToastManager {
     return toast;
   }
 
-  /**
-   * 清除所有提示
-   */
   public clear(): void {
-    const toasts = document.querySelectorAll<ToastHTMLElement>(".lite-tools-toast-item");
+    const toasts = document.querySelectorAll<ToastHTMLElement>(".lt-toast-item");
     toasts.forEach((toast) => {
       if (typeof toast.close === "function") {
         toast.close();
@@ -163,9 +160,6 @@ class ToastManager {
     });
   }
 
-  /**
-   * 绑定全局 lite_tools 事件
-   */
   public bindGlobalEvents() {
     lite_tools.onToast((toast) => {
       this.show(toast.content, toast.type, toast.duration);
@@ -174,7 +168,6 @@ class ToastManager {
   }
 }
 
-// 导出单例实例
 const toastManager = new ToastManager();
 
 export { toastManager };
