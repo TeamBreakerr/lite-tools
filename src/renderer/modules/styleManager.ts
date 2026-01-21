@@ -29,8 +29,6 @@ class StyleManager {
     const style = document.querySelector(`link[data-lt-css-name="${CSS.escape(cssName)}"]`);
     if (style) {
       style.remove();
-    } else {
-      console.error(`[StyleManager] ${cssName} not injected`);
     }
   }
   async checkFile(cssPath: string) {
@@ -47,17 +45,20 @@ class StyleManager {
   }
 
   async loopCheck(currentStyle: string, style: HTMLLinkElement, cssPath: string) {
-    if (!style.isConnected) {
-      return;
+    try {
+      if (!style.isConnected) {
+        return;
+      }
+      const nextStyle = await this.getFile(`${cssPath}?t=${Date.now()}`);
+      if (currentStyle !== nextStyle) {
+        style.href = `${cssPath}?t=${Date.now()}`;
+        currentStyle = nextStyle;
+      }
+    } finally {
+      setTimeout(() => {
+        this.loopCheck(currentStyle, style, cssPath);
+      }, 1000);
     }
-    const nextStyle = await this.getFile(`${cssPath}?t=${Date.now()}`);
-    if (currentStyle !== nextStyle) {
-      style.href = `${cssPath}?t=${Date.now()}`;
-      currentStyle = nextStyle;
-    }
-    setTimeout(() => {
-      this.loopCheck(currentStyle, style, cssPath);
-    }, 1000);
   }
 }
 
