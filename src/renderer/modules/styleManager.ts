@@ -47,17 +47,20 @@ class StyleManager {
   }
 
   async loopCheck(currentStyle: string, style: HTMLLinkElement, cssPath: string) {
-    if (!style.isConnected) {
-      return;
+    try {
+      if (!style.isConnected) {
+        return;
+      }
+      const nextStyle = await this.getFile(`${cssPath}?t=${Date.now()}`);
+      if (currentStyle !== nextStyle) {
+        style.href = `${cssPath}?t=${Date.now()}`;
+        currentStyle = nextStyle;
+      }
+    } finally {
+      setTimeout(() => {
+        this.loopCheck(currentStyle, style, cssPath);
+      }, 1000);
     }
-    const nextStyle = await this.getFile(`${cssPath}?t=${Date.now()}`);
-    if (currentStyle !== nextStyle) {
-      style.href = `${cssPath}?t=${Date.now()}`;
-      currentStyle = nextStyle;
-    }
-    setTimeout(() => {
-      this.loopCheck(currentStyle, style, cssPath);
-    }, 1000);
   }
 }
 
