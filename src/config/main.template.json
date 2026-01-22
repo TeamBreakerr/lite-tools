@@ -5,7 +5,7 @@
   },
   "localEmoticons": {
     "enabled": false,
-    "localPath": ""
+    "path": ""
   },
   "interface": {
     "goBackMainList": false,
