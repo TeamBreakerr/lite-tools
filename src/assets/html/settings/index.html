@@ -324,10 +324,10 @@
       </li>
     </ul>
   </div>
-  <!-- 背景功能 -->
-  <div class="wrap background">
+  <!-- 本地表情 -->
+  <div class="wrap local-emoticons">
     <div class="vertical-list-item title">
-      <h2>背景调整</h2>
+      <h2>本地表情</h2>
       <svg class="icon is-fold" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M21 8L12 17L3 8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
       </svg>
@@ -336,7 +336,51 @@
       <hr class="horizontal-dividing-line" />
       <li class="vertical-list-item">
         <div>
-          <h2>自定义背景</h2>
+          <h2>启用</h2>
+          <span class="secondary-text">
+            可识别嵌套文件夹结构
+          </span>
+        </div>
+        <div class="q-switch" data-config="localEmoticons.enabled">
+          <span class="q-switch__handle"></span>
+        </div>
+      </li>
+      <li class="select-path vertical-list-item">
+        <input
+          placeholder="请选择文件夹"
+          readonly
+          data-clear
+          title="移除路径"
+          class="select-file input-text text_color"
+          type="text"
+          spellcheck="false"
+          data-config="localEmoticons.path"
+        />
+        <div class="ops-btns">
+          <button
+            class="q-button q-button--small q-button--secondary select-file"
+            data-config="localEmoticons.path"
+            data-choose="folder"
+          >
+            选择
+          </button>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <!-- 背景功能 -->
+  <div class="wrap background">
+    <div class="vertical-list-item title">
+      <h2>自定义背景</h2>
+      <svg class="icon is-fold" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 8L12 17L3 8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
+      </svg>
+    </div>
+    <ul class="hidden">
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>启用</h2>
           <span class="secondary-text">
             仅支持单张图片/视频<br />
             使用前需要启用官方 <strong>极简白</strong> 主题
