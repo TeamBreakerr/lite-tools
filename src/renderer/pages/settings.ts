@@ -25,19 +25,21 @@ async function initSettingView(view: HTMLDivElement) {
   try {
     const devInfo: HTMLDivElement = document.createElement("div");
     devInfo.className = "wrap";
-    devInfo.innerHTML = `
-  <div class="vertical-list-item">
-  <p>加载器：${isll ? "LiteLoaderQQNT" : "QwQNT"}</p>
-  <p>插件版本：${__VERSION__}</p>
-  <p>构建时间：${__BUILD_DATE__}</p>
-  </div>
-  `;
-    devInfo.insertAdjacentHTML(
-      "afterbegin",
-      `<div style="color: red;justify-content: center;" class="vertical-list-item">
-    <p><strong>该版本仅供内部测试，请勿外传</strong></p>
-  </div>`,
-    );
+    devInfo.innerHTML = `<div class="vertical-list-item">
+<p>加载器：${isll ? "LiteLoaderQQNT" : "QwQNT"}</p>
+<p>插件版本：${__VERSION__}</p>
+<p>构建时间：${__BUILD_DATE__}</p>
+</div>
+`;
+    if (!__DEV__ && __ALPHA__) {
+      devInfo.insertAdjacentHTML(
+        "afterbegin",
+        `<div style="color: red;justify-content: center;" class="vertical-list-item">
+<p><strong>该版本仅供内部测试，请勿外传</strong></p>
+</div>`,
+      );
+    }
+
     const settingsHTML = await (await fetch(resolvePath(join(pluginPath, "dist/renderer", settingsHTMLPath)))).text();
     view.insertAdjacentHTML("beforeend", settingsHTML);
     view.querySelector(".lite-tools-settings")!.insertAdjacentElement("afterbegin", devInfo);
