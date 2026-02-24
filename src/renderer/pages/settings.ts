@@ -118,7 +118,7 @@ function initButton(view: HTMLDivElement, config: Config) {
           const filePaths = normalizePathsSimple(result.filePaths);
           log("选中的路径:", configPath, filePaths);
 
-          if (chooseType === "file") {
+          if (chooseType === "file" || chooseType === "folder") {
             setValueByPath(config, configPath, filePaths[0]);
             configStore.setConfig(config);
             dispatchEvent(view, configPath, filePaths[0]);
