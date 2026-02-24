@@ -1,6 +1,7 @@
 import { getHash } from "@/renderer/utils/getHash";
 import { createLogger } from "@/renderer/utils/createLogger";
 import { styleManager } from "@/renderer/modules/styleManager";
+import { toastManager } from "@/renderer/modules/toastManager";
 
 // pages
 import { setupMainPage } from "@/renderer/pages/main";
@@ -17,9 +18,11 @@ export async function main() {
   log("hash Update", hash);
   switch (hash) {
     case "#/main/message":
+      await toastManager.setup();
       setupMainPage();
       break;
     case "#/chat":
+      await toastManager.setup();
       setupChatPage();
       break;
     case "#/forward":

@@ -23,6 +23,7 @@ const baseConfig: BuildOptions = {
   assetNames: "assets/[name]-[hash]",
   define: {
     __DEV__: isDev.toString(),
+    __ALPHA__: isAlpha.toString(),
     __VERSION__: `"${packageJson.version}"`,
     __BUILD_DATE__: `"${new Date().toLocaleDateString("zh-CN", { hour12: false })}"`,
   },
@@ -116,7 +117,7 @@ function processHtml(srcPath: string, outPath: string) {
   const html = readFileSync(srcPath, "utf-8");
   const newHtml = html.replace(
     /<script\b([^>]*?)\bsrc=["']([^"']+?)\.ts["']([^>]*)><\/script>/g,
-    (_, beforeSrc, srcPath, afterSrc) => `<script${beforeSrc} src="${srcPath}.js"${afterSrc}></script>`
+    (_, beforeSrc, srcPath, afterSrc) => `<script${beforeSrc} src="${srcPath}.js"${afterSrc}></script>`,
   );
   writeFileSync(outPath, newHtml, "utf-8");
 }
@@ -178,7 +179,7 @@ async function runBuild() {
         }
 
         return ctx;
-      })
+      }),
     );
 
     console.log("Development build started. Watching for changes...");
@@ -190,16 +191,19 @@ async function runBuild() {
       compileAllScss();
       await Promise.all(
         builds.map(async ({ config, watchHtml }) => {
-
           // 改写为构建版本号
           config.define!.__VERSION__ = `"v${version}"`;
 
           await build(config);
           if (watchHtml) processHtml(watchHtml, config.outfile!.replace(/\.js$/, ".html"));
-        })
+        }),
       );
       const zip = new AdmZip();
-      zip.addLocalFolder("dist", "dist/");
+      zip.addLocalFolder("dist/css", "dist/css");
+      zip.addLocalFolder("dist/main", "dist/main");
+      zip.addLocalFolder("dist/preload", "dist/preload");
+      zip.addLocalFolder("dist/renderer", "dist/renderer");
+      zip.addLocalFolder("resources", "resources");
       zip.addFile("package.json", setJsonVersion("package.json", version));
       zip.addFile("manifest.json", setJsonVersion("manifest.json", version));
       zip.addLocalFile("LICENSE");

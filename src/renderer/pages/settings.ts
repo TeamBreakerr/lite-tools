@@ -6,6 +6,7 @@ import { normalizePathsSimple } from "@/common/normalizePathsSimple";
 import { styleManager } from "@/renderer/modules/styleManager";
 import { pluginPath } from "@/renderer/utils/pluginPaths";
 import { join, resolvePath } from "@/renderer/utils/pathUtils";
+import { toastManager } from "@/renderer/modules/toastManager";
 
 type OptionItem = {
   name: string;
@@ -18,24 +19,27 @@ async function initSettingView(view: HTMLDivElement) {
   styleManager.inject("settings");
   styleManager.inject("GitHubMarkdownMini");
   await configStore.ready;
+  await toastManager.setup();
   const config = configStore.value;
   log("获取到配置数据", config);
   try {
     const devInfo: HTMLDivElement = document.createElement("div");
     devInfo.className = "wrap";
-    devInfo.innerHTML = `
-  <div class="vertical-list-item">
-  <p>加载器：${isll ? "LiteLoaderQQNT" : "QwQNT"}</p>
-  <p>插件版本：${__VERSION__}</p>
-  <p>构建时间：${__BUILD_DATE__}</p>
-  </div>
-  `;
-    devInfo.insertAdjacentHTML(
-      "afterbegin",
-      `<div style="color: red;justify-content: center;" class="vertical-list-item">
-    <p><strong>该版本仅供内部测试，请勿外传</strong></p>
-  </div>`
-    );
+    devInfo.innerHTML = `<div class="vertical-list-item">
+<p>加载器：${isll ? "LiteLoaderQQNT" : "QwQNT"}</p>
+<p>插件版本：${__VERSION__}</p>
+<p>构建时间：${__BUILD_DATE__}</p>
+</div>
+`;
+    if (!__DEV__ && __ALPHA__) {
+      devInfo.insertAdjacentHTML(
+        "afterbegin",
+        `<div style="color: red;justify-content: center;" class="vertical-list-item">
+<p><strong>该版本仅供内部测试，请勿外传</strong></p>
+</div>`,
+      );
+    }
+
     const settingsHTML = await (await fetch(resolvePath(join(pluginPath, "dist/renderer", settingsHTMLPath)))).text();
     view.insertAdjacentHTML("beforeend", settingsHTML);
     view.querySelector(".lite-tools-settings")!.insertAdjacentElement("afterbegin", devInfo);
@@ -180,7 +184,7 @@ async function initRecallOptions(view: HTMLDivElement, config: Config) {
   light.value = config.message.preventRecall.customTextColor.light;
   dark.value = config.message.preventRecall.customTextColor.dark;
   lite_tools.onUpdateRecallCacheSize(
-    (size) => (localRecallMsgCache.innerText = `清除所有本地保存的撤回数据，当前保存有 ${size} 条消息`)
+    (size) => (localRecallMsgCache.innerText = `清除所有本地保存的撤回数据，当前保存有 ${size} 条消息`),
   );
   localRecallMsgCache.innerText = `清除所有本地保存的撤回数据，当前保存有 ${await lite_tools.getRecallCacheSize()} 条消息`;
   openRedirectPicPathBtn.addEventListener("click", () => {
@@ -286,7 +290,7 @@ function initSelectMenu(view: HTMLDivElement, config: Config) {
       return;
     }
     const findEl = Array.from(item.querySelectorAll(".setting-item")).find(
-      (item) => item.getAttribute("data-value") === configValue
+      (item) => item.getAttribute("data-value") === configValue,
     ) as HTMLElement;
     const showVlaue = findEl?.innerText ?? configValue;
     item.querySelector("input.setting-input")?.setAttribute("value", showVlaue);
@@ -322,7 +326,7 @@ function createOptionItems<T extends OptionItem>(
   list: T[],
   element: HTMLElement,
   objKey: string,
-  key: keyof T
+  key: keyof T,
 ) {
   const frag = document.createDocumentFragment();
 
@@ -398,7 +402,7 @@ function setValueByPath(
   path: string,
   value: any,
   createPath: boolean = false,
-  overridePath: boolean = false
+  overridePath: boolean = false,
 ): boolean {
   const keys = path.replace(/\[(\d+)\]/g, ".$1").split(".");
   let current: any = target;

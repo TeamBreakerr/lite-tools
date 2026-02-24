@@ -176,10 +176,14 @@ class RecallList {
   static async create() {
     styleManager.inject("recallMsgViewer");
     const basePath = "renderer/pages/recallMsgViewer";
-    const recallGroupItem = await importTextAsset(basePath, recallGroupItemPath);
-    const recallMsgItem = await importTextAsset(basePath, recallMsgItemPath);
-    const recallImgItem = await importTextAsset(basePath, recallImgItemPath);
-    const recallTail = await importTextAsset(basePath, recallTailPath);
+
+    const [recallGroupItem, recallMsgItem, recallImgItem, recallTail] = await Promise.all([
+      importTextAsset(basePath, recallGroupItemPath),
+      importTextAsset(basePath, recallMsgItemPath),
+      importTextAsset(basePath, recallImgItemPath),
+      importTextAsset(basePath, recallTailPath),
+    ]);
+
     return new RecallList(recallGroupItem, recallMsgItem, recallImgItem, recallTail);
   }
 }
