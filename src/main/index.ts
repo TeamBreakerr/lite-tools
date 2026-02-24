@@ -6,6 +6,7 @@ import { setupSideBar } from "@/main/modules/sideBar";
 import { captureWindow } from "@/main/utils/captureWindow";
 import { setupIpcInterceptor } from "@/main/modules/ipcInterceptor";
 import { wallpaperService } from "@/main/modules/WallpaperService";
+import { localStickers } from "@/main/modules/localStickers";
 import type { BrowserWindow } from "electron";
 
 const log = createLogger("lt_main");
@@ -27,6 +28,7 @@ function setupMain(uid: string) {
     setupSideBar();
     setupIpcInterceptor();
     wallpaperService.setup();
+    localStickers.setup();
   } catch (err) {
     log("初始化出错", err);
   }
