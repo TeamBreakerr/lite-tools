@@ -1,25 +1,23 @@
 type Path = string;
 
 type Sticker = {
-  id: string;
   name: string;
   path: Path;
-  index?: number;
 };
 
 type Stickers = Sticker[];
 
 type StickerPack = {
-  id: string;
-  name: string;
-  icon: Path;
+  title: string;
+  icon?: string;
   index?: number;
+  dirPath: string;
   stickers: Stickers;
 };
 
 type StickerStore = {
-  recent: Stickers;
-  stickers: StickerPack[];
+  recentStickers: Stickers;
+  stickerPack: StickerPack[];
   errMsg?: string;
 };
 
