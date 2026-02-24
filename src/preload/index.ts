@@ -1,7 +1,8 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { RecallMsgId } from "@/common/types/preventRecall";
 import type { WallpaperData } from "@/common/types/wallpaper";
-import type { ToastType, Toast } from "@/common/types/toastManager";
+import type { Toast } from "@/common/types/toastManager";
+import type { StickerStore } from "@/common/types/localStickers";
 
 const exposeFunctions = {
   // 配置相关
@@ -14,10 +15,17 @@ const exposeFunctions = {
   getWebContentId: (): number => ipcRenderer.sendSync("lite_tools.getWebContentId"),
   showOpenDialog: (options: Electron.OpenDialogOptions): Promise<Electron.OpenDialogReturnValue> =>
     ipcRenderer.invoke("lite_tools.showOpenDialog", options),
+
+  // 本地表情相关
+  onstickerStoreUpdated: (callback: (stickerStore: StickerStore) => void) =>
+    ipcRenderer.on("lite_tools.stickerStoreUpdated", (_, stickerStore: StickerStore) => callback(stickerStore)),
+  getStickerStore: (): Promise<StickerStore> => ipcRenderer.invoke("lite_tools.getStickerStore"),
+
   // 背景相关
-  onWallpaperChanged: (callback: (data: WallpaperData) => void) =>
-    ipcRenderer.on("lite_tools.wallpaperChanged", (_, data) => callback(data)),
+  onWallpaperChanged: (callback: (wallpaperData: WallpaperData) => void) =>
+    ipcRenderer.on("lite_tools.wallpaperChanged", (_, wallpaperData: WallpaperData) => callback(wallpaperData)),
   getWallpaperData: () => ipcRenderer.send("lite_tools.getWallpaperData"),
+
   // 防撤回相关
   onRecallMessagesFound: (callback: (recallMsgIds: RecallMsgId[]) => void) =>
     ipcRenderer.on("lite_tools.recallMessagesFound", (_, recallMsgIds: RecallMsgId[]) => callback(recallMsgIds)),
@@ -27,14 +35,17 @@ const exposeFunctions = {
   clearRecallCache: () => ipcRenderer.send("lite_tools.clearRecallCache"),
   openRecallMsgList: () => ipcRenderer.send("lite_tools.openRecallMsgList"),
   openRedirectPicPath: () => ipcRenderer.send("lite_tools.openRedirectPicPath"),
+
   // ipc转broadcast
   onBroadcast: (callback: (channelName: any, payload: any) => void) =>
     ipcRenderer.on("lite_tools.broadcast", (_, channelName, payload) => callback(channelName, payload)),
   sendBroadcast: (channelName: any, payload: any) => ipcRenderer.send("lite_tools.broadcast", channelName, payload),
+
   // toast 通知
   onToast: (callback: (toast: Toast) => void) =>
     ipcRenderer.on("lite_tools.toast", (_, toast: Toast) => callback(toast)),
   clearToast: (callback: () => void) => ipcRenderer.on("lite_tools.clearToast", callback),
+
   // 原生接口调用
   nativeCall: (event: any, payload: any, awaitCallback?: boolean | string | string[]) => {
     const callbackId = crypto.randomUUID();
