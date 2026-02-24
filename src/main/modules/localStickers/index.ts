@@ -4,53 +4,48 @@ import { ipcMain } from "electron";
 import chokidar from "chokidar";
 import { createLogger } from "@/main/utils/createLogger";
 import { globalBroadcast } from "@/main/utils/globalBroadcast";
+import { StickerPacksManager } from "./StickerPacksManager";
+import { createThrottledDispatcher } from "@/common/createThrottledDispatcher";
+import { configManager } from "@/main/modules/configManager";
+
 import type { FSWatcher } from "chokidar";
 import type { StickerStore } from "@/common/types/localStickers";
-
-import { configManager } from "@/main/modules/configManager";
 
 const log = createLogger("localStickers");
 
 class LocalStickers {
-  private initialized = false;
+  private initializedReady = false;
   private watcher: FSWatcher | null = null;
   private currentListeningPath = "";
-  private readyPromise: Promise<void> = Promise.resolve(); // 赋初始值，防止在未初始化时被 await
-  private resolveReady: () => void = () => {};
-  private stickerStore = this.createEmptyStickerStore();
+  private stickerStore = this.createEmptyStickerStore("初始化中...");
+  private stickerPacksManager: StickerPacksManager = new StickerPacksManager();
 
-  constructor() {
-    this.createReadyPromise();
+  constructor() {}
+
+  private notifyStickerStoreUpdated = createThrottledDispatcher(this.broadcastStickerStoreUpdated.bind(this), 1100);
+  private broadcastStickerStoreUpdated() {
+    // 如果 errMsg 不为空，则不获取数据
+    if (!this.stickerStore.errMsg) {
+      this.stickerStore.stickerPack = this.stickerPacksManager?.getPackList() ?? [];
+    }
+    log("通知更新", this.stickerStore);
+    globalBroadcast("lite_tools.stickerStore.updated", this.stickerStore);
   }
 
   setup() {
-    this.init();
-    // 使用箭头函数绑定 this
-    configManager.onConfigUpdate((config) => this.update(config));
-    this.update(configManager.value);
-  }
-
-  private init() {
-    if (this.initialized) return;
-    this.initialized = true;
     this.bindIpcMain();
+    this.update(configManager.value);
+    configManager.onConfigUpdate((config) => this.update(config));
+    log("初始化完成");
   }
 
   private bindIpcMain() {
-    ipcMain.handle("lite_tools.getStickerStore", async (event, data): Promise<StickerStore> => {
-      if (configManager.value.localStickers.enabled) {
-        await this.readyPromise;
-        return this.stickerStore;
-      } else {
-        return this.createEmptyStickerStore("未启用本地表情");
+    ipcMain.handle("lite_tools.stickerStore.get", async (): Promise<StickerStore> => {
+      if (!configManager.value.localStickers.enabled) {
+        return this.createEmptyStickerStore("功能未启用");
       }
+      return this.stickerStore;
     });
-  }
-
-  private createReadyPromise() {
-    const { promise, resolve } = Promise.withResolvers<void>();
-    this.readyPromise = promise;
-    this.resolveReady = resolve;
   }
 
   private async update(config: Config) {
@@ -62,25 +57,38 @@ class LocalStickers {
   }
 
   private async addListener(targetPath: string) {
-    if (!targetPath) return;
+    log("更新监听目录:", targetPath);
 
     // 如果路径没变且正在监听，则跳过
-    if (this.watcher && this.currentListeningPath === targetPath) return;
-
-    // 如果之前有监听器，先彻底关闭
+    if (this.watcher && this.currentListeningPath === targetPath) {
+      log("路径无变化");
+      return;
+    }
+    
+    // 重置状态
+    this.initializedReady = false;
     await this.offListener();
+
+    if (!targetPath) {
+      this.stickerStore = this.createEmptyStickerStore("请选择目录");
+      this.broadcastStickerStoreUpdated();
+      this.currentListeningPath = "";
+      return;
+    }
 
     try {
       // 必须使用异步的 stat 防止阻塞主进程
       const stat = await fs.promises.stat(targetPath);
       if (!stat.isDirectory()) {
         this.stickerStore = this.createEmptyStickerStore("路径无效");
-        this.broadcastStickerUpdate();
+        this.notifyStickerStoreUpdated();
+        this.currentListeningPath = "";
         return;
       }
 
       this.currentListeningPath = targetPath;
-      this.createReadyPromise(); // 重新开启监听时，重置 ready 状态
+      this.stickerStore = this.createEmptyStickerStore("扫描表情中..."); // 重置 stickerStore
+      this.broadcastStickerStoreUpdated();
 
       this.watcher = chokidar.watch(targetPath, {
         ignoreInitial: false,
@@ -93,55 +101,56 @@ class LocalStickers {
       // 监听 ready 事件来放行 IPC
       this.watcher.on("ready", () => {
         log("首次扫描完成");
-        this.resolveReady();
+        this.initializedReady = true;
+        this.stickerStore = this.createEmptyStickerStore(); // 重置 stickerStore
+        this.notifyStickerStoreUpdated();
       });
 
       this.watcher.on("all", (event, path) => {
         log("文件变化", event, path);
         // TODO: 这里需要实现实际的构建 stickerStore 逻辑
-
+        this.stickerPacksManager?.onEvent(event, path);
+        if (this.initializedReady) {
+          this.notifyStickerStoreUpdated();
+        }
       });
 
       this.watcher.on("error", (err: any) => {
         log("监听失败", err);
         // 如果报错了，也要让挂起的 IPC 返回，避免前端死锁
         this.stickerStore = this.createEmptyStickerStore(`监听文件夹失败: ${err.message}`);
-        this.broadcastStickerUpdate();
-        this.resolveReady();
+        this.currentListeningPath = "";
+        this.broadcastStickerStoreUpdated();
       });
     } catch (err: any) {
       log("监听失败", err);
       // 如果报错了，也要让挂起的 IPC 返回，避免前端死锁
       this.stickerStore = this.createEmptyStickerStore(`监听文件夹失败: ${err.message}`);
-      this.broadcastStickerUpdate();
-      this.resolveReady();
+      this.currentListeningPath = "";
+      this.broadcastStickerStoreUpdated();
     }
   }
 
   private async offListener() {
     if (!this.watcher) return;
+    log("关闭监听");
+    this.initializedReady = false;
     const oldWatcher = this.watcher;
     this.watcher = null;
     this.currentListeningPath = ""; // 清空路径状态
 
     // 重置 stickerStore
     this.stickerStore = this.createEmptyStickerStore("监听已关闭");
-    this.broadcastStickerUpdate();
-
-    // 如果关闭时处于未 ready 状态，立刻放行，防止旧的 IPC 挂起
-    this.resolveReady();
+    this.stickerPacksManager.clear();
 
     await oldWatcher.close();
   }
 
-  private broadcastStickerUpdate() {
-    globalBroadcast("lite_tools.stickerStoreUpdated", this.stickerStore);
-  }
-
   private createEmptyStickerStore(errMsg?: string): StickerStore {
+    log("创建空 stickerStore", errMsg);
     return {
-      recent: [],
-      stickers: [],
+      recentStickers: [],
+      stickerPack: [],
       errMsg,
     };
   }
