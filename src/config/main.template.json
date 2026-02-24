@@ -3,9 +3,13 @@
     "console": false,
     "mainConsole": false
   },
-  "localEmoticons": {
+  "localStickers": {
     "enabled": false,
-    "path": ""
+    "path": "",
+    "recentStickers": {
+      "enabled": false,
+      "limit": 3
+    }
   },
   "interface": {
     "goBackMainList": false,
