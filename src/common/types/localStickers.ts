@@ -9,16 +9,22 @@ type Stickers = Sticker[];
 
 type StickerPack = {
   title: string;
-  icon?: string;
+  icon?: Path;
   index?: number;
-  dirPath: string;
+  dirPath: Path;
   stickers: Stickers;
 };
 
-type StickerStore = {
-  recentStickers: Stickers;
-  stickerPack: StickerPack[];
-  errMsg?: string;
-};
+type StickerStore =
+  | {
+      status: "success";
+      stickerPack: StickerPack[];
+      msg?: never;
+    }
+  | {
+      status: "info" | "failed";
+      stickerPack?: never;
+      msg: string;
+    };
 
 export type { Path, Sticker, Stickers, StickerPack, StickerStore };
