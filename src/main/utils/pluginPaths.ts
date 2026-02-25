@@ -4,11 +4,11 @@ import packageJson from "package.json";
 let configPath: string;
 let dataPath: string;
 let pluginPath: string;
-if ("LiteLoader" in globalThis) {
+if ("LiteLoader" in globalThis && LiteLoader.plugins?.[packageJson.name]) {
   configPath = path.join(LiteLoader.plugins[packageJson.name].path.data, "configs");
   dataPath = path.join(LiteLoader.plugins[packageJson.name].path.data, "data");
   pluginPath = path.join(LiteLoader.plugins[packageJson.name].path.plugin);
-} else if ("qwqnt" in globalThis) {
+} else if ("qwqnt" in globalThis && qwqnt.framework?.plugins?.[packageJson.name]) {
   configPath = path.join(qwqnt.framework.paths.configs, packageJson.name);
   dataPath = path.join(qwqnt.framework.paths.data, packageJson.name);
   pluginPath = path.join(qwqnt.framework.plugins[packageJson.name].meta.path);
