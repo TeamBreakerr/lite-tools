@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import path from "node:path";
 import { ipcMain } from "electron";
 import chokidar from "chokidar";
 import { createLogger } from "@/main/utils/createLogger";
@@ -9,7 +8,7 @@ import { createThrottledDispatcher } from "@/common/createThrottledDispatcher";
 import { configManager } from "@/main/modules/configManager";
 
 import type { FSWatcher } from "chokidar";
-import type { StickerStore } from "@/common/types/localStickers";
+import type { StickerStore, StickerPack } from "@/common/types/localStickers";
 
 const log = createLogger("localStickers");
 
@@ -17,17 +16,17 @@ class LocalStickers {
   private initializedReady = false;
   private watcher: FSWatcher | null = null;
   private currentListeningPath = "";
-  private stickerStore = this.createEmptyStickerStore("初始化中...");
+  private stickerStore = this.createStickerStoreResult("info", "初始化中...");
   private stickerPacksManager: StickerPacksManager = new StickerPacksManager();
 
   constructor() {}
 
-  private notifyStickerStoreUpdated = createThrottledDispatcher(this.broadcastStickerStoreUpdated.bind(this), 1100);
+  private notifyStickerStoreUpdated = createThrottledDispatcher(() => {
+    this.stickerStore = this.createStickerStoreResult("success", this.stickerPacksManager.getPackList());
+    this.broadcastStickerStoreUpdated();
+  }, 1100);
+
   private broadcastStickerStoreUpdated() {
-    // 如果 errMsg 不为空，则不获取数据
-    if (!this.stickerStore.errMsg) {
-      this.stickerStore.stickerPack = this.stickerPacksManager?.getPackList() ?? [];
-    }
     log("通知更新", this.stickerStore);
     globalBroadcast("lite_tools.stickerStore.updated", this.stickerStore);
   }
@@ -42,7 +41,7 @@ class LocalStickers {
   private bindIpcMain() {
     ipcMain.handle("lite_tools.stickerStore.get", async (): Promise<StickerStore> => {
       if (!configManager.value.localStickers.enabled) {
-        return this.createEmptyStickerStore("功能未启用");
+        return this.createStickerStoreResult("failed", "功能未启用");
       }
       return this.stickerStore;
     });
@@ -64,13 +63,13 @@ class LocalStickers {
       log("路径无变化");
       return;
     }
-    
+
     // 重置状态
     this.initializedReady = false;
     await this.offListener();
 
     if (!targetPath) {
-      this.stickerStore = this.createEmptyStickerStore("请选择目录");
+      this.stickerStore = this.createStickerStoreResult("failed", "请选择目录");
       this.broadcastStickerStoreUpdated();
       this.currentListeningPath = "";
       return;
@@ -80,14 +79,14 @@ class LocalStickers {
       // 必须使用异步的 stat 防止阻塞主进程
       const stat = await fs.promises.stat(targetPath);
       if (!stat.isDirectory()) {
-        this.stickerStore = this.createEmptyStickerStore("路径无效");
-        this.notifyStickerStoreUpdated();
+        this.stickerStore = this.createStickerStoreResult("failed", "路径无效");
+        this.broadcastStickerStoreUpdated();
         this.currentListeningPath = "";
         return;
       }
 
       this.currentListeningPath = targetPath;
-      this.stickerStore = this.createEmptyStickerStore("扫描表情中..."); // 重置 stickerStore
+      this.stickerStore = this.createStickerStoreResult("info", "扫描表情中...");
       this.broadcastStickerStoreUpdated();
 
       this.watcher = chokidar.watch(targetPath, {
@@ -102,7 +101,6 @@ class LocalStickers {
       this.watcher.on("ready", () => {
         log("首次扫描完成");
         this.initializedReady = true;
-        this.stickerStore = this.createEmptyStickerStore(); // 重置 stickerStore
         this.notifyStickerStoreUpdated();
       });
 
@@ -118,41 +116,44 @@ class LocalStickers {
       this.watcher.on("error", (err: any) => {
         log("监听失败", err);
         // 如果报错了，也要让挂起的 IPC 返回，避免前端死锁
-        this.stickerStore = this.createEmptyStickerStore(`监听文件夹失败: ${err.message}`);
+        this.stickerStore = this.createStickerStoreResult("failed", `监听文件夹失败: ${err.message}`);
         this.currentListeningPath = "";
         this.broadcastStickerStoreUpdated();
+        this.offListener();
       });
     } catch (err: any) {
       log("监听失败", err);
       // 如果报错了，也要让挂起的 IPC 返回，避免前端死锁
-      this.stickerStore = this.createEmptyStickerStore(`监听文件夹失败: ${err.message}`);
+      this.stickerStore = this.createStickerStoreResult("failed", `监听文件夹失败: ${err.message}`);
       this.currentListeningPath = "";
       this.broadcastStickerStoreUpdated();
+      this.offListener();
     }
   }
 
   private async offListener() {
-    if (!this.watcher) return;
-    log("关闭监听");
+    // if (!this.watcher) return;
+    // log("关闭监听");
     this.initializedReady = false;
     const oldWatcher = this.watcher;
     this.watcher = null;
     this.currentListeningPath = ""; // 清空路径状态
 
     // 重置 stickerStore
-    this.stickerStore = this.createEmptyStickerStore("监听已关闭");
+    this.stickerStore = this.createStickerStoreResult("failed", "监听已关闭");
     this.stickerPacksManager.clear();
 
-    await oldWatcher.close();
+    await oldWatcher?.close();
   }
 
-  private createEmptyStickerStore(errMsg?: string): StickerStore {
-    log("创建空 stickerStore", errMsg);
+  private createStickerStoreResult(status: "success", stickerPack: StickerPack[]): StickerStore;
+  private createStickerStoreResult(status: "info" | "failed", msg: string): StickerStore;
+  private createStickerStoreResult(status: any, arg: any): StickerStore {
+    log("创建 stickerStore", status, arg);
     return {
-      recentStickers: [],
-      stickerPack: [],
-      errMsg,
-    };
+      status,
+      ...(status === "success" ? { stickerPack: arg } : { msg: arg }),
+    } as StickerStore;
   }
 }
 
