@@ -1,13 +1,18 @@
 import path from "node:path";
-
 import type { StickerPack } from "@/common/types/localStickers";
 
 // 定义支持的图片后缀
 const SUPPORTED_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp"]);
 
+// 定义内部使用的存储结构：Sticker 列表改为 Set<string>
+interface InternalStickerPack {
+  title: string;
+  dirPath: string;
+  stickerPaths: Set<string>; // 内部只存路径
+}
+
 class StickerPacksManager {
-  // 内部维护 Map，不直接操作外部传来的 store 引用
-  private stickerPacks: Map<string, StickerPack> = new Map();
+  private stickerPacks: Map<string, InternalStickerPack> = new Map();
 
   constructor() {}
 
@@ -32,13 +37,13 @@ class StickerPacksManager {
     }
   }
 
-  private ensurePackExists(dirPath: string, title?: string): StickerPack {
+  private ensurePackExists(dirPath: string): InternalStickerPack {
     let pack = this.stickerPacks.get(dirPath);
     if (!pack) {
       pack = {
-        title: title || path.basename(dirPath) || "未知分组",
+        title: path.basename(dirPath) || "未分类",
         dirPath: dirPath,
-        stickers: [],
+        stickerPaths: new Set<string>(), // 初始化 Set
       };
       this.stickerPacks.set(dirPath, pack);
     }
@@ -47,34 +52,37 @@ class StickerPacksManager {
 
   private addSticker(stickerPath: string) {
     const dirPath = path.dirname(stickerPath);
-    // 自动确保目录存在（容错处理：即使 addDir 没触发也能自动创建分组）
     const pack = this.ensurePackExists(dirPath);
-
-    // 防重处理
-    if (!pack.stickers.some((s) => s.path === stickerPath)) {
-      pack.stickers.push({
-        name: path.basename(stickerPath),
-        path: stickerPath,
-      });
-    }
+    pack.stickerPaths.add(stickerPath);
   }
 
   private deleteSticker(stickerPath: string) {
     const dirPath = path.dirname(stickerPath);
     const pack = this.stickerPacks.get(dirPath);
     if (pack) {
-      pack.stickers = pack.stickers.filter((s) => s.path !== stickerPath);
+      pack.stickerPaths.delete(stickerPath);
     }
   }
 
-  getPackList(): StickerPack[] {
-    // 过滤掉没有图片的空分组（可选）
+  /**
+   * 在导出时进行数据转换：Set<string> -> Sticker[]
+   */
+  public getPackList(): StickerPack[] {
     return Array.from(this.stickerPacks.values())
-      .filter((pack) => pack.stickers.length > 0)
+      .filter((pack) => pack.stickerPaths.size > 0)
+      .map((pack) => ({
+        title: pack.title,
+        dirPath: pack.dirPath,
+        // 在这里统一生成前端需要的对象结构
+        stickers: Array.from(pack.stickerPaths).map((filePath) => ({
+          name: path.basename(filePath, path.extname(filePath)),
+          path: filePath,
+        })),
+      }))
       .sort((a, b) => a.title.localeCompare(b.title));
   }
 
-  clear() {
+  public clear() {
     this.stickerPacks.clear();
   }
 }
