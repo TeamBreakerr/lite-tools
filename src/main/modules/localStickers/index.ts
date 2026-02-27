@@ -40,9 +40,6 @@ class LocalStickers {
 
   private bindIpcMain() {
     ipcMain.handle("lite_tools.stickerStore.get", async (): Promise<StickerStore> => {
-      if (!configManager.value.localStickers.enabled) {
-        return this.createStickerStoreResult("failed", "功能未启用");
-      }
       return this.stickerStore;
     });
   }
@@ -52,6 +49,7 @@ class LocalStickers {
       await this.addListener(config.localStickers.path);
     } else {
       await this.offListener();
+      this.stickerStore = this.createStickerStoreResult("failed", "功能未启用");
     }
   }
 
