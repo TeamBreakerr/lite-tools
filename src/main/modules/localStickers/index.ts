@@ -146,13 +146,13 @@ class LocalStickers {
     await oldWatcher?.close();
   }
 
-  private createStickerStoreResult(status: "success", stickerPack: StickerPack[]): StickerStore;
+  private createStickerStoreResult(status: "success", stickerPacks: StickerPack[]): StickerStore;
   private createStickerStoreResult(status: "info" | "failed", msg: string): StickerStore;
-  private createStickerStoreResult(status: any, arg: any): StickerStore {
+  private createStickerStoreResult(status: "success" | "info" | "failed", arg: StickerPack[] | string): StickerStore {
     log("创建 stickerStore", status, arg);
     return {
       status,
-      ...(status === "success" ? { stickerPack: arg } : { msg: arg }),
+      ...(status === "success" ? { stickerPacks: arg } : { msg: arg }),
     } as StickerStore;
   }
 }

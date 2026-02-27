@@ -18,12 +18,12 @@ type StickerPack = {
 type StickerStore =
   | {
       status: "success";
-      stickerPack: StickerPack[];
+      stickerPacks: StickerPack[];
       msg?: never;
     }
   | {
       status: "info" | "failed";
-      stickerPack?: never;
+      stickerPacks?: never;
       msg: string;
     };
 
