@@ -7,6 +7,8 @@ const SUPPORTED_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp"])
 // 定义内部使用的存储结构：Sticker 列表改为 Set<string>
 interface InternalStickerPack {
   title: string;
+  index?: number;
+  icon?: string;
   dirPath: string;
   stickerPaths: Set<string>; // 内部只存路径
 }
@@ -41,8 +43,9 @@ class StickerPacksManager {
     let pack = this.stickerPacks.get(dirPath);
     if (!pack) {
       pack = {
-        title: path.basename(dirPath) || "未分类",
+        title: path.basename(dirPath),
         dirPath: dirPath,
+        index: 0,
         stickerPaths: new Set<string>(), // 初始化 Set
       };
       this.stickerPacks.set(dirPath, pack);
@@ -53,6 +56,9 @@ class StickerPacksManager {
   private addSticker(stickerPath: string) {
     const dirPath = path.dirname(stickerPath);
     const pack = this.ensurePackExists(dirPath);
+    if (pack.stickerPaths.size === 0 && !pack.icon) {
+      pack.icon = stickerPath;
+    }
     pack.stickerPaths.add(stickerPath);
   }
 
@@ -73,6 +79,8 @@ class StickerPacksManager {
       .map((pack) => ({
         title: pack.title,
         dirPath: pack.dirPath,
+        index: pack.index,
+        icon: pack.icon,
         // 在这里统一生成前端需要的对象结构
         stickers: Array.from(pack.stickerPaths).map((filePath) => ({
           name: path.basename(filePath, path.extname(filePath)),
