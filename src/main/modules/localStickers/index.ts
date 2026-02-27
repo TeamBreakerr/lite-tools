@@ -24,7 +24,7 @@ class LocalStickers {
   private notifyStickerStoreUpdated = createThrottledDispatcher(() => {
     this.stickerStore = this.createStickerStoreResult("success", this.stickerPacksManager.getPackList());
     this.broadcastStickerStoreUpdated();
-  }, 1100);
+  }, 200);
 
   private broadcastStickerStoreUpdated() {
     log("通知更新", this.stickerStore);
@@ -91,10 +91,6 @@ class LocalStickers {
 
       this.watcher = chokidar.watch(targetPath, {
         ignoreInitial: false,
-        awaitWriteFinish: {
-          stabilityThreshold: 1000,
-          pollInterval: 100,
-        },
       });
 
       // 监听 ready 事件来放行 IPC
