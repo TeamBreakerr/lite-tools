@@ -17,8 +17,13 @@ const exposeFunctions = {
     ipcRenderer.invoke("lite_tools.showOpenDialog", options),
 
   // 本地表情相关
-  onStickerStoreUpdated: (callback: (stickerStore: StickerStore) => void) =>
-    ipcRenderer.on("lite_tools.stickerStore.updated", (_, stickerStore: StickerStore) => callback(stickerStore)),
+  onStickerStoreUpdated: (callback: (stickerStore: StickerStore) => void) => {
+    const listener = (_: any, stickerStore: StickerStore) => callback(stickerStore);
+    ipcRenderer.on("lite_tools.stickerStore.updated", listener);
+    return () => {
+      ipcRenderer.removeListener("lite_tools.stickerStore.updated", listener);
+    };
+  },
   getStickerStore: (): Promise<StickerStore> => ipcRenderer.invoke("lite_tools.stickerStore.get"),
 
   // 背景相关
