@@ -22,6 +22,7 @@ class LocalStickers {
   constructor() {}
 
   private notifyStickerStoreUpdated = createThrottledDispatcher(() => {
+    if (!this.initializedReady) return; // 避免因节流导致的 offListener 后状态被覆盖
     this.stickerStore = this.createStickerStoreResult("success", this.stickerPacksManager.getPackList());
     this.broadcastStickerStoreUpdated();
   }, 200);
@@ -50,6 +51,7 @@ class LocalStickers {
     } else {
       await this.offListener();
       this.stickerStore = this.createStickerStoreResult("failed", "功能未启用");
+      this.broadcastStickerStoreUpdated();
     }
   }
 
@@ -89,6 +91,7 @@ class LocalStickers {
 
       this.watcher = chokidar.watch(targetPath, {
         ignoreInitial: false,
+        depth: 10, // 限制目录深度，防止过度扫描子目录导致性能问题
       });
 
       // 监听 ready 事件来放行 IPC
@@ -99,29 +102,31 @@ class LocalStickers {
       });
 
       this.watcher.on("all", (event, path) => {
-        log("文件变化", event, path);
-        // TODO: 这里需要实现实际的构建 stickerStore 逻辑
-        this.stickerPacksManager?.onEvent(event, path);
+        // 初始扫描时避免疯狂日志刷屏卡顿
+        if (this.initializedReady) {
+          log("文件变化", event, path);
+        }
+
+        this.stickerPacksManager.onEvent(event, path);
+
         if (this.initializedReady) {
           this.notifyStickerStoreUpdated();
         }
       });
 
-      this.watcher.on("error", (err: any) => {
+      this.watcher.on("error", async (err: any) => {
         log("监听失败", err);
-        // 如果报错了，也要让挂起的 IPC 返回，避免前端死锁
+        await this.offListener();
         this.stickerStore = this.createStickerStoreResult("failed", `监听文件夹失败: ${err.message}`);
         this.currentListeningPath = "";
         this.broadcastStickerStoreUpdated();
-        this.offListener();
       });
     } catch (err: any) {
       log("监听失败", err);
-      // 如果报错了，也要让挂起的 IPC 返回，避免前端死锁
+      await this.offListener();
       this.stickerStore = this.createStickerStoreResult("failed", `监听文件夹失败: ${err.message}`);
       this.currentListeningPath = "";
       this.broadcastStickerStoreUpdated();
-      this.offListener();
     }
   }
 
