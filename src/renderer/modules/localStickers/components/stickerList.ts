@@ -1,7 +1,7 @@
 import { LitElement, html, css, PropertyValues } from "lit";
 import { customElement, state, property, query } from "lit/decorators.js";
 
-import { defaultStickerStore, StickerPack } from "./index";
+import type { StickerPack } from "./index";
 
 import type { StickerStore, StickerPack as StickerPackType } from "@/common/types/localStickers";
 
@@ -9,6 +9,7 @@ import type { StickerStore, StickerPack as StickerPackType } from "@/common/type
 export class StickerList extends LitElement {
   private _observer?: IntersectionObserver;
   private _visibleItems = new Set<StickerPack>();
+  private _ignoreScroll = false;
 
   static styles = css`
     .lt-sticker-list {
@@ -22,7 +23,7 @@ export class StickerList extends LitElement {
   `;
 
   @property({ type: Object })
-  public stickerStore: StickerStore = defaultStickerStore;
+  public stickerStore!: StickerStore;
 
   @query(".lt-sticker-list")
   private _stickerList!: HTMLDivElement;
@@ -32,7 +33,9 @@ export class StickerList extends LitElement {
       (pack) => pack.stickerPack.dirPath === dirPath,
     );
     if (pack) {
+      this._ignoreScroll = true;
       this._stickerList.scrollTop = pack.offsetTop;
+      setTimeout(() => (this._ignoreScroll = false), 10);
     }
   }
 
@@ -57,45 +60,51 @@ export class StickerList extends LitElement {
           const target = entry.target as StickerPack;
           if (entry.isIntersecting) {
             this._visibleItems.add(target);
+            target.isVisible = true;
           } else {
             this._visibleItems.delete(target);
+            target.isVisible = false;
           }
         });
         this._calculateClosest();
       },
       {
         root: this._stickerList,
-        threshold: [0, 0.1], // 只要露头就触发
       },
     );
   }
 
   private _calculateClosest() {
+    if (this._ignoreScroll) return;
     let closest: StickerPack | null = null;
     let minTop = Infinity;
     const containerRect = this._stickerList.getBoundingClientRect();
     for (const stickerPack of this._visibleItems) {
       const rect = stickerPack.getBoundingClientRect();
       const relativeTop = rect.bottom - containerRect.top;
-      console.log(stickerPack.stickerPack.title, relativeTop);
       if (relativeTop > 0 && relativeTop < minTop) {
         minTop = relativeTop;
         closest = stickerPack;
       }
     }
 
-    console.log(">======<");
     if (closest) {
-      console.log("顶部最近", closest.stickerPack.title, closest.offsetTop);
+      this.dispatchEvent(new CustomEvent("updateTopPack", { detail: { dirPath: closest.stickerPack.dirPath } }));
     }
-    console.log("<======>");
   }
 
   render() {
     return html`<div class="lt-sticker-list">
-      ${this.stickerStore.stickerPacks?.map(
-        (pack) => html`<lt-sticker-pack @item-mounted="${this._itemMounted}" .stickerPack="${pack}"></lt-sticker-pack>`,
-      ) || []}
+      ${this.stickerStore.stickerPacks
+        ?.sort((a, b) => a.title.localeCompare(b.title))
+        ?.sort((a, b) => a.index - b.index)
+        ?.map(
+          (stickerPack) =>
+            html`<lt-sticker-pack
+              @item-mounted="${this._itemMounted}"
+              .stickerPack="${stickerPack}"
+            ></lt-sticker-pack>`,
+        ) || []}
     </div>`;
   }
 }

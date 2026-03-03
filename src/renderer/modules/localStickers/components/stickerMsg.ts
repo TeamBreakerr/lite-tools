@@ -1,14 +1,12 @@
 import { LitElement, html, css, PropertyValues } from "lit";
 import { customElement, state, property, query } from "lit/decorators.js";
 
-import { defaultStickerStore } from "./index";
-
 import type { StickerStore } from "@/common/types/localStickers";
 
 @customElement("lt-sticker-msg")
 export class StickerMsg extends LitElement {
   @property({ type: Object })
-  stickerStore: StickerStore = defaultStickerStore;
+  stickerStore!: StickerStore;
 
   static styles = css`
     .lt-sticker-msg {

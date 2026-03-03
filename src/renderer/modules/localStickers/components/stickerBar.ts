@@ -1,8 +1,6 @@
 import { LitElement, html, css, PropertyValues } from "lit";
 import { customElement, state, property, query } from "lit/decorators.js";
 
-import { defaultStickerStore } from "./index";
-
 import type { StickerPack, StickerStore } from "@/common/types/localStickers";
 
 @customElement("lt-sticker-bar-item")
@@ -81,7 +79,7 @@ export class StickerBar extends LitElement {
   `;
 
   @property({ type: Object })
-  public stickerStore: StickerStore = defaultStickerStore;
+  public stickerStore!: StickerStore;
 
   @property({ type: String })
   public activeDirPath: StickerPack["dirPath"] = "";

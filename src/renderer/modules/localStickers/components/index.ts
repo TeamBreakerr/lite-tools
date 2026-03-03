@@ -2,13 +2,9 @@ import { StickerPanel } from "./stickerPanel";
 import { StickerMsg } from "./stickerMsg";
 import { StickerList } from "./stickerList";
 import { StickerBar, StickerBarItem } from "./stickerBar";
-import { StickerPack } from "./stickerPack";
+import { StickerPack, StickerItem } from "./stickerPack";
 
-import type { StickerStore } from "@/common/types/localStickers";
-
-const defaultStickerStore: StickerStore = { status: "info", msg: "初始化中..." };
-
-export { StickerPanel, StickerMsg, StickerList, StickerBar, StickerPack, defaultStickerStore };
+export { StickerPanel, StickerMsg, StickerList, StickerBar, StickerPack, StickerItem };
 
 declare global {
   interface HTMLElementTagNameMap {
