@@ -1,4 +1,5 @@
 import path from "node:path";
+import fs from "node:fs";
 import type { StickerPack } from "@/common/types/localStickers";
 
 // 定义支持的图片后缀
@@ -7,20 +8,28 @@ const SUPPORTED_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp"])
 // 定义内部使用的存储结构：Sticker 列表改为 Set<string>
 interface InternalStickerPack {
   title: string;
-  index?: number;
+  index: number;
   icon?: string;
   dirPath: string;
   stickerPaths: Set<string>; // 内部只存路径
 }
 
+interface StickerConfig {
+  title: string;
+  index: number;
+  icon?: string;
+}
+
 class StickerPacksManager {
   private stickerPacks: Map<string, InternalStickerPack> = new Map();
 
+  public rootPath!: string;
+
   constructor() {}
 
-  public onEvent(eventName: string, filePath: string) {
+  public onEvent(eventName: string, _filePath: string) {
+    const filePath = _filePath.replace(/\\/g, "/");
     const ext = path.extname(filePath).toLowerCase();
-
     switch (eventName) {
       case "addDir":
         this.ensurePackExists(filePath);
@@ -42,15 +51,50 @@ class StickerPacksManager {
   private ensurePackExists(dirPath: string): InternalStickerPack {
     let pack = this.stickerPacks.get(dirPath);
     if (!pack) {
-      pack = {
-        title: path.basename(dirPath),
-        dirPath: dirPath,
-        index: 0,
-        stickerPaths: new Set<string>(), // 初始化 Set
-      };
+      // 先查找目录下是否有sticker.json配置文件
+      const configPath = path.join(dirPath, "sticker.json");
+      if (fs.existsSync(configPath)) {
+        const config = JSON.parse(fs.readFileSync(configPath, "utf-8")) as StickerConfig;
+        pack = {
+          title: config.title || this.baseName(dirPath),
+          index: config.index || 0,
+          icon: config.icon ? path.join(dirPath, config.icon) : undefined,
+          dirPath: dirPath,
+          stickerPaths: new Set<string>(),
+        };
+      } else {
+        pack = {
+          title: this.baseName(dirPath),
+          index: 0,
+          icon: undefined,
+          dirPath: dirPath,
+          stickerPaths: new Set<string>(),
+        };
+      }
+
       this.stickerPacks.set(dirPath, pack);
     }
     return pack;
+  }
+
+  private baseName(path: string) {
+    return path.replace(this.rootPath + "/", "");
+  }
+
+  private writeConfig(pack: InternalStickerPack) {
+    const configPath = path.join(pack.dirPath, "sticker.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          title: pack.title,
+          index: pack.index,
+          icon: pack.icon,
+        },
+        null,
+        2,
+      ),
+    );
   }
 
   private addSticker(stickerPath: string) {
@@ -81,13 +125,11 @@ class StickerPacksManager {
         dirPath: pack.dirPath,
         index: pack.index,
         icon: pack.icon,
-        // 在这里统一生成前端需要的对象结构
         stickers: Array.from(pack.stickerPaths).map((filePath) => ({
           name: path.basename(filePath, path.extname(filePath)),
           path: filePath,
         })),
       }))
-      .sort((a, b) => a.title.localeCompare(b.title));
   }
 
   public clear() {

@@ -56,17 +56,19 @@ class LocalStickers {
   }
 
   private async addListener(targetPath: string) {
-    log("更新监听目录:", targetPath);
-
     // 如果路径没变且正在监听，则跳过
     if (this.watcher && this.currentListeningPath === targetPath) {
-      log("路径无变化");
       return;
     }
+
+    log("更新监听目录:", targetPath);
 
     // 重置状态
     this.initializedReady = false;
     await this.offListener();
+
+    // 更新 rootPath
+    this.stickerPacksManager.rootPath = targetPath;
 
     if (!targetPath) {
       this.stickerStore = this.createStickerStoreResult("failed", "请选择目录");

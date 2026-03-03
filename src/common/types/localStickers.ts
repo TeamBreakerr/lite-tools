@@ -10,7 +10,7 @@ type Stickers = Sticker[];
 type StickerPack = {
   title: string;
   icon?: Path;
-  index?: number;
+  index: number;
   dirPath: Path;
   stickers: Stickers;
 };
