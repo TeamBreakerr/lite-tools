@@ -7,6 +7,8 @@
     "enabled": false,
     "path": "",
     "stickersPerRow": 6,
+    "panelWidth": 350,
+    "panelHeight": 420,
     "recentStickers": {
       "enabled": false,
       "limit": 3
