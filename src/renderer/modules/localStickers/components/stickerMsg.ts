@@ -9,6 +9,9 @@ export class StickerMsg extends LitElement {
   stickerStore!: StickerStore;
 
   static styles = css`
+    :host {
+      display: block;
+    }
     .lt-sticker-msg {
       width: 100%;
       height: 100%;

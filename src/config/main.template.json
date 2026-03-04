@@ -6,6 +6,7 @@
   "localStickers": {
     "enabled": false,
     "path": "",
+    "stickersPerRow": 6,
     "recentStickers": {
       "enabled": false,
       "limit": 3

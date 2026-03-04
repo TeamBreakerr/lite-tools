@@ -6,6 +6,9 @@ import type { StickerPack, StickerStore } from "@/common/types/localStickers";
 @customElement("lt-sticker-bar-item")
 export class StickerBarItem extends LitElement {
   static styles = css`
+    :host {
+      display: block;
+    }
     .lt-sticker-bar-item {
       width: calc(var(--bar-height) - var(--bar-item-padding) * 2);
       height: calc(var(--bar-height) - var(--bar-item-padding) * 2);
@@ -54,18 +57,20 @@ export class StickerBarItem extends LitElement {
 @customElement("lt-sticker-bar")
 export class StickerBar extends LitElement {
   static styles = css`
+    :host {
+      display: block;
+    }
     .lt-sticker-bar {
       flex-shrink: 0;
-      width: var(--bar-width);
       height: var(--bar-height);
+      width: min(100vw, var(--bar-width));
       flex-shrink: 0;
       overflow: hidden;
       background-color: var(--background-03);
     }
     .scroll-container {
       width: var(--bar-height);
-      height: var(--bar-width);
-
+      height: min(100vw, var(--bar-width));
       overflow-y: auto;
       overflow-x: hidden;
       box-sizing: border-box;

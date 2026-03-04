@@ -7,15 +7,19 @@ import type { StickerStore, StickerPack as StickerPackType } from "@/common/type
 
 @customElement("lt-sticker-list")
 export class StickerList extends LitElement {
-  private _observer?: IntersectionObserver;
-  private _visibleItems = new Set<StickerPack>();
-  private _ignoreScroll = false;
-
   static styles = css`
+    :host {
+      display: block;
+    }
     .lt-sticker-list {
       min-height: 0;
+      min-width: 0;
+      width: 100%;
       height: 100%;
+      overflow-x: hidden;
       overflow-y: auto;
+      background-color: var(--panel-background);
+      position: relative;
     }
     .lt-sticker-list::-webkit-scrollbar {
       display: none;
@@ -23,12 +27,19 @@ export class StickerList extends LitElement {
   `;
 
   @property({ type: Object })
-  public stickerStore!: StickerStore;
+  stickerStore!: StickerStore;
+
+  @property({ type: Number })
+  stickersPerRow = 6;
 
   @query(".lt-sticker-list")
   private _stickerList!: HTMLDivElement;
 
-  public gotoPackByPath(dirPath: StickerPackType["dirPath"]) {
+  private _observer?: IntersectionObserver;
+  private _visibleItems = new Set<StickerPack>();
+  private _ignoreScroll = false;
+
+  gotoPackByPath(dirPath: StickerPackType["dirPath"]) {
     const pack = Array.from(this.renderRoot.querySelectorAll(`lt-sticker-pack`)).find(
       (pack) => pack.stickerPack.dirPath === dirPath,
     );
@@ -103,6 +114,7 @@ export class StickerList extends LitElement {
             html`<lt-sticker-pack
               @item-mounted="${this._itemMounted}"
               .stickerPack="${stickerPack}"
+              .stickersPerRow="${this.stickersPerRow}"
             ></lt-sticker-pack>`,
         ) || []}
     </div>`;
