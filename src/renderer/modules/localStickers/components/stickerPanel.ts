@@ -6,10 +6,6 @@ import { StickerBar, StickerList } from "./index";
 
 import type { StickerStore, StickerPack } from "@/common/types/localStickers";
 
-function log(...args: any[]) {
-  console.log(...args);
-}
-
 @customElement("lt-sticker-panel")
 export class StickerPanel extends LitElement {
   static styles = css`
@@ -36,59 +32,34 @@ export class StickerPanel extends LitElement {
   `;
 
   @property({ type: Number })
-  panelHeight = 420;
-
-  @property({ type: Number })
   panelWidth = 350;
 
   @property({ type: Number })
-  stickersPerRow = 6;
+  panelHeight = 420;
 
   @property({ type: Object })
-  stickerStore: StickerStore = { status: "info", msg: "初始化中..." };
+  stickerStore!: StickerStore;
+
+  @property({ type: Number })
+  stickersPerRow!: number;
+
+  @property({ type: Boolean })
+  showPanel = false;
 
   @state()
   private _activeDirPath: StickerPack["dirPath"] = "";
 
-  private _listenerSet = new Set<() => void>();
-
-  protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
-    this.stickerStore = await lite_tools.getStickerStore();
-  }
-
-  async connectedCallback(): Promise<void> {
-    super.connectedCallback();
-
-    const config = await lite_tools.getConfig();
-    this.stickersPerRow = config.localStickers.stickersPerRow;
-
-    lite_tools.onConfigChange((config) => {
-      this.stickersPerRow = config.localStickers.stickersPerRow;
-    });
-
-    this._listenerSet.add(
-      lite_tools.onStickerStoreUpdated((stickerStore) => {
-        this.stickerStore = stickerStore;
-      }),
-    );
-  }
-
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    if (this._listenerSet.size) {
-      this._listenerSet.forEach((unsubscribe) => unsubscribe());
-    }
-  }
-
   private _updateActivePack(e: CustomEvent) {
-    log("更新当前激活的 pack", e.detail.dirPath);
+    if (!this.showPanel) return;
+    console.log("更新激活贴纸");
     this._activeDirPath = e.detail.dirPath;
     const stickerList = this.renderRoot.querySelector("lt-sticker-list") as StickerList;
     stickerList.gotoPackByPath(e.detail.dirPath);
   }
 
   private _updateTopPack(e: CustomEvent) {
-    log("更新顶部 pack", e.detail);
+    if (!this.showPanel) return;
+    console.log("更新顶部贴纸");
     this._activeDirPath = e.detail.dirPath;
     const stickerBar = this.renderRoot.querySelector("lt-sticker-bar") as StickerBar;
     stickerBar.selectPackIcon(e.detail.dirPath);
@@ -123,8 +94,3 @@ export class StickerPanel extends LitElement {
     </div>`;
   }
 }
-
-// 测试
-setTimeout(() => {
-  document.querySelector(".test")!.innerHTML = `<lt-sticker-panel></lt-sticker-panel>`;
-}, 100);
