@@ -82,7 +82,7 @@ export class StickerPack extends LitElement {
         z-index: 1;
         background-color: var(--panel-background);
         & .lt-sticker-pack-name {
-          max-width: calc(100% - 40px);
+          max-width: calc(100% - 20px);
           text-overflow: ellipsis;
           overflow: hidden;
           white-space: nowrap;
