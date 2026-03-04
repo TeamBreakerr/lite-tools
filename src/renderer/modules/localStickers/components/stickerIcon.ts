@@ -14,6 +14,8 @@ export class StickerIcon extends LitElement {
     :host {
       display: block;
       --transition-time: 150ms;
+      background-color: red;
+      position: relative;
     }
     :host(:not(:last-child)) {
       margin-right: 4px;
@@ -82,12 +84,27 @@ export class StickerIcon extends LitElement {
 
     .lt-sticker-panel-container {
       position: absolute;
-      top: 0;
-      left: 0;
+      bottom: calc(100% + 10px);
+      right: -10px;
       z-index: 1000;
       opacity: 0;
       pointer-events: none;
-      transition: var(--transition-time);
+      transition: opacity var(--transition-time);
+      &.left {
+        right: unset;
+        left: -10px;
+        .lt-sticker-panel-inner {
+          clip-path: inset(60% 60% 0 0 round 6px);
+        }
+      }
+      &.center{
+        right: unset;
+        left: 50%;
+        transform: translateX(-50%);
+        .lt-sticker-panel-inner {
+          clip-path: inset(60% 60% 0 60% round 6px);
+        }
+      }
       &::after {
         content: "";
         display: block;
@@ -111,7 +128,7 @@ export class StickerIcon extends LitElement {
         right: 0;
         width: 100%;
         height: 100%;
-        clip-path: inset(70% 0 0 70% round 6px);
+        clip-path: inset(60% 0 0 60% round 6px);
         overflow: hidden;
         transition: clip-path var(--transition-time);
         transition-delay: var(--transition-time);
