@@ -58,7 +58,7 @@ class StickerPacksManager {
         pack = {
           title: config.title || this.baseName(dirPath),
           index: config.index || 0,
-          icon: config.icon ? path.join(dirPath, config.icon) : undefined,
+          icon: config.icon ? path.join(dirPath, config.icon).replace(/\\/g, "/") : undefined,
           dirPath: dirPath,
           stickerPaths: new Set<string>(),
         };
