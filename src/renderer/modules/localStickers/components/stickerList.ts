@@ -60,6 +60,12 @@ export class StickerList extends LitElement {
     this._observer?.disconnect();
   }
 
+  get _sortStickerPacks() {
+    return this.stickerStore.stickerPacks
+      ?.sort((a, b) => a.title.localeCompare(b.title))
+      ?.sort((a, b) => a.index - b.index);
+  }
+
   private _itemMounted(e: CustomEvent) {
     this._observer?.observe(e.detail.element);
   }
@@ -106,17 +112,14 @@ export class StickerList extends LitElement {
 
   render() {
     return html`<div class="lt-sticker-list">
-      ${this.stickerStore.stickerPacks
-        ?.sort((a, b) => a.title.localeCompare(b.title))
-        ?.sort((a, b) => a.index - b.index)
-        ?.map(
-          (stickerPack) =>
-            html`<lt-sticker-pack
-              @item-mounted="${this._itemMounted}"
-              .stickerPack="${stickerPack}"
-              .stickersPerRow="${this.stickersPerRow}"
-            ></lt-sticker-pack>`,
-        ) || []}
+      ${this._sortStickerPacks?.map(
+        (stickerPack) =>
+          html`<lt-sticker-pack
+            @item-mounted="${this._itemMounted}"
+            .stickerPack="${stickerPack}"
+            .stickersPerRow="${this.stickersPerRow}"
+          ></lt-sticker-pack>`,
+      ) || []}
     </div>`;
   }
 }
