@@ -40,6 +40,10 @@ export class StickerItem extends LitElement {
         background-color: var(--hover-background);
         box-shadow: 0 0 0 3px var(--hover-background);
       }
+      &:hover:active {
+        background-color: var(--overlay_pressed);
+        box-shadow: 0 0 0 3px var(--overlay_pressed);
+      }
     }
   `;
 
