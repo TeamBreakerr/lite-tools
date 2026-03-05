@@ -156,7 +156,7 @@ export class StickerPack extends LitElement {
     return html`
       <div class="lt-sticker-pack">
         <div class="lt-sticker-pack-top-bar">
-          <div class="lt-sticker-pack-name">${this.stickerPack?.title}[${this.stickerPack?.index}]</div>
+          <div class="lt-sticker-pack-name">${this.stickerPack?.title}</div>
         </div>
         <div style="--rows: ${this._estimatedRows}" class="lt-sticker-pack-content">
           ${this.isVisible
