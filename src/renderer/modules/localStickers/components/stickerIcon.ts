@@ -265,6 +265,7 @@ export class StickerIcon extends LitElement {
           : ""}
       </div>
       <div @click="${() => (this._showPanel = !this._showPanel)}" class="lt-sticker-icon">
+        <div style="display: ${!this._showPanel ? "block" : "none"}" class="flot-card">本地贴纸</div>
         <div class="icon-item" aria-label="本地贴纸" tabindex="0">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
             <path
