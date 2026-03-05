@@ -77,8 +77,11 @@ class StickerPacksManager {
     return pack;
   }
 
-  private baseName(path: string) {
-    return path.replace(this.rootPath + "/", "");
+  private baseName(stickerPath: string) {
+    if (stickerPath === this.rootPath) {
+      return path.basename(stickerPath);
+    }
+    return stickerPath.replace(this.rootPath + "/", "");
   }
 
   private writeConfig(pack: InternalStickerPack) {
@@ -129,7 +132,7 @@ class StickerPacksManager {
           name: path.basename(filePath, path.extname(filePath)),
           path: filePath,
         })),
-      }))
+      }));
   }
 
   public clear() {
