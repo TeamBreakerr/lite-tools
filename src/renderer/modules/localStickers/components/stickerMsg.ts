@@ -25,15 +25,16 @@ export class StickerMsg extends LitElement {
       padding: 10px;
       overflow: auto;
       font-weight: 600;
-    }
-    .lt-sticker-msg.info {
-      color: var(--text-secondary-02);
-    }
-    .lt-sticker-msg.failed {
-      color: var(--text-error);
-    }
-    .lt-sticker-msg span {
-      display: block;
+      background-color: var(--panel-background);
+      &.info {
+        color: var(--text-secondary-02);
+      }
+      &.failed {
+        color: var(--text-error);
+      }
+      span {
+        display: block;
+      }
     }
   `;
 
