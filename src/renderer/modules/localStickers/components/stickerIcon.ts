@@ -4,9 +4,7 @@ import { styleMap } from "lit/directives/style-map.js";
 
 import { configStore } from "@/renderer/modules/configStore";
 
-import type { StickerPack } from "./index";
-
-import type { StickerStore, StickerPack as StickerPackType } from "@/common/types/localStickers";
+import type { StickerStore } from "@/common/types/localStickers";
 
 @customElement("lt-sticker-icon")
 export class StickerIcon extends LitElement {

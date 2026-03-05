@@ -1,7 +1,7 @@
 import { LitElement, html, css, PropertyValues } from "lit";
 import { customElement, state, property, query } from "lit/decorators.js";
 
-import type { StickerPack } from "./index";
+import type { StickerPack } from "../index";
 
 import type { StickerStore, StickerPack as StickerPackType } from "@/common/types/localStickers";
 
