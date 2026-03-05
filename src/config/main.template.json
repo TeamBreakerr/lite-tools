@@ -9,6 +9,7 @@
     "stickersPerRow": 6,
     "panelWidth": 350,
     "panelHeight": 420,
+    "sendAsPic": false,
     "recentStickers": {
       "enabled": false,
       "limit": 3
