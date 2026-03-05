@@ -147,6 +147,7 @@ function initInput(view: HTMLDivElement, config: Config) {
       return;
     }
     el.value = value;
+    const isNumber = el.getAttribute("type") === "number";
     view.addEventListener(configPath, (e) => {
       const event = e as CustomEvent<string>;
       el.value = event.detail;
@@ -161,7 +162,11 @@ function initInput(view: HTMLDivElement, config: Config) {
       }
     } else {
       el.addEventListener("change", () => {
-        setValueByPath(config, configPath, el.value);
+        let value: string | number = el.value;
+        if (isNumber) {
+          value = parseInt(value);
+        }
+        setValueByPath(config, configPath, value);
         configStore.setConfig(config);
         dispatchEvent(view, configPath, el.value);
       });
