@@ -29,7 +29,7 @@ export class StickerItem extends LitElement {
         user-select: none;
         overflow: hidden;
         opacity: 0;
-        transition: opacity 300ms;
+        transition: opacity 150ms;
       }
       svg {
         width: 100%;
