@@ -324,10 +324,10 @@
       </li>
     </ul>
   </div>
-  <!-- 本地表情 -->
+  <!-- 本地贴纸 -->
   <div class="wrap local-stickers">
     <div class="vertical-list-item title">
-      <h2>本地表情</h2>
+      <h2>本地贴纸</h2>
       <svg class="icon is-fold" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M21 8L12 17L3 8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
       </svg>
@@ -338,6 +338,7 @@
         <div>
           <h2>启用</h2>
           <span class="secondary-text">
+            <strong>正在开发中，当前仅实现最低限度功能</strong><br />
             可识别嵌套文件夹结构
           </span>
         </div>
@@ -364,6 +365,54 @@
           >
             选择
           </button>
+        </div>
+      </li>
+
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>每行贴纸数量</h2>
+        </div>
+        <div class="slot-input-box">
+          <input
+            placeholder="6"
+            class="slot-input text_color"
+            data-config="localStickers.stickersPerRow"
+            type="number"
+            spellcheck="false"
+          />
+        </div>
+      </li>
+
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>窗口宽度</h2>
+        </div>
+        <div class="slot-input-box">
+          <input
+            placeholder="350"
+            class="slot-input text_color"
+            data-config="localStickers.panelWidth"
+            type="number"
+            spellcheck="false"
+          />
+        </div>
+      </li>
+
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>窗口高度</h2>
+        </div>
+        <div class="slot-input-box">
+          <input
+            placeholder="420"
+            class="slot-input text_color"
+            data-config="localStickers.panelHeight"
+            type="number"
+            spellcheck="false"
+          />
         </div>
       </li>
     </ul>
