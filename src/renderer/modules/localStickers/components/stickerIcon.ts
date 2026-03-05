@@ -3,6 +3,7 @@ import { customElement, state, property, query } from "lit/decorators.js";
 import { styleMap } from "lit/directives/style-map.js";
 
 import { configStore } from "@/renderer/modules/configStore";
+import { StickerItem } from "./stickerPack";
 
 import type { StickerStore } from "@/common/types/localStickers";
 
@@ -173,12 +174,10 @@ export class StickerIcon extends LitElement {
       }),
     );
 
-    document.addEventListener("click", (e: Event) => {
-      if (this.contains(e.target as Node)) {
-      } else {
-        this._showPanel = false;
-      }
-    });
+    document.addEventListener("click", this.handleClick);
+    document.addEventListener("mousedown", this.handleMouseDown);
+    document.addEventListener("mouseup", this.handleMouseUp);
+    document.addEventListener("mousemove", this.handleMouseMove);
 
     this._isReady = true;
   }
@@ -186,8 +185,56 @@ export class StickerIcon extends LitElement {
   disconnectedCallback(): void {
     this._listenerSet.forEach((unsubscribe) => unsubscribe());
     this._listenerSet.clear();
+    document.removeEventListener("click", this.handleClick);
+    document.removeEventListener("mousedown", this.handleMouseDown);
+    document.removeEventListener("mouseup", this.handleMouseUp);
+    document.removeEventListener("mousemove", this.handleMouseMove);
     super.disconnectedCallback();
   }
+
+  handleClick = (e: Event) => {
+    if (this.contains(e.target as Node)) {
+    } else {
+      this._showPanel = false;
+    }
+  };
+
+  private _longPressTimer?: ReturnType<typeof setTimeout>;
+
+  @state()
+  private _previewStickerPath?: string;
+
+  @state()
+  private _showPreview = false;
+
+  handleMouseDown = (e: Event) => {
+    const path = e.composedPath() as HTMLElement[];
+    const target = path.find((item) => item instanceof StickerItem);
+    if (target) {
+      this._longPressTimer = setTimeout(() => {
+        this._previewStickerPath = target.sticker.path;
+        this._showPreview = true;
+      }, 300);
+    }
+  };
+
+  handleMouseUp = (e: Event) => {
+    if (this._longPressTimer) {
+      clearTimeout(this._longPressTimer);
+      this._longPressTimer = undefined;
+    }
+    this._showPreview = false;
+  };
+
+  handleMouseMove = (e: Event) => {
+    if (this._showPreview) {
+      const path = e.composedPath() as HTMLElement[];
+      const target = path.find((item) => item instanceof StickerItem);
+      if (target) {
+        this._previewStickerPath = target.sticker.path;
+      }
+    }
+  };
 
   protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
     await configStore.ready;
@@ -196,7 +243,11 @@ export class StickerIcon extends LitElement {
   }
 
   render() {
-    return html` <div
+    return html` <lt-sticker-full-viewer
+        .show="${this._showPreview}"
+        .stickerPath="${this._previewStickerPath}"
+      ></lt-sticker-full-viewer>
+      <div
         style=${styleMap({
           maxWidth: `min(100vw, ${this._panelWidth}px)`,
           maxHeight: `min(100vh, ${this._panelHeight}px)`,
@@ -214,15 +265,7 @@ export class StickerIcon extends LitElement {
           : ""}
       </div>
       <div @click="${() => (this._showPanel = !this._showPanel)}" class="lt-sticker-icon">
-        ${!this._showPanel ? html`<div class="flot-card">贴纸</div>` : ""}
-        <div
-          class="icon-item"
-          bf-toolbar-item=""
-          role="button"
-          bf-label-inner="true"
-          aria-label="本地贴纸"
-          tabindex="0"
-        >
+        <div class="icon-item" aria-label="本地贴纸" tabindex="0">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
             <path
               fill="currentColor"

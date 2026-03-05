@@ -4,8 +4,9 @@ import { StickerList } from "./components/stickerList";
 import { StickerBar, StickerBarItem } from "./components/stickerBar";
 import { StickerPack, StickerItem } from "./components/stickerPack";
 import { StickerIcon } from "./components/stickerIcon";
+import { StickerFullViewer } from "./components/stickerFullViewer";
 
-export { StickerPanel, StickerMsg, StickerList, StickerBar, StickerPack, StickerItem, StickerIcon };
+export { StickerPanel, StickerMsg, StickerList, StickerBar, StickerPack, StickerItem, StickerIcon, StickerFullViewer };
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -16,6 +17,6 @@ declare global {
     "lt-sticker-bar": StickerBar;
     "lt-sticker-bar-item": StickerBarItem;
     "lt-sticker-icon": StickerIcon;
+    "lt-sticker-full-viewer": StickerFullViewer;
   }
 }
-
