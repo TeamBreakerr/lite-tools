@@ -143,6 +143,9 @@ export class StickerIcon extends LitElement {
   @state()
   private _showPanel = false;
 
+  @state()
+  private _ignoreClick = false;
+
   get _panelWidth() {
     return this?._config?.localStickers?.panelWidth ?? 350;
   }
@@ -157,10 +160,74 @@ export class StickerIcon extends LitElement {
 
   private _listenerSet = new Set<() => void>();
 
-  async connectedCallback(): Promise<void> {
-    super.connectedCallback();
+  handleClick = (e: MouseEvent) => {
+    if (this.contains(e.target as Node)) {
+      if (this._ignoreClick) return;
+      if (e.button === 0) {
+        const path = e.composedPath() as HTMLElement[];
+        const target = path.find((item) => item instanceof StickerItem);
+        if (target) {
+          if (e.altKey) {
+            this.dispatchEvent(new CustomEvent("lt-select-sticker", { detail: target.sticker }));
+          } else {
+            this.dispatchEvent(new CustomEvent("lt-send-sticker", { detail: target.sticker }));
+          }
+          if (!e.ctrlKey) {
+            this._showPanel = false;
+          }
+        }
+      } else if (e.button === 2) {
+        // right menu
+      }
+    } else {
+      this._showPanel = false;
+    }
+  };
 
-    this._config = await lite_tools.getConfig();
+  private _longPressTimer?: ReturnType<typeof setTimeout>;
+
+  @state()
+  private _previewStickerPath?: string;
+
+  @state()
+  private _showPreview = false;
+
+  handleMouseDown = (e: Event) => {
+    const path = e.composedPath() as HTMLElement[];
+    const target = path.find((item) => item instanceof StickerItem);
+    if (target) {
+      this._longPressTimer = setTimeout(() => {
+        this._previewStickerPath = target.sticker.path;
+        this._showPreview = true;
+        this._ignoreClick = true;
+      }, 300);
+    }
+  };
+
+  handleMouseUp = (e: Event) => {
+    if (this._longPressTimer) {
+      clearTimeout(this._longPressTimer);
+      this._longPressTimer = undefined;
+    }
+    this._showPreview = false;
+    setTimeout(() => (this._ignoreClick = false));
+  };
+
+  handleMouseMove = (e: Event) => {
+    if (this._showPreview) {
+      const path = e.composedPath() as HTMLElement[];
+      const target = path.find((item) => item instanceof StickerItem);
+      if (target) {
+        this._previewStickerPath = target.sticker.path;
+      }
+    }
+  };
+
+  protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
+    await configStore.ready;
+
+    this._stickerStore = await lite_tools.getStickerStore();
+    this._config = configStore.value;
 
     this._listenerSet.add(
       lite_tools.onConfigChange((config) => {
@@ -182,88 +249,41 @@ export class StickerIcon extends LitElement {
     this._isReady = true;
   }
 
-  disconnectedCallback(): void {
+  // 销毁函数
+  destroy() {
     this._listenerSet.forEach((unsubscribe) => unsubscribe());
     this._listenerSet.clear();
+
     document.removeEventListener("click", this.handleClick);
     document.removeEventListener("mousedown", this.handleMouseDown);
     document.removeEventListener("mouseup", this.handleMouseUp);
     document.removeEventListener("mousemove", this.handleMouseMove);
-    super.disconnectedCallback();
-  }
 
-  handleClick = (e: Event) => {
-    if (this.contains(e.target as Node)) {
-    } else {
-      this._showPanel = false;
-    }
-  };
-
-  private _longPressTimer?: ReturnType<typeof setTimeout>;
-
-  @state()
-  private _previewStickerPath?: string;
-
-  @state()
-  private _showPreview = false;
-
-  handleMouseDown = (e: Event) => {
-    const path = e.composedPath() as HTMLElement[];
-    const target = path.find((item) => item instanceof StickerItem);
-    if (target) {
-      this._longPressTimer = setTimeout(() => {
-        this._previewStickerPath = target.sticker.path;
-        this._showPreview = true;
-      }, 300);
-    }
-  };
-
-  handleMouseUp = (e: Event) => {
-    if (this._longPressTimer) {
-      clearTimeout(this._longPressTimer);
-      this._longPressTimer = undefined;
-    }
-    this._showPreview = false;
-  };
-
-  handleMouseMove = (e: Event) => {
-    if (this._showPreview) {
-      const path = e.composedPath() as HTMLElement[];
-      const target = path.find((item) => item instanceof StickerItem);
-      if (target) {
-        this._previewStickerPath = target.sticker.path;
-      }
-    }
-  };
-
-  protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
-    await configStore.ready;
-    this._stickerStore = await lite_tools.getStickerStore();
-    this._config = configStore.value;
+    this._isReady = false;
   }
 
   render() {
-    return html` <lt-sticker-full-viewer
-        .show="${this._showPreview}"
-        .stickerPath="${this._previewStickerPath}"
-      ></lt-sticker-full-viewer>
-      <div
-        style=${styleMap({
-          maxWidth: `min(100vw, ${this._panelWidth}px)`,
-          maxHeight: `min(100vh, ${this._panelHeight}px)`,
-        })}
-        class="lt-sticker-panel-container right ${this._showPanel ? "show" : ""}"
-      >
-        ${this._isReady
-          ? html`<lt-sticker-panel
-              .panelWidth="${this._panelWidth}"
-              .panelHeight="${this._panelHeight}"
-              .stickersPerRow="${this._stickersPerRow}"
-              .stickerStore="${this._stickerStore}"
-              .showPanel="${this._showPanel}"
-            ></lt-sticker-panel>`
-          : ""}
-      </div>
+    return html` ${this._isReady
+        ? html`<lt-sticker-full-viewer
+              .show="${this._showPreview}"
+              .stickerPath="${this._previewStickerPath}"
+            ></lt-sticker-full-viewer>
+            <div
+              style=${styleMap({
+                maxWidth: `min(100vw, ${this._panelWidth}px)`,
+                maxHeight: `min(100vh, ${this._panelHeight}px)`,
+              })}
+              class="lt-sticker-panel-container right ${this._showPanel ? "show" : ""}"
+            >
+              <lt-sticker-panel
+                .panelWidth="${this._panelWidth}"
+                .panelHeight="${this._panelHeight}"
+                .stickersPerRow="${this._stickersPerRow}"
+                .stickerStore="${this._stickerStore}"
+                .showPanel="${this._showPanel}"
+              ></lt-sticker-panel>
+            </div>`
+        : ""}
       <div @click="${() => (this._showPanel = !this._showPanel)}" class="lt-sticker-icon">
         <div style="display: ${!this._showPanel ? "block" : "none"}" class="flot-card">本地贴纸</div>
         <div class="icon-item" aria-label="本地贴纸" tabindex="0">
@@ -293,8 +313,3 @@ export class StickerIcon extends LitElement {
       </div>`;
   }
 }
-
-// 测试
-setTimeout(() => {
-  document.querySelector(".test .func-bar-native")!.innerHTML = `<lt-sticker-icon></lt-sticker-icon>`;
-}, 100);
