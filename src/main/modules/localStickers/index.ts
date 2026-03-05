@@ -23,7 +23,12 @@ class LocalStickers {
 
   private notifyStickerStoreUpdated = createThrottledDispatcher(() => {
     if (!this.initializedReady) return; // 避免因节流导致的 offListener 后状态被覆盖
-    this.stickerStore = this.createStickerStoreResult("success", this.stickerPacksManager.getPackList());
+    const stickerStore = this.createStickerStoreResult("success", this.stickerPacksManager.getPackList());
+    if (stickerStore.stickerPacks?.length) {
+      this.stickerStore = stickerStore;
+    } else {
+      this.stickerStore = this.createStickerStoreResult("failed", "路径下没有贴纸");
+    }
     this.broadcastStickerStoreUpdated();
   }, 200);
 
