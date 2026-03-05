@@ -14,7 +14,10 @@ export class StickerIcon extends LitElement {
     :host {
       display: block;
       --transition-time: 150ms;
-      background-color: red;
+      --shadow-width: 8px;
+      --shadow-offset: calc(var(--shadow-width) * 3);
+      --offset-x: -6px;
+      --offset-y: 6px;
       position: relative;
     }
     :host(:not(:last-child)) {
@@ -74,6 +77,7 @@ export class StickerIcon extends LitElement {
         white-space: nowrap;
         font-size: 12px;
         position: absolute;
+        z-index: 1000;
         left: 50%;
         top: -29px;
         transform: translateX(-50%);
@@ -84,26 +88,29 @@ export class StickerIcon extends LitElement {
 
     .lt-sticker-panel-container {
       position: absolute;
-      bottom: calc(100% + 10px);
-      right: -10px;
+      bottom: calc(100% + var(--offset-y) - var(--shadow-offset));
+      right: calc(var(--offset-x) - var(--shadow-offset));
       z-index: 1000;
       opacity: 0;
       pointer-events: none;
-      transition: opacity var(--transition-time);
+      transition:
+        clip-path var(--transition-time) var(--transition-time),
+        opacity var(--transition-time);
+      clip-path: inset(60% 0 0 60% round 6px);
+      filter: drop-shadow(0 8px var(--shadow-width) rgba(0, 0, 0, 0.14));
+      border-radius: 6px;
+      padding: var(--shadow-offset);
+
       &.left {
         right: unset;
-        left: -10px;
-        .lt-sticker-panel-inner {
-          clip-path: inset(60% 60% 0 0 round 6px);
-        }
+        left: calc(var(--offset-x) - var(--shadow-offset));
+        clip-path: inset(60% 60% 0 0 round 6px);
       }
-      &.center{
+      &.center {
         right: unset;
         left: 50%;
         transform: translateX(-50%);
-        .lt-sticker-panel-inner {
-          clip-path: inset(60% 60% 0 60% round 6px);
-        }
+        clip-path: inset(60% 60% 0 60% round 6px);
       }
       &::after {
         content: "";
@@ -116,22 +123,11 @@ export class StickerIcon extends LitElement {
       }
       &.show {
         opacity: 1;
-        pointer-events: auto;
-        .lt-sticker-panel-inner {
-          transition-delay: unset;
-          clip-path: inset(0 0 0 0 round 6px);
+        transition-delay: unset;
+        clip-path: inset(0 0 0 0 round 6px);
+        lt-sticker-panel {
+          pointer-events: auto;
         }
-      }
-      .lt-sticker-panel-inner {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        width: 100%;
-        height: 100%;
-        clip-path: inset(60% 0 0 60% round 6px);
-        overflow: hidden;
-        transition: clip-path var(--transition-time);
-        transition-delay: var(--transition-time);
       }
     }
   `;
@@ -178,6 +174,14 @@ export class StickerIcon extends LitElement {
         this._stickerStore = stickerStore;
       }),
     );
+
+    document.addEventListener("click", (e: Event) => {
+      if (this.contains(e.target as Node)) {
+      } else {
+        this._showPanel = false;
+      }
+    });
+
     this._isReady = true;
   }
 
@@ -196,22 +200,20 @@ export class StickerIcon extends LitElement {
   render() {
     return html` <div
         style=${styleMap({
-          width: `min(100vw, ${this._panelWidth}px)`,
-          height: `min(100vh, ${this._panelHeight}px)`,
+          maxWidth: `min(100vw, ${this._panelWidth}px)`,
+          maxHeight: `min(100vh, ${this._panelHeight}px)`,
         })}
-        class="lt-sticker-panel-container ${this._showPanel ? "show" : ""}"
+        class="lt-sticker-panel-container right ${this._showPanel ? "show" : ""}"
       >
-        <div class="lt-sticker-panel-inner">
-          ${this._isReady
-            ? html`<lt-sticker-panel
-                .panelWidth="${this._panelWidth}"
-                .panelHeight="${this._panelHeight}"
-                .stickersPerRow="${this._stickersPerRow}"
-                .stickerStore="${this._stickerStore}"
-                .showPanel="${this._showPanel}"
-              ></lt-sticker-panel>`
-            : ""}
-        </div>
+        ${this._isReady
+          ? html`<lt-sticker-panel
+              .panelWidth="${this._panelWidth}"
+              .panelHeight="${this._panelHeight}"
+              .stickersPerRow="${this._stickersPerRow}"
+              .stickerStore="${this._stickerStore}"
+              .showPanel="${this._showPanel}"
+            ></lt-sticker-panel>`
+          : ""}
       </div>
       <div @click="${() => (this._showPanel = !this._showPanel)}" class="lt-sticker-icon">
         ${!this._showPanel ? html`<div class="flot-card">贴纸</div>` : ""}
