@@ -7,6 +7,19 @@ import { StickerItem } from "./stickerPack";
 
 import type { StickerStore } from "@/common/types/localStickers";
 
+// types.ts 或在你的组件文件顶部
+interface LtStickerEvent extends CustomEvent {
+  detail: { path: string; name: string }; // 这里定义你实际传递的数据结构
+}
+
+declare global {
+  interface HTMLElementEventMap {
+    // 关键：将事件名与类型关联
+    "lt-select-sticker": LtStickerEvent;
+    "lt-send-sticker": LtStickerEvent;
+  }
+}
+
 @customElement("lt-sticker-icon")
 export class StickerIcon extends LitElement {
   static styles = css`
@@ -167,10 +180,22 @@ export class StickerIcon extends LitElement {
         const path = e.composedPath() as HTMLElement[];
         const target = path.find((item) => item instanceof StickerItem);
         if (target) {
-          if (e.altKey) {
-            this.dispatchEvent(new CustomEvent("lt-select-sticker", { detail: target.sticker }));
+          if (!e.altKey) {
+            this.dispatchEvent(
+              new CustomEvent("lt-select-sticker", {
+                detail: target.sticker,
+                bubbles: true,
+                composed: true,
+              }),
+            );
           } else {
-            this.dispatchEvent(new CustomEvent("lt-send-sticker", { detail: target.sticker }));
+            this.dispatchEvent(
+              new CustomEvent("lt-send-sticker", {
+                detail: target.sticker,
+                bubbles: true,
+                composed: true,
+              }),
+            );
           }
           if (!e.ctrlKey) {
             this._showPanel = false;
