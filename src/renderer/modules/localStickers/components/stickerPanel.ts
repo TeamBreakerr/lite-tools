@@ -53,7 +53,7 @@ export class StickerPanel extends LitElement {
     if (!this.showPanel) return;
     console.log("更新激活贴纸");
     this._activeDirPath = e.detail.dirPath;
-    const stickerList = this.renderRoot.querySelector("lt-sticker-list") as StickerList;
+    const stickerList = this.renderRoot.querySelector("lt-sticker-list")!;
     stickerList.gotoPackByPath(e.detail.dirPath);
   }
 
@@ -61,7 +61,7 @@ export class StickerPanel extends LitElement {
     if (!this.showPanel) return;
     console.log("更新顶部贴纸");
     this._activeDirPath = e.detail.dirPath;
-    const stickerBar = this.renderRoot.querySelector("lt-sticker-bar") as StickerBar;
+    const stickerBar = this.renderRoot.querySelector("lt-sticker-bar")!;
     stickerBar.selectPackIcon(e.detail.dirPath);
   }
 
