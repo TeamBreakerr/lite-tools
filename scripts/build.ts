@@ -110,6 +110,20 @@ const builds: { config: BuildOptions; watchHtml?: string }[] = [
     },
     watchHtml: "src/assets/html/recallMsgViewer/index.html",
   },
+  {
+    // renderer-devWindow
+    config: {
+      ...baseConfig,
+      platform: "browser",
+      target: "esnext",
+      format: "iife",
+      tsconfig: "src/renderer/tsconfig.json",
+      entryPoints: ["src/renderer/pages/devWindow.ts"],
+      outfile: "dist/renderer/pages/devWindow/index.js",
+      loader: { ".html": "file" },
+    },
+    watchHtml: "src/assets/html/devWindow/index.html",
+  },
 ];
 
 // 构建 HTML 的辅助函数

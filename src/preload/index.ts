@@ -35,6 +35,8 @@ const exposeFunctions = {
   onToast: (callback: (toast: Toast) => void) =>
     ipcRenderer.on("lite_tools.toast", (_, toast: Toast) => callback(toast)),
   clearToast: (callback: () => void) => ipcRenderer.on("lite_tools.clearToast", callback),
+  // debug
+  openDevWindow: () => ipcRenderer.send("lite_tools.openDevWindow"),
   // 原生接口调用
   nativeCall: (event: any, payload: any, awaitCallback?: boolean | string | string[]) => {
     const callbackId = crypto.randomUUID();

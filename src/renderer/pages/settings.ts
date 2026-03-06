@@ -70,6 +70,10 @@ async function initSettings(view: HTMLDivElement, config: Config) {
   initInput(view, config);
   // 初始化按钮
   initButton(view, config);
+  // debug
+  view.querySelector("button.open-debug")?.addEventListener("click", () => {
+    lite_tools.openDevWindow();
+  });
   log("初始化设置页面完成");
 }
 
