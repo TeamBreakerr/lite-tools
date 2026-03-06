@@ -37,12 +37,12 @@ export class StickerItem extends LitElement {
         color: #cdcdcd;
       }
       &:hover {
-        background-color: var(--hover-background);
-        box-shadow: 0 0 0 3px var(--hover-background);
+        background-color: var(--overlay_hover_brand);
+        box-shadow: 0 0 0 3px var(--overlay_hover_brand);
       }
       &:hover:active {
-        background-color: var(--overlay_pressed);
-        box-shadow: 0 0 0 3px var(--overlay_pressed);
+        background-color: var(--overlay_pressed_brand);
+        box-shadow: 0 0 0 3px var(--overlay_pressed_brand);
       }
     }
   `;
@@ -103,7 +103,7 @@ export class StickerPack extends LitElement {
         top: 0;
         left: 0;
         z-index: 1;
-        background-color: var(--panel-background);
+        background-color: color(from var(--blur_middle_standard) srgb r g b / 1);
         & .lt-sticker-pack-name {
           max-width: calc(100% - 20px);
           text-overflow: ellipsis;

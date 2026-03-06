@@ -18,7 +18,7 @@ export class StickerList extends LitElement {
       height: 100%;
       overflow-x: hidden;
       overflow-y: auto;
-      background-color: var(--panel-background);
+      background-color: color(from var(--blur_middle_standard) srgb r g b / 1);
       position: relative;
     }
     .lt-sticker-list::-webkit-scrollbar {

@@ -36,7 +36,7 @@ export class StickerBarItem extends LitElement {
         color: #cdcdcd;
       }
       &.active {
-        background-color: var(--hover-background);
+        background-color: var(--overlay_hover_brand);
       }
     }
   `;
@@ -89,7 +89,7 @@ export class StickerBar extends LitElement {
       width: min(100vw, var(--bar-width));
       flex-shrink: 0;
       overflow: hidden;
-      background-color: var(--background-03);
+      background-color: color-mix(in srgb, color(from var(--blur_middle_standard) srgb r g b / 1), gray 10%);
     }
     .scroll-container {
       width: var(--bar-height);
