@@ -58,7 +58,7 @@ class StickerPacksManager {
         pack = {
           title: config.title || this.baseName(dirPath),
           index: config.index || 0,
-          icon: config.icon ? path.join(dirPath, config.icon).replace(/\\/g, "/") : undefined,
+          icon: config.icon || undefined,
           dirPath: dirPath,
           stickerPaths: new Set<string>(),
         };
@@ -70,6 +70,7 @@ class StickerPacksManager {
           dirPath: dirPath,
           stickerPaths: new Set<string>(),
         };
+        this.writeConfig(pack);
       }
 
       this.stickerPacks.set(dirPath, pack);
@@ -103,9 +104,6 @@ class StickerPacksManager {
   private addSticker(stickerPath: string) {
     const dirPath = path.dirname(stickerPath);
     const pack = this.ensurePackExists(dirPath);
-    if (pack.stickerPaths.size === 0 && !pack.icon) {
-      pack.icon = stickerPath;
-    }
     pack.stickerPaths.add(stickerPath);
   }
 
@@ -123,16 +121,30 @@ class StickerPacksManager {
   public getPackList(): StickerPack[] {
     return Array.from(this.stickerPacks.values())
       .filter((pack) => pack.stickerPaths.size > 0)
-      .map((pack) => ({
-        title: pack.title,
-        dirPath: pack.dirPath,
-        index: pack.index,
-        icon: pack.icon,
-        stickers: Array.from(pack.stickerPaths).map((filePath) => ({
+      .map((pack) => {
+        const stickers = Array.from(pack.stickerPaths).map((filePath) => ({
           name: path.basename(filePath, path.extname(filePath)),
           path: filePath,
-        })),
-      }));
+        }));
+
+        return {
+          title: pack.title,
+          dirPath: pack.dirPath,
+          index: pack.index,
+          icon: (pack.icon ? path.join(pack.dirPath, pack.icon) : stickers[0]?.path).replace(/\\/g, "/"),
+          stickers,
+        };
+      });
+  }
+
+  public updatePackConfig(path: string, key: "index" | "title" | "icon", value: string | number) {
+    if (["index", "title", "icon"].includes(key)) {
+      const pack = this.stickerPacks.get(path);
+      if (pack) {
+        (pack as any)[key] = value;
+        this.writeConfig(pack);
+      }
+    }
   }
 
   public clear() {
