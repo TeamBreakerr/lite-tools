@@ -37,7 +37,7 @@ class LocalStickers {
     globalBroadcast("lite_tools.stickerStore.updated", this.stickerStore);
   }
 
-  setup() {
+  public setup() {
     this._bindIpcMain();
     this._update(configManager.value);
     configManager.onConfigUpdate((config) => this._update(config));
@@ -47,6 +47,10 @@ class LocalStickers {
   private _bindIpcMain() {
     ipcMain.handle("lite_tools.stickerStore.get", async (): Promise<StickerStore> => {
       return this.stickerStore;
+    });
+    ipcMain.on("lite_tools.stickerPacksManager.updatePackConfig", (_, path, key, value) => {
+      this.stickerPacksManager.updatePackConfig(path, key, value);
+      this._notifyStickerStoreUpdated();
     });
   }
 
