@@ -64,9 +64,13 @@ export class StickerBarItem extends LitElement {
     }
   }
 
-  private _loadImage(e: Event) {
+  private _handleImageLoad(e: Event) {
     const img = e.target as HTMLImageElement;
     img.style.opacity = "1";
+  }
+
+  private _handleImageError(e: Event) {
+    this._isError = true;
   }
 
   render() {
@@ -74,9 +78,10 @@ export class StickerBarItem extends LitElement {
       ${!this._isError
         ? html`<img
             loading="lazy"
+            decoding="async"
             src="appimg://${this.stickerPack.icon!}"
-            @error="${() => (this._isError = true)}"
-            @load="${this._loadImage}"
+            @error="${this._handleImageError}"
+            @load="${this._handleImageLoad}"
           />`
         : StickerBarItem.ERR_ICON}
     </div>`;

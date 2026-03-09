@@ -40,7 +40,8 @@ export class StickerItem extends LitElement {
         background-color: var(--overlay_hover_brand);
         box-shadow: 0 0 0 3px var(--overlay_hover_brand);
       }
-      &:hover:active {
+      &:hover:active,
+      &.active {
         background-color: var(--overlay_pressed_brand);
         box-shadow: 0 0 0 3px var(--overlay_pressed_brand);
       }
@@ -55,6 +56,20 @@ export class StickerItem extends LitElement {
     ></path>
   </svg>`;
 
+  protected willUpdate(_changedProperties: PropertyValues): void {
+    if (_changedProperties.has("sticker")) {
+      this._isError = false;
+    }
+  }
+
+  private _handleImageLoad(e: Event) {
+    this._opacity = 1;
+  }
+
+  private _handleImageError(e: Event) {
+    this._isError = true;
+  }
+
   @state()
   _isError = false;
 
@@ -64,15 +79,19 @@ export class StickerItem extends LitElement {
   @property({ type: Object })
   sticker!: Sticker;
 
+  @property({ type: Boolean })
+  active = false;
+
   render() {
     return html`
-      <div class="lt-sticker-item">
+      <div class="lt-sticker-item ${this.active ? "active" : ""}">
         ${!this._isError
           ? html`<img
               loading="lazy"
+              decoding="async"
               style="opacity: ${this._opacity}"
-              @load="${() => (this._opacity = 1)}"
-              @error="${() => (this._isError = true)}"
+              @load="${this._handleImageLoad}"
+              @error="${this._handleImageError}"
               src="appimg://${this.sticker.path!}"
             />`
           : StickerItem.ERR_ICON}
