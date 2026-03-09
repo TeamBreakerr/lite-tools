@@ -88,7 +88,6 @@ export class StickerItem extends LitElement {
         ${!this._isError
           ? html`<img
               loading="lazy"
-              decoding="async"
               style="opacity: ${this._opacity}"
               @load="${this._handleImageLoad}"
               @error="${this._handleImageError}"

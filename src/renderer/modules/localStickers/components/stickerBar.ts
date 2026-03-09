@@ -78,7 +78,6 @@ export class StickerBarItem extends LitElement {
       ${!this._isError
         ? html`<img
             loading="lazy"
-            decoding="async"
             src="appimg://${this.stickerPack.icon!}"
             @error="${this._handleImageError}"
             @load="${this._handleImageLoad}"
