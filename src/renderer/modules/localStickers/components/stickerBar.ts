@@ -58,6 +58,12 @@ export class StickerBarItem extends LitElement {
   @state()
   _isError = false;
 
+  protected willUpdate(_changedProperties: PropertyValues): void {
+    if (_changedProperties.has("stickerPack")) {
+      this._isError = false;
+    }
+  }
+
   private _loadImage(e: Event) {
     const img = e.target as HTMLImageElement;
     img.style.opacity = "1";
