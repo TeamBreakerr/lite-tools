@@ -3,13 +3,13 @@ import { customElement, state, property, query } from "lit/decorators.js";
 import { styleMap } from "lit/directives/style-map.js";
 
 import { configStore } from "@/renderer/modules/configStore";
-import { StickerItem } from "./stickerPack";
+import { StickerPack, StickerItem } from "./stickerPack";
+import { ContextMenu } from "./stickerContextMenu";
 
 import type { StickerStore } from "@/common/types/localStickers";
 
-// types.ts 或在你的组件文件顶部
 interface LtStickerEvent extends CustomEvent {
-  detail: { path: string; name: string }; // 这里定义你实际传递的数据结构
+  detail: { path: string; name: string };
 }
 
 declare global {
@@ -28,7 +28,7 @@ export class StickerIcon extends LitElement {
       --transition-time: 150ms;
       --shadow-width: 8px;
       --shadow-offset: calc(var(--shadow-width) * 3);
-      --offset-x: -6px;
+      --offset-x: -38px;
       --offset-y: 6px;
       position: relative;
     }
@@ -173,43 +173,12 @@ export class StickerIcon extends LitElement {
 
   private _listenerSet = new Set<() => void>();
 
-  handleClick = (e: MouseEvent) => {
-    if (this.contains(e.target as Node)) {
-      if (this._ignoreClick) return;
-      if (e.button === 0) {
-        const path = e.composedPath() as HTMLElement[];
-        const target = path.find((item) => item instanceof StickerItem);
-        if (target) {
-          if (!e.altKey) {
-            this.dispatchEvent(
-              new CustomEvent("lt-select-sticker", {
-                detail: target.sticker,
-                bubbles: true,
-                composed: true,
-              }),
-            );
-          } else {
-            this.dispatchEvent(
-              new CustomEvent("lt-send-sticker", {
-                detail: target.sticker,
-                bubbles: true,
-                composed: true,
-              }),
-            );
-          }
-          if (!e.ctrlKey) {
-            this._showPanel = false;
-          }
-        }
-      } else if (e.button === 2) {
-        // right menu
-      }
-    } else {
-      this._showPanel = false;
-    }
-  };
+  @query("lt-context-menu", true)
+  private _contextMenu!: ContextMenu;
 
   private _longPressTimer?: ReturnType<typeof setTimeout>;
+
+  private _activeStickerItem?: StickerItem;
 
   @state()
   private _previewStickerPath?: string;
@@ -217,10 +186,84 @@ export class StickerIcon extends LitElement {
   @state()
   private _showPreview = false;
 
-  handleMouseDown = (e: Event) => {
+  private _handleContextMenu = (e: MouseEvent) => {
+    const path = e.composedPath() as HTMLElement[];
+    const stickerItem = path.find((item) => item instanceof StickerItem);
+    const stickerIcon = path.find((item) => item instanceof StickerIcon);
+    if (!stickerIcon) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    // 贴纸的右键菜单
+    if (stickerItem) {
+      stickerItem.active = true;
+      const stickerPack = path.find((item) => item instanceof StickerPack)!;
+      this._activeStickerItem = stickerItem;
+      this._showPreview = false;
+      this._contextMenu.show = true;
+      this._contextMenu.position = { x: e.clientX, y: e.clientY };
+      this._contextMenu.menuList = [
+        {
+          name: "设为图标",
+          callback: () => {
+            const iconName = stickerItem.sticker.path.split("/").pop()!;
+            lite_tools.updateStickerPackConfig(stickerPack.stickerPack.dirPath, "icon", iconName);
+            this._closeContextMenu();
+          },
+        },
+        {
+          name: "删除",
+          type: "danger",
+          callback: () => {
+            this._closeContextMenu();
+          },
+        },
+      ];
+    }
+  };
+
+  private _handleClick = (e: MouseEvent) => {
+    if (this._ignoreClick) return;
+    if (e.button === 0) {
+      const path = e.composedPath() as HTMLElement[];
+      const target = path.find((item) => item instanceof StickerItem);
+      if (target) {
+        if (!e.altKey) {
+          this.dispatchEvent(
+            new CustomEvent("lt-select-sticker", {
+              detail: target.sticker,
+              bubbles: true,
+              composed: true,
+            }),
+          );
+        } else {
+          this.dispatchEvent(
+            new CustomEvent("lt-send-sticker", {
+              detail: target.sticker,
+              bubbles: true,
+              composed: true,
+            }),
+          );
+        }
+        if (!e.ctrlKey) {
+          this._showPanel = false;
+        }
+      }
+    }
+  };
+
+  private _handleMouseDown = (e: MouseEvent) => {
+    if (!this.contains(e.target as Node)) {
+      this._showPanel = false;
+    }
+
     const path = e.composedPath() as HTMLElement[];
     const target = path.find((item) => item instanceof StickerItem);
-    if (target) {
+    const contextMenu = path.find((item) => item instanceof ContextMenu);
+    if (!contextMenu) {
+      this._closeContextMenu();
+    }
+    if (target && e.button === 0) {
       this._longPressTimer = setTimeout(() => {
         this._previewStickerPath = target.sticker.path;
         this._showPreview = true;
@@ -229,7 +272,8 @@ export class StickerIcon extends LitElement {
     }
   };
 
-  handleMouseUp = (e: Event) => {
+  private _handleMouseUp = (e: MouseEvent) => {
+    if (e.button !== 0) return;
     if (this._longPressTimer) {
       clearTimeout(this._longPressTimer);
       this._longPressTimer = undefined;
@@ -238,7 +282,7 @@ export class StickerIcon extends LitElement {
     setTimeout(() => (this._ignoreClick = false));
   };
 
-  handleMouseMove = (e: Event) => {
+  private _handleMouseMove = (e: Event) => {
     if (this._showPreview) {
       const path = e.composedPath() as HTMLElement[];
       const target = path.find((item) => item instanceof StickerItem);
@@ -246,6 +290,18 @@ export class StickerIcon extends LitElement {
         this._previewStickerPath = target.sticker.path;
       }
     }
+  };
+
+  private _closeContextMenu = () => {
+    this._contextMenu.show = false;
+    if (this._activeStickerItem) {
+      this._activeStickerItem.active = false;
+      this._activeStickerItem = undefined;
+    }
+  };
+
+  private _showPanelHandler = () => {
+    this._showPanel = !this._showPanel;
   };
 
   protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
@@ -262,54 +318,61 @@ export class StickerIcon extends LitElement {
 
     this._listenerSet.add(
       lite_tools.onStickerStoreUpdated((stickerStore) => {
+        console.log("更新贴纸列表", stickerStore);
         this._stickerStore = stickerStore;
       }),
     );
+    this._contextMenu.addEventListener("lt-context-menu-cancel", this._closeContextMenu);
 
-    document.addEventListener("click", this.handleClick);
-    document.addEventListener("mousedown", this.handleMouseDown);
-    document.addEventListener("mouseup", this.handleMouseUp);
-    document.addEventListener("mousemove", this.handleMouseMove);
+    document.addEventListener("mousedown", this._handleMouseDown);
+    document.addEventListener("mouseup", this._handleMouseUp);
+    document.addEventListener("mousemove", this._handleMouseMove);
+    document.addEventListener("contextmenu", this._handleContextMenu);
+    document.addEventListener("click", this._handleClick);
 
     this._isReady = true;
   }
 
   // 销毁函数
-  destroy() {
+  public destroy() {
     this._listenerSet.forEach((unsubscribe) => unsubscribe());
     this._listenerSet.clear();
 
-    document.removeEventListener("click", this.handleClick);
-    document.removeEventListener("mousedown", this.handleMouseDown);
-    document.removeEventListener("mouseup", this.handleMouseUp);
-    document.removeEventListener("mousemove", this.handleMouseMove);
+    this._contextMenu.removeEventListener("lt-context-menu-cancel", this._closeContextMenu);
+
+    document.removeEventListener("mousedown", this._handleMouseDown);
+    document.removeEventListener("mouseup", this._handleMouseUp);
+    document.removeEventListener("mousemove", this._handleMouseMove);
+    document.removeEventListener("contextmenu", this._handleContextMenu);
+    document.removeEventListener("click", this._handleClick);
 
     this._isReady = false;
   }
 
   render() {
-    return html` ${this._isReady
-        ? html`<lt-sticker-full-viewer
-              .show="${this._showPreview}"
-              .stickerPath="${this._previewStickerPath}"
-            ></lt-sticker-full-viewer>
-            <div
-              style=${styleMap({
-                maxWidth: `min(100vw, ${this._panelWidth}px)`,
-                maxHeight: `min(100vh, ${this._panelHeight}px)`,
-              })}
-              class="lt-sticker-panel-container right ${this._showPanel ? "show" : ""}"
-            >
-              <lt-sticker-panel
-                .panelWidth="${this._panelWidth}"
-                .panelHeight="${this._panelHeight}"
-                .stickersPerRow="${this._stickersPerRow}"
-                .stickerStore="${this._stickerStore}"
-                .showPanel="${this._showPanel}"
-              ></lt-sticker-panel>
-            </div>`
+    return html`<lt-context-menu></lt-context-menu>
+      <lt-sticker-full-viewer
+        .show="${this._showPreview}"
+        .stickerPath="${this._previewStickerPath}"
+      ></lt-sticker-full-viewer>
+      ${this._isReady
+        ? html`<div
+            style=${styleMap({
+              maxWidth: `min(100vw, ${this._panelWidth}px)`,
+              maxHeight: `min(100vh, ${this._panelHeight}px)`,
+            })}
+            class="lt-sticker-panel-container right ${this._showPanel ? "show" : ""}"
+          >
+            <lt-sticker-panel
+              .panelWidth="${this._panelWidth}"
+              .panelHeight="${this._panelHeight}"
+              .stickersPerRow="${this._stickersPerRow}"
+              .stickerStore="${this._stickerStore}"
+              .showPanel="${this._showPanel}"
+            ></lt-sticker-panel>
+          </div>`
         : ""}
-      <div @click="${() => (this._showPanel = !this._showPanel)}" class="lt-sticker-icon">
+      <div @click="${this._showPanelHandler}" class="lt-sticker-icon">
         <div style="display: ${!this._showPanel ? "block" : "none"}" class="flot-card">本地贴纸</div>
         <div class="icon-item" aria-label="本地贴纸" tabindex="0">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
