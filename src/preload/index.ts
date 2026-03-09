@@ -25,7 +25,9 @@ const exposeFunctions = {
     };
   },
   getStickerStore: (): Promise<StickerStore> => ipcRenderer.invoke("lite_tools.stickerStore.get"),
-  updateStickerPackConfig: (path: string, key: string, value: string) => ipcRenderer.send("lite_tools.stickerPacksManager.updatePackConfig", path, key, value),
+  updateStickerPackConfig: (dirPath: string, key: string, value: string) =>
+    ipcRenderer.send("lite_tools.stickerPacksManager.updatePackConfig", dirPath, key, value),
+  deleteSticker: (stickerPath: string) => ipcRenderer.send("lite_tools.stickerPacksManager.deleteSticker", stickerPath),
 
   // 背景相关
   onWallpaperChanged: (callback: (wallpaperData: WallpaperData) => void) =>

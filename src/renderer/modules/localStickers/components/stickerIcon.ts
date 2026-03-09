@@ -216,6 +216,7 @@ export class StickerIcon extends LitElement {
           type: "danger",
           callback: () => {
             this._closeContextMenu();
+            lite_tools.deleteSticker(stickerItem.sticker.path);
           },
         },
       ];
@@ -318,7 +319,6 @@ export class StickerIcon extends LitElement {
 
     this._listenerSet.add(
       lite_tools.onStickerStoreUpdated((stickerStore) => {
-        console.log("更新贴纸列表", stickerStore);
         this._stickerStore = stickerStore;
       }),
     );

@@ -52,6 +52,10 @@ class LocalStickers {
       this.stickerPacksManager.updatePackConfig(path, key, value);
       this._notifyStickerStoreUpdated();
     });
+    ipcMain.on("lite_tools.stickerPacksManager.deleteSticker", (_, stickerPath) => {
+      this.stickerPacksManager.onEvent("unlink", stickerPath);
+      this._notifyStickerStoreUpdated();
+    });
   }
 
   private async _update(config: Config) {

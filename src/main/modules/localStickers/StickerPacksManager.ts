@@ -110,8 +110,16 @@ class StickerPacksManager {
   private deleteSticker(stickerPath: string) {
     const dirPath = path.dirname(stickerPath);
     const pack = this.stickerPacks.get(dirPath);
-    if (pack) {
-      pack.stickerPaths.delete(stickerPath);
+    if (!pack) return;
+    pack.stickerPaths.delete(stickerPath);
+    if (pack.stickerPaths.size === 0) {
+      this.stickerPacks.delete(dirPath);
+      return;
+    }
+    const baseName = path.basename(stickerPath);
+    if (pack.icon === baseName) {
+      pack.icon = path.basename(pack.stickerPaths.values().next().value!);
+      this.writeConfig(pack);
     }
   }
 
