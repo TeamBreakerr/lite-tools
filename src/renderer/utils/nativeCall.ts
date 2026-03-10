@@ -37,7 +37,7 @@ async function convertMessage(message: any) {
           payload: [
             {
               sourcePath: path,
-              elementSubType: 1,
+              elementSubType: message.picSubType,
             },
             null,
           ],
