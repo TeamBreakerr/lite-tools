@@ -332,6 +332,20 @@ function resetLoginInfo(uin: string) {
   );
 }
 
+function openFolder(path: string) {
+  return lite_tools.nativeCall(
+    {
+      type: "request",
+      eventName: "FileApi",
+    },
+    {
+      cmdName: "openFolder",
+      cmdType: "invoke",
+      payload: [path],
+    },
+  );
+}
+
 export {
   sendMessage,
   forwardMessage,
@@ -344,4 +358,5 @@ export {
   activeChatAndReturnPreview,
   getLoginList,
   resetLoginInfo,
+  openFolder,
 };

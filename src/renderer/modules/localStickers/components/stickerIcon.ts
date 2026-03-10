@@ -4,7 +4,8 @@ import { styleMap } from "lit/directives/style-map.js";
 
 import { configStore } from "@/renderer/modules/configStore";
 import { StickerPack, StickerItem } from "./stickerPack";
-import { ContextMenu } from "./stickerContextMenu";
+import { ContextMenu } from "@/renderer/components/contextMenu";
+import { openFolder } from "@/renderer/utils/nativeCall";
 
 import type { StickerStore } from "@/common/types/localStickers";
 
@@ -203,6 +204,13 @@ export class StickerIcon extends LitElement {
       this._contextMenu.show = true;
       this._contextMenu.position = { x: e.clientX, y: e.clientY };
       this._contextMenu.menuList = [
+        {
+          name: "打开文件夹",
+          callback: () => {
+            openFolder(stickerItem.sticker.path);
+            this._closeContextMenu();
+          },
+        },
         {
           name: "设为图标",
           callback: () => {
