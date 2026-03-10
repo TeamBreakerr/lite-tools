@@ -38,7 +38,7 @@ class AioStore {
     return {
       chatType: this.curAioData?.chatType,
       guildId: "",
-      peerUid: this.curAioData?.uid,
+      peerUid: this.curAioData?.header?.uid,
     };
   }
 

@@ -78,10 +78,7 @@ async function setupLocalStickers() {
 
   stickerIcon.addEventListener("lt-send-sticker", (e) => {
     const picSubType = configStore.value.localStickers.sendAsPic ? 0 : 1;
-    // 暂未实现
-    toastManager.show("暂未实现", "default", 1500);
-    // sendMessage(aioStore.getPeer(), [{ type: "image", path: e.detail.path, picSubType }]);
-    console.log("send", e);
+    sendMessage(aioStore.getPeer(), [{ type: "image", path: e.detail.path, picSubType }]);
   });
 }
 
