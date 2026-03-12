@@ -1,22 +1,61 @@
-import { LitElement, html, css, PropertyValues } from "lit";
+import { LitElement, html, css, PropertyValues, nothing } from "lit";
 import { customElement, state, property, query } from "lit/decorators.js";
 
 @customElement("lt-context-menu-item")
 export class ContextMenuItem extends LitElement {
   static styles = css`
-    .lt-context-menu-item {
+    .item-wrapper {
+      max-width: 180px;
+      position: relative;
+      &:hover {
+        background-color: var(--overlay_hover);
+        .icon {
+          animation-duration: 0.5s;
+          animation-name: iconAnimate;
+          animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+        }
+      }
+    }
+
+    .item-context {
+      cursor: pointer;
       align-items: center;
       appearance: none;
+      color: var(--text_primary);
       background-color: transparent;
       border-radius: 4px;
-      color: var(--text_primary);
       display: flex;
       font-size: 14px;
       font-weight: 400;
       line-height: 20px;
       padding: 4px 12px 4px 8px;
-      position: relative;
-      cursor: pointer;
+      .text {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .arrow-icon {
+        height: 14px;
+        width: 14px;
+        margin-left: 8px;
+        margin-right: -6px;
+        font-size: 0;
+        svg {
+          width: 100%;
+          height: 100%;
+        }
+      }
+      .icon {
+        height: 16px;
+        width: 16px;
+        margin-right: 8px;
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+      }
       &.danger {
         color: var(--text-error);
       }
@@ -35,59 +74,47 @@ export class ContextMenuItem extends LitElement {
       &.none {
         color: var(--text_primary);
       }
-      &:hover {
-        background-color: var(--overlay_hover);
-        .icon {
-          animation-duration: 0.5s;
-          animation-name: iconAnimate;
-          animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
-        }
-      }
+
       &:hover:active {
         background-color: var(--overlay_pressed);
       }
-      .icon {
-        height: 16px;
-        width: 16px;
-        margin-right: 8px;
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-        }
-      }
-      .text {
-        flex: 1;
-        white-space: nowrap;
-      }
+    }
 
-      /* 新增 */
-      .arrow-icon {
-        margin-left: 16px;
-        opacity: 0.6;
-        font-size: 10px;
-      }
-
+    .item-wrapper:hover {
       .submenu-panel {
-        position: absolute;
-        left: 100%; /* 出现在父项的右侧 */
-        top: -4px; /* 与父级容器的 padding 对齐 */
-        background-color: var(--bg_top_light);
-        border: var(--border_secondary);
-        border-radius: 8px;
-        box-shadow: var(--shadow_bg_middle_secondary);
-        padding: 4px;
-        display: none;
-        flex-direction: column;
-        min-width: max-content;
-        z-index: 10001; /* 确保层级高于兄弟元素 */
-      }
-
-      /* 当 hover 父级 item 时，显示子面板 */
-      .lt-context-menu-item:hover > .submenu-panel {
-        display: flex;
+        opacity: 1;
+        visibility: visible;
+        transition-delay: 100ms;
+        transform: translateX(0);
       }
     }
+    .submenu-panel {
+      --show-offset: -4px;
+
+      position: absolute;
+      left: 100%;
+      top: -4px;
+      background-color: var(--bg_top_light);
+      border: var(--border_secondary);
+      border-radius: 8px;
+      box-shadow: var(--shadow_bg_middle_secondary);
+      padding: 4px;
+      display: flex;
+      flex-direction: column;
+      min-width: max-content;
+      z-index: 10001;
+      visibility: hidden;
+      opacity: 0;
+      transition: 150ms;
+      transition-delay: 300ms;
+      transform: translateX(var(--show-offset));
+      &.left {
+        --show-offset: 4px;
+        left: unset;
+        right: 100%;
+      }
+    }
+
     @keyframes iconAnimate {
       0% {
         transform: scale(1);
@@ -123,43 +150,48 @@ export class ContextMenuItem extends LitElement {
   @property({ type: Array })
   childrenList?: ContextMenuType[];
 
-  @property({ type: Object })
-  callback?: (e: MouseEvent) => void;
+  @property({ attribute: false })
+  callback?: ContextMenuType["callback"];
+
+  private get _hasChildren() {
+    return this.childrenList && this.childrenList.length > 0;
+  }
 
   private _handleClick(e: MouseEvent) {
-    // 如果有子菜单，点击时阻止事件冒泡，防止误触发全局的关闭事件
-    if (this.childrenList && this.childrenList.length > 0) {
+    if (this._hasChildren) {
       e.stopPropagation();
       e.preventDefault();
       return;
     }
-    // 如果没有子菜单且有回调，则执行
     if (this.callback) {
       this.callback(e);
     }
   }
 
+  private static foldIcon = html`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M8 3L17 12L8 21" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
+  </svg>`;
+
   render() {
-    const hasChildren = this.childrenList && this.childrenList.length > 0;
-
     return html`
-      <div class="lt-context-menu-item ${this.type}" @click="${this._handleClick}">
-        ${this.showIcon ? html`<span class="icon"> ${this.icon ? html`<img src="${this.icon}" />` : ""} </span>` : ""}
-        <span class="text">${this.name}</span>
-
-        ${hasChildren
+      <div class="item-wrapper ${this.type}" @click=${this._handleClick}>
+        <div class="item-context">
+          ${this.showIcon ? html`<span class="icon"> ${this.icon ? html`<img src=${this.icon} />` : ""} </span>` : ""}
+          <span class="text">${this.name}</span>
+          ${this._hasChildren ? html`<span class="arrow-icon">${ContextMenuItem.foldIcon}</span>` : ""}
+        </div>
+        ${this._hasChildren
           ? html`
-              <span class="arrow-icon">▶</span>
               <div class="submenu-panel">
                 ${this.childrenList!.map(
                   (child) => html`
                     <lt-context-menu-item
-                      .name="${child.name}"
-                      .icon="${child.icon}"
-                      .type="${child.type}"
-                      .callback="${child.callback}"
-                      .childrenList="${child.children}"
-                      .showIcon="${this.childrenList!.some((i) => i.icon)}"
+                      .name=${child.name}
+                      .icon=${child.icon}
+                      .type=${child.type}
+                      .callback=${child.callback}
+                      .childrenList=${child.children}
+                      .showIcon=${this.childrenList!.some((i) => i.icon)}
                     ></lt-context-menu-item>
                   `,
                 )}
@@ -183,7 +215,6 @@ interface LtContextMenuCancel extends CustomEvent {}
 
 declare global {
   interface HTMLElementEventMap {
-    // 关键：将事件名与类型关联
     "lt-context-menu-cancel": LtContextMenuCancel;
   }
 }
@@ -191,16 +222,17 @@ declare global {
 @customElement("lt-context-menu")
 export class ContextMenu extends LitElement {
   static styles = css`
-    .lt-context-menu {
+    :host {
+      --pointer-events: none;
       --padding-offset: 8px;
+    }
+    .lt-context-menu {
       -webkit-app-region: no-drag;
       box-sizing: border-box;
       display: flex;
       z-index: 10000;
       flex-direction: column;
-      max-height: var(--q-contextmenu-max-height);
       outline: none;
-      /* overflow: hidden auto; */
       position: fixed;
       user-select: none;
       width: max-content;
@@ -210,7 +242,7 @@ export class ContextMenu extends LitElement {
       border-radius: 8px;
       box-shadow: var(--shadow_bg_middle_secondary);
       padding: 4px;
-      pointer-events: none;
+      pointer-events: var(--pointer-events);
       opacity: 0;
       transform: translateY(-6px);
       left: 0;
@@ -222,9 +254,9 @@ export class ContextMenu extends LitElement {
         opacity 100ms,
         transform 100ms;
       &.show {
+        --pointer-events: auto;
         opacity: 1;
         transform: translateY(0);
-        pointer-events: auto;
       }
     }
     .mask {
@@ -234,12 +266,12 @@ export class ContextMenu extends LitElement {
       left: 0;
       width: 100vw;
       height: 100vh;
-      pointer-events: none;
+      pointer-events: var(--pointer-events);
       opacity: 0;
       transition: opacity 100ms;
       &.show {
+        --pointer-events: auto;
         opacity: 1;
-        pointer-events: auto;
       }
     }
   `;
@@ -270,11 +302,7 @@ export class ContextMenu extends LitElement {
   menuList: ContextMenuType[] = [];
 
   render() {
-    return html` <div
-        @contextmenu="${this._cancel}"
-        @click="${this._cancel}"
-        class="mask ${this.show ? "show" : ""}"
-      ></div>
+    return html` <div @contextmenu=${this._cancel} @click=${this._cancel} class="mask ${this.show ? "show" : ""}"></div>
       <a
         style="--x: ${this.position.x}px; --y: ${this.position.y}px;"
         class="lt-context-menu ${this.show ? "show" : ""}"
@@ -282,13 +310,12 @@ export class ContextMenu extends LitElement {
         ${this.menuList.map(
           (item) =>
             html`<lt-context-menu-item
-              @click="${item.callback}"
-              .icon="${item.icon}"
-              .name="${item.name}"
-              .type="${item?.type}"
-              .callback="${item.callback}"
-              .childrenList="${item.children}"
-              .showIcon="${this.menuList.some((i) => i.icon)}"
+              .icon=${item.icon}
+              .name=${item.name}
+              .type=${item?.type}
+              .callback=${item.callback}
+              .childrenList=${item.children}
+              .showIcon=${this.menuList.some((i) => i.icon)}
             >
             </lt-context-menu-item>`,
         )}
