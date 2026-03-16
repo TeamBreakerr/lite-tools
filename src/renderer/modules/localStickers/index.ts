@@ -9,9 +9,12 @@ import { StickerFullViewer } from "./components/stickerFullViewer";
 import { configStore } from "@/renderer/modules/configStore";
 import { waitForElement } from "@/renderer/utils/domWaitFor";
 import { observeMutations } from "@/renderer/utils/observeMutations";
-import { toastManager } from "@/renderer/modules/toastManager";
 import { sendMessage } from "@/renderer/utils/nativeCall";
 import { aioStore } from "@/renderer/modules/aioStore";
+import { createLogger } from "@/renderer/utils/createLogger";
+import { ContextMenu, ContextMenuItem } from "@/renderer/components/contextMenu";
+
+const log = createLogger("localStickers");
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -23,6 +26,8 @@ declare global {
     "lt-sticker-bar-item": StickerBarItem;
     "lt-sticker-icon": StickerIcon;
     "lt-sticker-full-viewer": StickerFullViewer;
+    "lt-context-menu": ContextMenu;
+    "lt-context-menu-item": ContextMenuItem;
   }
 }
 
@@ -69,16 +74,18 @@ async function setupLocalStickers() {
       const selection = ckeditEditorModel.document.selection;
       const position = selection.getFirstPosition();
       const writerEl = writer.createElement("msg-img", {
-        data: JSON.stringify({ type: "pic", src: e.detail.path, picSubType }),
+        data: JSON.stringify({ type: "pic", src: e.detail.path, picSubType, summary: "" }),
       });
       writer.insert(writerEl, position);
       writer.setSelection(writer.createPositionAt(writerEl, "after"));
+      log("插入表情", e.detail.path);
     });
   });
 
   stickerIcon.addEventListener("lt-send-sticker", (e) => {
     const picSubType = configStore.value.localStickers.sendAsPic ? 0 : 1;
-    sendMessage(aioStore.getPeer(), [{ type: "image", path: e.detail.path, picSubType }]);
+    sendMessage(aioStore.getPeer(), [{ type: "image", path: e.detail.path, picSubType, summary: "" }]);
+    log("发送表情", e.detail.path);
   });
 }
 
@@ -91,5 +98,7 @@ export {
   StickerItem,
   StickerIcon,
   StickerFullViewer,
+  ContextMenu,
+  ContextMenuItem,
   setupLocalStickers,
 };
