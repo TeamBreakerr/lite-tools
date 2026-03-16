@@ -112,6 +112,7 @@ class StickerPacksManager {
     const pack = this.stickerPacks.get(dirPath);
     if (!pack) return;
     pack.stickerPaths.delete(stickerPath);
+    fs.unlinkSync(stickerPath);
     if (pack.stickerPaths.size === 0) {
       this.stickerPacks.delete(dirPath);
       return;
