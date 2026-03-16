@@ -15,6 +15,12 @@ type StickerPack = {
   stickers: Stickers;
 };
 
+type StickerPathItem = {
+  label: string;
+  path: string;
+  children?: StickerPathItem[];
+};
+
 type StickerStore =
   | {
       status: "success";
@@ -27,4 +33,4 @@ type StickerStore =
       msg: string;
     };
 
-export type { Path, Sticker, Stickers, StickerPack, StickerStore };
+export type { Path, Sticker, Stickers, StickerPack, StickerStore, StickerPathItem };
