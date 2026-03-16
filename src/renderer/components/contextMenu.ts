@@ -1,10 +1,12 @@
-import { LitElement, html, css, PropertyValues, nothing } from "lit";
+import { LitElement, html, css, TemplateResult, nothing } from "lit";
 import { customElement, state, property, query } from "lit/decorators.js";
 
 type ContextMenuStatus = "danger" | "disabled" | "success" | "warning" | "none";
 
+type IconContent = string | TemplateResult;
+
 interface ContextMenuType {
-  icon?: string;
+  icon?: IconContent;
   name: string;
   type?: ContextMenuStatus;
   callback?: (e: MouseEvent) => void;
@@ -80,7 +82,7 @@ export class ContextMenuItem extends LitElement {
         height: 16px;
         width: 16px;
         margin-right: 8px;
-        img {
+        * {
           width: 100%;
           height: 100%;
           object-fit: contain;
@@ -226,14 +228,20 @@ export class ContextMenuItem extends LitElement {
     <path d="M8 3L17 12L8 21" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
   </svg>`;
 
+  private renderIcon(icon?: IconContent) {
+    if (!icon) return nothing;
+    if (typeof icon === "string") {
+      return html`<img src=${icon} />`;
+    }
+    return icon;
+  }
+
   render() {
     const childShowIcon = this.item?.children?.some((i) => i.icon) ?? false;
     return html`
       <div class="item-wrapper ${this.item.type}" @click=${this._handleClick}>
         <div class="item-context" @mouseenter=${this._handleMouseEnter}>
-          ${this.showIcon
-            ? html`<span class="icon"> ${this.item.icon ? html`<img src=${this.item.icon} />` : ""} </span>`
-            : ""}
+          ${this.showIcon ? html`<span class="icon">${this.renderIcon(this.item.icon)}</span>` : ""}
           <span class="text">${this.item.name}</span>
           ${this._hasChildren ? html`<span class="arrow-icon">${ContextMenuItem.foldIcon}</span>` : ""}
         </div>
