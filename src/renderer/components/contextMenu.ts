@@ -1,18 +1,48 @@
 import { LitElement, html, css, PropertyValues, nothing } from "lit";
 import { customElement, state, property, query } from "lit/decorators.js";
 
+type ContextMenuStatus = "danger" | "disabled" | "success" | "warning" | "none";
+
+interface ContextMenuType {
+  icon?: string;
+  name: string;
+  type?: ContextMenuStatus;
+  callback?: (e: MouseEvent) => void;
+  children?: ContextMenuType[];
+}
+
+interface LtContextMenuCancel extends CustomEvent {}
+
+declare global {
+  interface HTMLElementEventMap {
+    "lt-context-menu-cancel": LtContextMenuCancel;
+  }
+}
+
 @customElement("lt-context-menu-item")
 export class ContextMenuItem extends LitElement {
   static styles = css`
+    :host {
+      --submenu-offset-y: -4px; /* 子菜单默认的Y轴偏移量 */
+      --submenu-safe-gap: 8px; /* 距离屏幕边缘的安全边距 */
+      --submenu-offset-x: -4px; /* 子菜单默认的X轴偏移量 (覆盖面板重叠度) */
+    }
     .item-wrapper {
       max-width: 180px;
       position: relative;
+      border-radius: 4px;
       &:hover {
         background-color: var(--overlay_hover);
         .icon {
           animation-duration: 0.5s;
           animation-name: iconAnimate;
           animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+        }
+        .submenu-panel {
+          opacity: 1;
+          visibility: visible;
+          transform: translateX(0);
+          transition-delay: 0s;
         }
       }
     }
@@ -80,20 +110,11 @@ export class ContextMenuItem extends LitElement {
       }
     }
 
-    .item-wrapper:hover {
-      .submenu-panel {
-        opacity: 1;
-        visibility: visible;
-        transition-delay: 100ms;
-        transform: translateX(0);
-      }
-    }
     .submenu-panel {
-      --show-offset: -4px;
-
+      max-height: calc(100vh - (var(--submenu-safe-gap) * 2));
       position: absolute;
       left: 100%;
-      top: -4px;
+      top: var(--submenu-offset-y);
       background-color: var(--bg_top_light);
       border: var(--border_secondary);
       border-radius: 8px;
@@ -105,13 +126,16 @@ export class ContextMenuItem extends LitElement {
       z-index: 10001;
       visibility: hidden;
       opacity: 0;
-      transition: 150ms;
-      transition-delay: 300ms;
-      transform: translateX(var(--show-offset));
+      transition:
+        opacity 150ms,
+        transform 150ms,
+        visibility 150ms;
+      transition-delay: 150ms;
+      transform: translateX(var(--submenu-offset-x));
       &.left {
-        --show-offset: 4px;
         left: unset;
         right: 100%;
+        transform: translateX(calc(var(--submenu-offset-x) * -1));
       }
     }
 
@@ -137,34 +161,64 @@ export class ContextMenuItem extends LitElement {
   @property({ type: Boolean })
   showIcon = false;
 
-  @property({ type: String })
-  icon?: string;
+  @property({ type: Object })
+  item!: ContextMenuType;
 
-  @property({ type: String })
-  name = "";
+  @state()
+  private _showLeft = false;
 
-  @property({ type: String })
-  type?: "danger" | "disabled" | "success" | "warning" | "none" = "none";
-
-  // 接收从外部或父组件传来的配置和回调
-  @property({ type: Array })
-  childrenList?: ContextMenuType[];
-
-  @property({ attribute: false })
-  callback?: ContextMenuType["callback"];
+  @state()
+  private _dynamicTop: string | null = null;
 
   private get _hasChildren() {
-    return this.childrenList && this.childrenList.length > 0;
+    return this.item?.children && this.item.children.length > 0;
   }
 
   private _handleClick(e: MouseEvent) {
     if (this._hasChildren) {
       e.stopPropagation();
       e.preventDefault();
-      return;
+      // return;
     }
-    if (this.callback) {
-      this.callback(e);
+    if (this.item?.callback) {
+      this.item.callback(e);
+    }
+  }
+
+  private _handleMouseEnter(e: MouseEvent) {
+    if (this._hasChildren) {
+      const wrapperEl = this.renderRoot.querySelector(".item-wrapper")!;
+      const childEl = this.renderRoot.querySelector<HTMLElement>(".submenu-panel")!;
+
+      const parentRect = wrapperEl.getBoundingClientRect();
+      const childRect = childEl.getBoundingClientRect();
+
+      const defaultOffsetY = -4;
+      const safeGap = 8;
+
+      // 预测翻转
+      if (parentRect.right + childRect.width > window.innerWidth) {
+        this._showLeft = true;
+      } else {
+        this._showLeft = false;
+      }
+
+      const expectedBottom = parentRect.top + defaultOffsetY + childRect.height;
+
+      let targetTop = defaultOffsetY;
+
+      // 预测溢出
+      if (expectedBottom > window.innerHeight - safeGap) {
+        const overflowY = expectedBottom - (window.innerHeight - safeGap);
+        targetTop -= overflowY;
+
+        const expectedTop = parentRect.top + targetTop;
+        if (expectedTop < safeGap) {
+          targetTop = safeGap - parentRect.top;
+        }
+      }
+
+      this._dynamicTop = `${targetTop}px`;
     }
   }
 
@@ -173,26 +227,25 @@ export class ContextMenuItem extends LitElement {
   </svg>`;
 
   render() {
+    const childShowIcon = this.item?.children?.some((i) => i.icon) ?? false;
     return html`
-      <div class="item-wrapper ${this.type}" @click=${this._handleClick}>
-        <div class="item-context">
-          ${this.showIcon ? html`<span class="icon"> ${this.icon ? html`<img src=${this.icon} />` : ""} </span>` : ""}
-          <span class="text">${this.name}</span>
+      <div class="item-wrapper ${this.item.type}" @click=${this._handleClick}>
+        <div class="item-context" @mouseenter=${this._handleMouseEnter}>
+          ${this.showIcon
+            ? html`<span class="icon"> ${this.item.icon ? html`<img src=${this.item.icon} />` : ""} </span>`
+            : ""}
+          <span class="text">${this.item.name}</span>
           ${this._hasChildren ? html`<span class="arrow-icon">${ContextMenuItem.foldIcon}</span>` : ""}
         </div>
         ${this._hasChildren
           ? html`
-              <div class="submenu-panel">
-                ${this.childrenList!.map(
+              <div
+                class="submenu-panel ${this._showLeft ? "left" : ""}"
+                style="top: ${this._dynamicTop !== null ? this._dynamicTop : "var(--submenu-offset-y)"};"
+              >
+                ${this.item.children!.map(
                   (child) => html`
-                    <lt-context-menu-item
-                      .name=${child.name}
-                      .icon=${child.icon}
-                      .type=${child.type}
-                      .callback=${child.callback}
-                      .childrenList=${child.children}
-                      .showIcon=${this.childrenList!.some((i) => i.icon)}
-                    ></lt-context-menu-item>
+                    <lt-context-menu-item .item=${child as any} .showIcon=${childShowIcon}></lt-context-menu-item>
                   `,
                 )}
               </div>
@@ -200,22 +253,6 @@ export class ContextMenuItem extends LitElement {
           : ""}
       </div>
     `;
-  }
-}
-
-interface ContextMenuType {
-  icon?: string;
-  name: string;
-  type?: "danger" | "disabled" | "success" | "warning" | "none";
-  callback?: (e: MouseEvent) => void;
-  children?: ContextMenuType[];
-}
-
-interface LtContextMenuCancel extends CustomEvent {}
-
-declare global {
-  interface HTMLElementEventMap {
-    "lt-context-menu-cancel": LtContextMenuCancel;
   }
 }
 
@@ -244,15 +281,12 @@ export class ContextMenu extends LitElement {
       padding: 4px;
       pointer-events: var(--pointer-events);
       opacity: 0;
-      transform: translateY(-6px);
       left: 0;
       top: 0;
       margin: 0;
       translate: clamp(0px, var(--x), calc(100vw - 100% - var(--padding-offset)))
         clamp(0px, var(--y), calc(100vh - 100% - var(--padding-offset)));
-      transition:
-        opacity 100ms,
-        transform 100ms;
+      transition: opacity 150ms;
       &.show {
         --pointer-events: auto;
         opacity: 1;
@@ -302,22 +336,14 @@ export class ContextMenu extends LitElement {
   menuList: ContextMenuType[] = [];
 
   render() {
+    const showIcon = this.menuList?.some((i) => i.icon);
     return html` <div @contextmenu=${this._cancel} @click=${this._cancel} class="mask ${this.show ? "show" : ""}"></div>
       <a
         style="--x: ${this.position.x}px; --y: ${this.position.y}px;"
         class="lt-context-menu ${this.show ? "show" : ""}"
       >
         ${this.menuList.map(
-          (item) =>
-            html`<lt-context-menu-item
-              .icon=${item.icon}
-              .name=${item.name}
-              .type=${item?.type}
-              .callback=${item.callback}
-              .childrenList=${item.children}
-              .showIcon=${this.menuList.some((i) => i.icon)}
-            >
-            </lt-context-menu-item>`,
+          (item) => html`<lt-context-menu-item .item=${item as any} .showIcon=${showIcon}> </lt-context-menu-item>`,
         )}
       </a>`;
   }
