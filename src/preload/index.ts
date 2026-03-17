@@ -29,6 +29,10 @@ const exposeFunctions = {
     ipcRenderer.send("lite_tools.stickerPacksManager.updatePackConfig", dirPath, key, value),
   deleteSticker: (stickerPath: string) => ipcRenderer.send("lite_tools.stickerPacksManager.deleteSticker", stickerPath),
 
+  // 通用操作接口
+  copyFile: (sourceFilePath: string, targetFilePath: string) =>
+    ipcRenderer.invoke("lite_tools.copyFile", sourceFilePath, targetFilePath),
+
   // 背景相关
   onWallpaperChanged: (callback: (wallpaperData: WallpaperData) => void) =>
     ipcRenderer.on("lite_tools.wallpaperChanged", (_, wallpaperData: WallpaperData) => callback(wallpaperData)),
