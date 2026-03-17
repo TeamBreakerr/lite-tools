@@ -1,13 +1,13 @@
-import { LitElement, html, css, TemplateResult, nothing } from "lit";
+import { LitElement, html, css, TemplateResult, nothing, PropertyValues } from "lit";
 import { customElement, state, property, query } from "lit/decorators.js";
 
 type ContextMenuStatus = "danger" | "disabled" | "success" | "warning" | "none";
 
 type IconContent = string | TemplateResult;
 
-interface ContextMenuType {
+export interface ContextMenuType {
   icon?: IconContent;
-  name: string;
+  label: string;
   type?: ContextMenuStatus;
   callback?: (e: MouseEvent) => void;
   children?: ContextMenuType[];
@@ -27,7 +27,7 @@ export class ContextMenuItem extends LitElement {
     :host {
       --submenu-offset-y: -4px; /* 子菜单默认的Y轴偏移量 */
       --submenu-safe-gap: 8px; /* 距离屏幕边缘的安全边距 */
-      --submenu-offset-x: -4px; /* 子菜单默认的X轴偏移量 (覆盖面板重叠度) */
+      --submenu-offset-x: -4px; /* 子菜单默认的X轴偏移量 */
     }
     .item-wrapper {
       max-width: 180px;
@@ -41,10 +41,8 @@ export class ContextMenuItem extends LitElement {
           animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
         }
         .submenu-panel {
-          opacity: 1;
           visibility: visible;
-          transform: translateX(0);
-          transition-delay: 0s;
+          transition-delay: 50ms;
         }
       }
     }
@@ -113,11 +111,8 @@ export class ContextMenuItem extends LitElement {
     }
 
     .submenu-panel {
-      max-height: calc(100vh - (var(--submenu-safe-gap) * 2));
-      position: absolute;
-      left: 100%;
-      top: var(--submenu-offset-y);
-      background-color: var(--bg_top_light);
+      box-sizing: border-box;
+      position: fixed;
       border: var(--border_secondary);
       border-radius: 8px;
       box-shadow: var(--shadow_bg_middle_secondary);
@@ -127,17 +122,34 @@ export class ContextMenuItem extends LitElement {
       min-width: max-content;
       z-index: 10001;
       visibility: hidden;
-      opacity: 0;
-      transition:
-        opacity 150ms,
-        transform 150ms,
-        visibility 150ms;
-      transition-delay: 150ms;
-      transform: translateX(var(--submenu-offset-x));
-      &.left {
-        left: unset;
-        right: 100%;
-        transform: translateX(calc(var(--submenu-offset-x) * -1));
+      transition: visibility 0s linear 150ms;
+      &::before {
+        backdrop-filter: blur(8px);
+        background-color: var(--blur_middle_standard);
+        content: "";
+        inset: 0;
+        pointer-events: none;
+        position: absolute;
+        z-index: -1;
+        border-radius: inherit;
+      }
+      &::-webkit-scrollbar {
+        display: none;
+      }
+
+      .submenu-content {
+        max-height: calc(100vh - (var(--submenu-safe-gap) * 2) - 8px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        border-radius: 4px;
+
+        display: flex;
+        flex-direction: column;
+        min-width: max-content;
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
       }
     }
 
@@ -172,6 +184,9 @@ export class ContextMenuItem extends LitElement {
   @state()
   private _dynamicTop: string | null = null;
 
+  @state()
+  private _dynamicLeft: string | null = null;
+
   private get _hasChildren() {
     return this.item?.children && this.item.children.length > 0;
   }
@@ -195,31 +210,33 @@ export class ContextMenuItem extends LitElement {
       const parentRect = wrapperEl.getBoundingClientRect();
       const childRect = childEl.getBoundingClientRect();
 
-      const defaultOffsetY = -4;
-      const safeGap = 8;
+      const defaultOffsetY = -5; // Y轴默认偏移
+      const offsetX = -4; // X轴重叠偏移
+      const safeGap = 8; // 屏幕安全距离
 
-      // 预测翻转
-      if (parentRect.right + childRect.width > window.innerWidth) {
+      // 计算 X 轴
+      let targetLeft = parentRect.right + offsetX;
+      this._showLeft = false;
+
+      // 预测右侧溢出，如果溢出则向左翻转
+      if (targetLeft + childRect.width > window.innerWidth - safeGap) {
+        targetLeft = parentRect.left - childRect.width - offsetX;
         this._showLeft = true;
-      } else {
-        this._showLeft = false;
       }
 
-      const expectedBottom = parentRect.top + defaultOffsetY + childRect.height;
+      // 计算 Y 轴
+      let targetTop = parentRect.top + defaultOffsetY;
+      const expectedBottom = targetTop + childRect.height;
 
-      let targetTop = defaultOffsetY;
-
-      // 预测溢出
+      // 预测底部溢出
       if (expectedBottom > window.innerHeight - safeGap) {
-        const overflowY = expectedBottom - (window.innerHeight - safeGap);
-        targetTop -= overflowY;
-
-        const expectedTop = parentRect.top + targetTop;
-        if (expectedTop < safeGap) {
-          targetTop = safeGap - parentRect.top;
+        targetTop -= expectedBottom - (window.innerHeight - safeGap);
+        if (targetTop < safeGap) {
+          targetTop = safeGap;
         }
       }
 
+      this._dynamicLeft = `${targetLeft}px`;
       this._dynamicTop = `${targetTop}px`;
     }
   }
@@ -242,20 +259,24 @@ export class ContextMenuItem extends LitElement {
       <div class="item-wrapper ${this.item.type}" @click=${this._handleClick}>
         <div class="item-context" @mouseenter=${this._handleMouseEnter}>
           ${this.showIcon ? html`<span class="icon">${this.renderIcon(this.item.icon)}</span>` : ""}
-          <span class="text">${this.item.name}</span>
+          <span class="text">${this.item.label}</span>
           ${this._hasChildren ? html`<span class="arrow-icon">${ContextMenuItem.foldIcon}</span>` : ""}
         </div>
         ${this._hasChildren
           ? html`
               <div
                 class="submenu-panel ${this._showLeft ? "left" : ""}"
-                style="top: ${this._dynamicTop !== null ? this._dynamicTop : "var(--submenu-offset-y)"};"
+                style="top: ${this._dynamicTop || "0px"}; left: ${this._dynamicLeft || "0px"}"
               >
-                ${this.item.children!.map(
-                  (child) => html`
-                    <lt-context-menu-item .item=${child as any} .showIcon=${childShowIcon}></lt-context-menu-item>
-                  `,
-                )}
+                <div class="submenu-content">
+                  ${this.item.children!.map(
+                    (child) =>
+                      html`<lt-context-menu-item
+                        .item=${child as any}
+                        .showIcon=${childShowIcon}
+                      ></lt-context-menu-item>`,
+                  )}
+                </div>
               </div>
             `
           : ""}
@@ -273,6 +294,10 @@ export class ContextMenu extends LitElement {
     }
     .lt-context-menu {
       -webkit-app-region: no-drag;
+      max-height: calc(100vh - (var(--padding-offset) * 2));
+      overflow-y: auto;
+      overflow-x: hidden;
+
       box-sizing: border-box;
       display: flex;
       z-index: 10000;
@@ -289,16 +314,13 @@ export class ContextMenu extends LitElement {
       padding: 4px;
       pointer-events: var(--pointer-events);
       opacity: 0;
-      left: 0;
-      top: 0;
+      left: clamp(var(--padding-offset), var(--x), calc(100vw - var(--width) - var(--padding-offset)));
+      top: clamp(var(--padding-offset), var(--y), calc(100vh - var(--height) - var(--padding-offset)));
       margin: 0;
-      translate: clamp(0px, var(--x), calc(100vw - 100% - var(--padding-offset)))
-        clamp(0px, var(--y), calc(100vh - 100% - var(--padding-offset)));
       transition: opacity 150ms;
       &.show {
         --pointer-events: auto;
         opacity: 1;
-        transform: translateY(0);
       }
     }
     .mask {
@@ -340,14 +362,33 @@ export class ContextMenu extends LitElement {
   @property({ type: Object })
   position = { x: 0, y: 0 };
 
+  @state()
+  rect = { width: 0, height: 0 };
+
+  @query(".lt-context-menu")
+  contextMenu?: HTMLElement;
+
   @property({ type: Array })
   menuList: ContextMenuType[] = [];
+
+  protected updated(changedProperties: PropertyValues<this>): void {
+    super.updated(changedProperties);
+    if (changedProperties.has("show")) {
+      if (this.show) {
+        this.rect = this.contextMenu!.getBoundingClientRect();
+      }
+    }
+  }
 
   render() {
     const showIcon = this.menuList?.some((i) => i.icon);
     return html` <div @contextmenu=${this._cancel} @click=${this._cancel} class="mask ${this.show ? "show" : ""}"></div>
       <a
-        style="--x: ${this.position.x}px; --y: ${this.position.y}px;"
+        style="
+        --x: ${this.position.x}px; 
+        --y: ${this.position.y}px; 
+        --width: ${this.rect.width}px; 
+        --height: ${this.rect.height}px"
         class="lt-context-menu ${this.show ? "show" : ""}"
       >
         ${this.menuList.map(
