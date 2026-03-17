@@ -2,6 +2,7 @@ import { LitElement, html, css, PropertyValues } from "lit";
 import { customElement, state, property, query } from "lit/decorators.js";
 import { styleMap } from "lit/directives/style-map.js";
 
+import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/configStore";
 import { StickerPack, StickerItem } from "./stickerPack";
 import { ContextMenu } from "@/renderer/components/contextMenu";
@@ -20,6 +21,8 @@ declare global {
     "lt-send-sticker": LtStickerEvent;
   }
 }
+
+const log = createLogger("stickerIcon");
 
 @customElement("lt-sticker-icon")
 export class StickerIcon extends LitElement {
@@ -146,7 +149,7 @@ export class StickerIcon extends LitElement {
   `;
 
   @state()
-  private _stickerStore: StickerStore = { status: "info", msg: "初始化中..." };
+  public stickerStore: StickerStore = { status: "info", msg: "初始化中..." };
 
   @state()
   private _config!: Config;
@@ -205,14 +208,14 @@ export class StickerIcon extends LitElement {
       this._contextMenu.position = { x: e.clientX, y: e.clientY };
       this._contextMenu.menuList = [
         {
-          name: "打开文件夹",
+          label: "打开文件夹",
           callback: () => {
             openFolder(stickerItem.sticker.path);
             this._closeContextMenu();
           },
         },
         {
-          name: "设为图标",
+          label: "设为图标",
           callback: () => {
             const iconName = stickerItem.sticker.path.split("/").pop()!;
             lite_tools.updateStickerPackConfig(stickerPack.stickerPack.dirPath, "icon", iconName);
@@ -220,7 +223,7 @@ export class StickerIcon extends LitElement {
           },
         },
         {
-          name: "删除",
+          label: "删除",
           type: "danger",
           callback: () => {
             this._closeContextMenu();
@@ -316,8 +319,9 @@ export class StickerIcon extends LitElement {
   protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
     await configStore.ready;
 
-    this._stickerStore = await lite_tools.getStickerStore();
+    this.stickerStore = await lite_tools.getStickerStore();
     this._config = configStore.value;
+    log("更新 stickerStore", this.stickerStore);
 
     this._listenerSet.add(
       lite_tools.onConfigChange((config) => {
@@ -327,7 +331,8 @@ export class StickerIcon extends LitElement {
 
     this._listenerSet.add(
       lite_tools.onStickerStoreUpdated((stickerStore) => {
-        this._stickerStore = stickerStore;
+        log("更新 stickerStore", stickerStore);
+        this.stickerStore = stickerStore;
       }),
     );
     this._contextMenu.addEventListener("lt-context-menu-cancel", this._closeContextMenu);
@@ -398,7 +403,7 @@ export class StickerIcon extends LitElement {
               .panelWidth="${this._panelWidth}"
               .panelHeight="${this._panelHeight}"
               .stickersPerRow="${this._stickersPerRow}"
-              .stickerStore="${this._stickerStore}"
+              .stickerStore="${this.stickerStore}"
               .showPanel="${this._showPanel}"
             ></lt-sticker-panel>
           </div>`

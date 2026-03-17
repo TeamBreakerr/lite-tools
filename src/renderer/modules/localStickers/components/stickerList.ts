@@ -62,7 +62,7 @@ export class StickerList extends LitElement {
 
   get _sortStickerPacks() {
     return this.stickerStore.stickerPacks
-      ?.sort((a, b) => a.title.localeCompare(b.title))
+      ?.sort((a, b) => a.label.localeCompare(b.label))
       ?.sort((a, b) => a.index - b.index);
   }
 

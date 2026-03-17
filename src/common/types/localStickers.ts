@@ -8,7 +8,7 @@ type Sticker = {
 type Stickers = Sticker[];
 
 type StickerPack = {
-  title: string;
+  label: string;
   icon?: Path;
   index: number;
   dirPath: Path;

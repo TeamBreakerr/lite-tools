@@ -7,7 +7,7 @@ const SUPPORTED_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp"])
 
 // 定义内部使用的存储结构：Sticker 列表改为 Set<string>
 interface InternalStickerPack {
-  title: string;
+  label: string;
   index: number;
   icon?: string;
   dirPath: string;
@@ -15,7 +15,7 @@ interface InternalStickerPack {
 }
 
 interface StickerConfig {
-  title: string;
+  label: string;
   index: number;
   icon?: string;
 }
@@ -51,20 +51,31 @@ class StickerPacksManager {
   private ensurePackExists(dirPath: string): InternalStickerPack {
     let pack = this.stickerPacks.get(dirPath);
     if (!pack) {
-      // 先查找目录下是否有sticker.json配置文件
-      const configPath = path.join(dirPath, "sticker.json");
-      if (fs.existsSync(configPath)) {
-        const config = JSON.parse(fs.readFileSync(configPath, "utf-8")) as StickerConfig;
+      try {
+        // 先查找目录下是否有sticker.json配置文件
+        const configPath = path.join(dirPath, "sticker.json");
+        if (fs.existsSync(configPath)) {
+          const config = JSON.parse(fs.readFileSync(configPath, "utf-8")) as StickerConfig;
+          pack = {
+            label: config.label || this.baseName(dirPath),
+            index: config.index || 0,
+            icon: config.icon || undefined,
+            dirPath: dirPath,
+            stickerPaths: new Set<string>(),
+          };
+        } else {
+          pack = {
+            label: this.baseName(dirPath),
+            index: 0,
+            icon: undefined,
+            dirPath: dirPath,
+            stickerPaths: new Set<string>(),
+          };
+          this.writeConfig(pack);
+        }
+      } catch (err) {
         pack = {
-          title: config.title || this.baseName(dirPath),
-          index: config.index || 0,
-          icon: config.icon || undefined,
-          dirPath: dirPath,
-          stickerPaths: new Set<string>(),
-        };
-      } else {
-        pack = {
-          title: this.baseName(dirPath),
+          label: this.baseName(dirPath),
           index: 0,
           icon: undefined,
           dirPath: dirPath,
@@ -91,7 +102,7 @@ class StickerPacksManager {
       configPath,
       JSON.stringify(
         {
-          title: pack.title,
+          label: pack.label,
           index: pack.index,
           icon: pack.icon,
         },
@@ -129,7 +140,7 @@ class StickerPacksManager {
    */
   public getPackList(): StickerPack[] {
     return Array.from(this.stickerPacks.values())
-      .filter((pack) => pack.stickerPaths.size > 0)
+      // .filter((pack) => pack.stickerPaths.size > 0) // 此处不进行过滤，后续在渲染进程过滤空文件夹
       .map((pack) => {
         const stickers = Array.from(pack.stickerPaths).map((filePath) => ({
           name: path.basename(filePath, path.extname(filePath)),
@@ -137,17 +148,17 @@ class StickerPacksManager {
         }));
 
         return {
-          title: pack.title,
+          label: pack.label,
           dirPath: pack.dirPath,
           index: pack.index,
-          icon: (pack.icon ? path.join(pack.dirPath, pack.icon) : stickers[0]?.path).replace(/\\/g, "/"),
+          icon: (pack.icon ? path.join(pack.dirPath, pack.icon) : stickers[0]?.path)?.replace(/\\/g, "/"),
           stickers,
         };
       });
   }
 
-  public updatePackConfig(path: string, key: "index" | "title" | "icon", value: string | number) {
-    if (["index", "title", "icon"].includes(key)) {
+  public updatePackConfig(path: string, key: "index" | "label" | "icon", value: string | number) {
+    if (["index", "label", "icon"].includes(key)) {
       const pack = this.stickerPacks.get(path);
       if (pack) {
         (pack as any)[key] = value;
