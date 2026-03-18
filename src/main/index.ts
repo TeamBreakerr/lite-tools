@@ -5,7 +5,7 @@ import { setupIpcMain } from "@/main/modules/ipcRegistrar";
 import { setupSideBar } from "@/main/modules/sidebarManager";
 import { captureWindow } from "@/main/utils/captureWindow";
 import { setupIpcInterceptor } from "@/main/modules/ipcInterceptor";
-import { wallpaperService } from "@/main/modules/WallpaperService";
+import { wallpaperService } from "@/main/modules/wallpaperService";
 import { setupDevWindow } from "@/main/modules/devWindow";
 import type { BrowserWindow } from "electron";
 
