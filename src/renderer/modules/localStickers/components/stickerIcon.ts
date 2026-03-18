@@ -403,7 +403,7 @@ export class StickerIcon extends LitElement {
               .panelWidth="${this._panelWidth}"
               .panelHeight="${this._panelHeight}"
               .stickersPerRow="${this._stickersPerRow}"
-              .stickerStore="${this.stickerStore}"
+              .stickerStore="${this.stickerStore as any}"
               .showPanel="${this._showPanel}"
             ></lt-sticker-panel>
           </div>`
