@@ -81,11 +81,13 @@ async function convertMessage(message: any) {
         true,
       )) as number;
 
+      const fileName = copyFile.newPath.replace(/\\/g, "/").split("/").pop()!;
+
       const picElement = {
         md5HexStr: copyFile.md5,
         picWidth: imageSize.width,
         picHeight: imageSize.height,
-        fileName: copyFile.md5 + "." + fileType.ext,
+        fileName,
         fileSize: `${fileSize}`,
         original: true,
         picSubType: message.picSubType,
