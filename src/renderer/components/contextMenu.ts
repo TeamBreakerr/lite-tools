@@ -33,6 +33,7 @@ export class ContextMenuItem extends LitElement {
       max-width: 180px;
       position: relative;
       border-radius: 4px;
+      color: var(--text_primary);
       &:hover {
         background-color: var(--overlay_hover);
         .icon {
@@ -45,13 +46,32 @@ export class ContextMenuItem extends LitElement {
           transition-delay: 50ms;
         }
       }
+
+      &.danger {
+        color: var(--text-error);
+      }
+      &.disabled {
+        pointer-events: none;
+        background-color: transparent !important;
+        opacity: 0.3;
+        cursor: unset;
+      }
+      &.success {
+        color: var(--text-success);
+      }
+      &.warning {
+        color: var(--text-warning);
+      }
+      &.none {
+        color: var(--text_primary);
+      }
     }
 
     .item-context {
       cursor: pointer;
       align-items: center;
       appearance: none;
-      color: var(--text_primary);
+      color: inherit;
       background-color: transparent;
       border-radius: 4px;
       display: flex;
@@ -85,24 +105,6 @@ export class ContextMenuItem extends LitElement {
           height: 100%;
           object-fit: contain;
         }
-      }
-      &.danger {
-        color: var(--text-error);
-      }
-      &.disabled {
-        pointer-events: none;
-        background-color: transparent !important;
-        opacity: 0.3;
-        cursor: unset;
-      }
-      &.success {
-        color: var(--text-success);
-      }
-      &.warning {
-        color: var(--text-warning);
-      }
-      &.none {
-        color: var(--text_primary);
       }
 
       &:hover:active {
@@ -289,38 +291,51 @@ export class ContextMenuItem extends LitElement {
 export class ContextMenu extends LitElement {
   static styles = css`
     :host {
-      --pointer-events: none;
       --padding-offset: 8px;
     }
-    .lt-context-menu {
+    .context-menu {
       -webkit-app-region: no-drag;
-      max-height: calc(100vh - (var(--padding-offset) * 2));
-      overflow-y: auto;
-      overflow-x: hidden;
-
       box-sizing: border-box;
-      display: flex;
       z-index: 10000;
-      flex-direction: column;
       outline: none;
       position: fixed;
       user-select: none;
-      width: max-content;
       background-clip: padding-box;
-      background-color: var(--bg_top_light);
       border: var(--border_secondary);
       border-radius: 8px;
       box-shadow: var(--shadow_bg_middle_secondary);
       padding: 4px;
-      pointer-events: var(--pointer-events);
-      opacity: 0;
+      pointer-events: none;
+      visibility: hidden;
       left: clamp(var(--padding-offset), var(--x), calc(100vw - var(--width) - var(--padding-offset)));
       top: clamp(var(--padding-offset), var(--y), calc(100vh - var(--height) - var(--padding-offset)));
       margin: 0;
-      transition: opacity 150ms;
       &.show {
-        --pointer-events: auto;
-        opacity: 1;
+        pointer-events: auto;
+        visibility: visible;
+      }
+      &::before {
+        backdrop-filter: blur(8px);
+        background-color: var(--blur_middle_standard);
+        content: "";
+        inset: 0;
+        pointer-events: none;
+        position: absolute;
+        z-index: -1;
+        border-radius: inherit;
+      }
+      .context-content {
+        max-height: calc(100vh - (var(--padding-offset) * 2) - 8px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        border-radius: 4px;
+
+        display: flex;
+        flex-direction: column;
+        min-width: max-content;
+        &::-webkit-scrollbar {
+          display: none;
+        }
       }
     }
     .mask {
@@ -330,11 +345,11 @@ export class ContextMenu extends LitElement {
       left: 0;
       width: 100vw;
       height: 100vh;
-      pointer-events: var(--pointer-events);
+      pointer-events: none;
       opacity: 0;
       transition: opacity 100ms;
       &.show {
-        --pointer-events: auto;
+        pointer-events: auto;
         opacity: 1;
       }
     }
@@ -365,16 +380,17 @@ export class ContextMenu extends LitElement {
   @state()
   rect = { width: 0, height: 0 };
 
-  @query(".lt-context-menu")
+  @query(".context-menu")
   contextMenu?: HTMLElement;
 
   @property({ type: Array })
   menuList: ContextMenuType[] = [];
 
-  protected updated(changedProperties: PropertyValues<this>): void {
+  protected async updated(changedProperties: PropertyValues<this>): Promise<void> {
     super.updated(changedProperties);
-    if (changedProperties.has("show")) {
-      if (this.show) {
+    if (changedProperties.has("menuList")) {
+      if (this.menuList.length > 0) {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
         this.rect = this.contextMenu!.getBoundingClientRect();
       }
     }
@@ -389,11 +405,13 @@ export class ContextMenu extends LitElement {
         --y: ${this.position.y}px; 
         --width: ${this.rect.width}px; 
         --height: ${this.rect.height}px"
-        class="lt-context-menu ${this.show ? "show" : ""}"
+        class="context-menu ${this.show ? "show" : ""}"
       >
-        ${this.menuList.map(
-          (item) => html`<lt-context-menu-item .item=${item as any} .showIcon=${showIcon}> </lt-context-menu-item>`,
-        )}
+        <div class="context-content">
+          ${this.menuList.map(
+            (item) => html`<lt-context-menu-item .item=${item as any} .showIcon=${showIcon}> </lt-context-menu-item>`,
+          )}
+        </div>
       </a>`;
   }
 }
