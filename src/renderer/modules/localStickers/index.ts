@@ -99,21 +99,18 @@ async function setupLocalStickers() {
 
   const updateIconState = async () => {
     const isEnabled = configStore.value.localStickers.enabled;
-    const existingIcon = document.querySelector("lt-sticker-icon");
 
     if (isEnabled) {
-      if (!existingIcon) {
-        const target = await waitForElement(injectPosition);
-        if (target) {
-          target.insertAdjacentElement("afterbegin", stickerContainer);
-          offObserver?.();
-          offObserver = observeMutations(target, updateIconState, {
-            childList: true,
-          });
-        }
+      const target = await waitForElement(injectPosition);
+      if (target) {
+        target.insertAdjacentElement("afterbegin", stickerContainer);
+        offObserver?.();
+        offObserver = observeMutations(target, updateIconState, {
+          childList: true,
+        });
       }
     } else {
-      existingIcon?.remove();
+      stickerContainer?.remove();
       offObserver?.();
     }
   };
