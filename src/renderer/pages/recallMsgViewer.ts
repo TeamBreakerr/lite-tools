@@ -57,8 +57,10 @@ class RecallList {
   }
 
   async getRecallMessagesByUid(peerUid: string) {
-    const messages = await lt_showRecallList.getRecallMessagesByUid(peerUid);
-    console.log(messages);
+    const buffer = await lt_showRecallList.getRecallMessagesByUid(peerUid);
+    const decoder = new TextDecoder("utf-8");
+    const jsonString = decoder.decode(buffer);
+    const messages = JSON.parse(jsonString);
     const msgListEl = document.querySelector<HTMLElement>(".msg-list")!;
     msgListEl.innerHTML = "";
     msgListEl.scrollTop = 0;

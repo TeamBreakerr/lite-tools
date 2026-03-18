@@ -210,8 +210,7 @@ class MsgStore {
   }
 
   private getRecallMessagesByUid(peerUid: string) {
-    log("getRecallMessagesByUid", peerUid, this.allCaches.get(peerUid));
-    return this.allCaches.get(peerUid);
+    return Buffer.from(JSON.stringify(this.allCaches.get(peerUid) || []), "utf-8");
   }
 
   private openRecallMsgList() {
