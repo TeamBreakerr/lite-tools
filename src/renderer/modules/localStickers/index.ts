@@ -5,6 +5,7 @@ import { StickerBar, StickerBarItem } from "./components/stickerBar";
 import { StickerPack, StickerItem } from "./components/stickerPack";
 import { StickerIcon } from "./components/stickerIcon";
 import { StickerFullViewer } from "./components/stickerFullViewer";
+import { StickerContainer } from "./components/stickerContainer";
 
 import { configStore } from "@/renderer/modules/configStore";
 import { waitForElement } from "@/renderer/utils/domWaitFor";
@@ -32,6 +33,7 @@ declare global {
     "lt-sticker-full-viewer": StickerFullViewer;
     "lt-context-menu": ContextMenu;
     "lt-context-menu-item": ContextMenuItem;
+    "lt-sticker-container": StickerContainer;
   }
 }
 
@@ -41,7 +43,7 @@ let picPath: string;
 async function setupLocalStickers() {
   await configStore.ready;
   const injectPosition = ".chat-func-bar .func-bar-native.func-bar-shortcuts:last-child";
-  const stickerIcon = document.createElement("lt-sticker-icon") as StickerIcon;
+  const stickerContainer = document.createElement("lt-sticker-container");
   const addToLocalStickerContextMenu = document.createElement("lt-context-menu-item") as ContextMenuItem;
   addToLocalStickerContextMenu.showIcon = true;
 
@@ -69,11 +71,11 @@ async function setupLocalStickers() {
   onComponentMount((component) => {
     if (
       configStore.value.localStickers.enabled &&
-      stickerIcon.stickerStore.status === "success" &&
+      stickerContainer.stickerStore.status === "success" &&
       component?.props?.icon === "expression_add"
     ) {
       addToLocalStickerContextMenu.item = buildStickerMenu(
-        stickerIcon.stickerStore.stickerPacks,
+        stickerContainer.stickerStore.stickerPacks,
         picPath,
         () => rawContextMenu,
       );
@@ -103,7 +105,7 @@ async function setupLocalStickers() {
       if (!existingIcon) {
         const target = await waitForElement(injectPosition);
         if (target) {
-          target.insertAdjacentElement("afterbegin", stickerIcon);
+          target.insertAdjacentElement("afterbegin", stickerContainer);
           offObserver?.();
           offObserver = observeMutations(target, updateIconState, {
             childList: true,
@@ -118,7 +120,7 @@ async function setupLocalStickers() {
   updateIconState();
   configStore.onChange(updateIconState);
 
-  stickerIcon.addEventListener("lt-select-sticker", (e) => {
+  stickerContainer.addEventListener("lt-select-sticker", (e) => {
     ckeditEditorModel.change((writer: any) => {
       const picSubType = configStore.value.localStickers.sendAsPic ? 0 : 1;
       const selection = ckeditEditorModel.document.selection;
@@ -132,7 +134,7 @@ async function setupLocalStickers() {
     });
   });
 
-  stickerIcon.addEventListener("lt-send-sticker", (e) => {
+  stickerContainer.addEventListener("lt-send-sticker", (e) => {
     const picSubType = configStore.value.localStickers.sendAsPic ? 0 : 1;
     sendMessage(aioStore.getPeer(), [{ type: "image", path: e.detail.path, picSubType, summary: "" }]);
     log("发送表情", e.detail.path);
@@ -252,6 +254,7 @@ export {
   StickerItem,
   StickerIcon,
   StickerFullViewer,
+  StickerContainer,
   ContextMenu,
   ContextMenuItem,
   setupLocalStickers,
