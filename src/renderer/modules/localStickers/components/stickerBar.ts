@@ -56,31 +56,31 @@ export class StickerBarItem extends LitElement {
   </svg>`;
 
   @state()
-  _isError = false;
+  private isError = false;
 
-  protected willUpdate(_changedProperties: PropertyValues): void {
-    if (_changedProperties.has("stickerPack")) {
-      this._isError = false;
+  protected willUpdate(changedProperties: PropertyValues): void {
+    if (changedProperties.has("stickerPack")) {
+      this.isError = false;
     }
   }
 
-  private _handleImageLoad(e: Event) {
+  private handleImageLoad(e: Event) {
     const img = e.target as HTMLImageElement;
     img.style.opacity = "1";
   }
 
-  private _handleImageError(e: Event) {
-    this._isError = true;
+  private handleImageError(e: Event) {
+    this.isError = true;
   }
 
   render() {
     return html`<div class="lt-sticker-bar-item ${this.activeDirPath === this.stickerPack.dirPath ? "active" : ""}">
-      ${!this._isError
+      ${!this.isError
         ? html`<img
             loading="lazy"
             src="appimg://${this.stickerPack.icon!}"
-            @error="${this._handleImageError}"
-            @load="${this._handleImageLoad}"
+            @error="${this.handleImageError}"
+            @load="${this.handleImageLoad}"
           />`
         : StickerBarItem.ERR_ICON}
     </div>`;
@@ -123,9 +123,9 @@ export class StickerBar extends LitElement {
   public activeDirPath: StickerPack["dirPath"] = "";
 
   @query(".scroll-container")
-  private _stickerContainer!: HTMLDivElement;
+  private stickerContainer!: HTMLDivElement;
 
-  private _gotoPack(e: Event) {
+  private gotoPack(e: Event) {
     const target = e.target as StickerBarItem;
     const dirPath = target.stickerPack.dirPath;
     this.dispatchEvent(new CustomEvent("gotoPack", { detail: { dirPath } }));
@@ -137,8 +137,8 @@ export class StickerBar extends LitElement {
       (pack) => pack.stickerPack.dirPath === dirPath,
     );
     if (pack) {
-      this._stickerContainer.scrollTo({
-        top: pack.offsetTop - this._stickerContainer.offsetHeight / 2 + pack.offsetHeight / 2,
+      this.stickerContainer.scrollTo({
+        top: pack.offsetTop - this.stickerContainer.offsetHeight / 2 + pack.offsetHeight / 2,
         behavior: "smooth",
       });
     }
@@ -149,7 +149,7 @@ export class StickerBar extends LitElement {
       <div class="scroll-container">
         ${this.stickerStore.stickerPacks?.map((stickerPack) => {
           return html`<lt-sticker-bar-item
-            @click="${this._gotoPack}"
+            @click="${this.gotoPack}"
             .activeDirPath="${this.activeDirPath}"
             .stickerPack="${stickerPack}"
           ></lt-sticker-bar-item>`;

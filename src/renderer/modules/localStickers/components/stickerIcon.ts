@@ -152,45 +152,45 @@ export class StickerIcon extends LitElement {
   public stickerStore: StickerStore = { status: "info", msg: "初始化中..." };
 
   @state()
-  private _config!: Config;
+  private config!: Config;
 
   @state()
-  private _isReady = false;
+  private isReady = false;
 
   @state()
-  private _showPanel = false;
+  private showPanel = false;
 
   @state()
-  private _ignoreClick = false;
+  private ignoreClick = false;
 
-  get _panelWidth() {
-    return this?._config?.localStickers?.panelWidth ?? 350;
+  private get panelWidth() {
+    return this?.config?.localStickers?.panelWidth ?? 350;
   }
 
-  get _panelHeight() {
-    return this?._config?.localStickers?.panelHeight ?? 420;
+  private get panelHeight() {
+    return this?.config?.localStickers?.panelHeight ?? 420;
   }
 
-  get _stickersPerRow() {
-    return this?._config?.localStickers?.stickersPerRow ?? 6;
+  private get stickersPerRow() {
+    return this?.config?.localStickers?.stickersPerRow ?? 6;
   }
 
-  private _listenerSet = new Set<() => void>();
+  private listenerSet = new Set<() => void>();
 
   @query("lt-context-menu", true)
-  private _contextMenu!: ContextMenu;
+  private contextMenu!: ContextMenu;
 
-  private _longPressTimer?: ReturnType<typeof setTimeout>;
+  private longPressTimer?: ReturnType<typeof setTimeout>;
 
-  private _activeStickerItem?: StickerItem;
-
-  @state()
-  private _previewStickerPath?: string;
+  private activeStickerItem?: StickerItem;
 
   @state()
-  private _showPreview = false;
+  private previewStickerPath?: string;
 
-  private _handleContextMenu = (e: MouseEvent) => {
+  @state()
+  private showPreview = false;
+
+  private handleContextMenu = (e: MouseEvent) => {
     const path = e.composedPath() as HTMLElement[];
     const stickerItem = path.find((item) => item instanceof StickerItem);
     const stickerIcon = path.find((item) => item instanceof StickerIcon);
@@ -202,16 +202,16 @@ export class StickerIcon extends LitElement {
     if (stickerItem) {
       stickerItem.active = true;
       const stickerPack = path.find((item) => item instanceof StickerPack)!;
-      this._activeStickerItem = stickerItem;
-      this._showPreview = false;
-      this._contextMenu.show = true;
-      this._contextMenu.position = { x: e.clientX, y: e.clientY };
-      this._contextMenu.menuList = [
+      this.activeStickerItem = stickerItem;
+      this.showPreview = false;
+      this.contextMenu.show = true;
+      this.contextMenu.position = { x: e.clientX, y: e.clientY };
+      this.contextMenu.menuList = [
         {
           label: "打开文件夹",
           callback: () => {
             openFolder(stickerItem.sticker.path);
-            this._closeContextMenu();
+            this.closeContextMenu();
           },
         },
         {
@@ -219,14 +219,14 @@ export class StickerIcon extends LitElement {
           callback: () => {
             const iconName = stickerItem.sticker.path.split("/").pop()!;
             lite_tools.updateStickerPackConfig(stickerPack.stickerPack.dirPath, "icon", iconName);
-            this._closeContextMenu();
+            this.closeContextMenu();
           },
         },
         {
           label: "删除",
           type: "danger",
           callback: () => {
-            this._closeContextMenu();
+            this.closeContextMenu();
             lite_tools.deleteSticker(stickerItem.sticker.path);
           },
         },
@@ -234,8 +234,8 @@ export class StickerIcon extends LitElement {
     }
   };
 
-  private _handleClick = (e: MouseEvent) => {
-    if (this._ignoreClick) return;
+  private handleClick = (e: MouseEvent) => {
+    if (this.ignoreClick) return;
     if (e.button === 0) {
       const path = e.composedPath() as HTMLElement[];
       const target = path.find((item) => item instanceof StickerItem);
@@ -258,108 +258,108 @@ export class StickerIcon extends LitElement {
           );
         }
         if (!e.ctrlKey) {
-          this._showPanel = false;
+          this.showPanel = false;
         }
       }
     }
   };
 
-  private _handleMouseDown = (e: MouseEvent) => {
+  private handleMouseDown = (e: MouseEvent) => {
     if (!this.contains(e.target as Node)) {
-      this._showPanel = false;
+      this.showPanel = false;
     }
 
     const path = e.composedPath() as HTMLElement[];
     const target = path.find((item) => item instanceof StickerItem);
     const contextMenu = path.find((item) => item instanceof ContextMenu);
     if (!contextMenu) {
-      this._closeContextMenu();
+      this.closeContextMenu();
     }
     if (target && e.button === 0) {
-      this._longPressTimer = setTimeout(() => {
-        this._previewStickerPath = target.sticker.path;
-        this._showPreview = true;
-        this._ignoreClick = true;
+      this.longPressTimer = setTimeout(() => {
+        this.previewStickerPath = target.sticker.path;
+        this.showPreview = true;
+        this.ignoreClick = true;
       }, 300);
     }
   };
 
-  private _handleMouseUp = (e: MouseEvent) => {
+  private handleMouseUp = (e: MouseEvent) => {
     if (e.button !== 0) return;
-    if (this._longPressTimer) {
-      clearTimeout(this._longPressTimer);
-      this._longPressTimer = undefined;
+    if (this.longPressTimer) {
+      clearTimeout(this.longPressTimer);
+      this.longPressTimer = undefined;
     }
-    this._showPreview = false;
-    setTimeout(() => (this._ignoreClick = false));
+    this.showPreview = false;
+    setTimeout(() => (this.ignoreClick = false));
   };
 
-  private _handleMouseMove = (e: Event) => {
-    if (this._showPreview) {
+  private handleMouseMove = (e: Event) => {
+    if (this.showPreview) {
       const path = e.composedPath() as HTMLElement[];
       const target = path.find((item) => item instanceof StickerItem);
       if (target) {
-        this._previewStickerPath = target.sticker.path;
+        this.previewStickerPath = target.sticker.path;
       }
     }
   };
 
-  private _closeContextMenu = () => {
-    this._contextMenu.show = false;
-    if (this._activeStickerItem) {
-      this._activeStickerItem.active = false;
-      this._activeStickerItem = undefined;
+  private closeContextMenu = () => {
+    this.contextMenu.show = false;
+    if (this.activeStickerItem) {
+      this.activeStickerItem.active = false;
+      this.activeStickerItem = undefined;
     }
   };
 
-  private _showPanelHandler = () => {
-    this._showPanel = !this._showPanel;
+  private showPanelHandler = () => {
+    this.showPanel = !this.showPanel;
   };
 
-  protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
+  protected async firstUpdated(): Promise<void> {
     await configStore.ready;
 
     this.stickerStore = await lite_tools.getStickerStore();
-    this._config = configStore.value;
+    this.config = configStore.value;
     log("更新 stickerStore", this.stickerStore);
 
-    this._listenerSet.add(
+    this.listenerSet.add(
       lite_tools.onConfigChange((config) => {
-        this._config = config;
+        this.config = config;
       }) as unknown as () => void, // todo 修改preload.ts
     );
 
-    this._listenerSet.add(
+    this.listenerSet.add(
       lite_tools.onStickerStoreUpdated((stickerStore) => {
         log("更新 stickerStore", stickerStore);
         this.stickerStore = stickerStore;
       }),
     );
-    this._contextMenu.addEventListener("lt-context-menu-cancel", this._closeContextMenu);
+    this.contextMenu.addEventListener("lt-context-menu-cancel", this.closeContextMenu);
 
-    document.addEventListener("mousedown", this._handleMouseDown);
-    document.addEventListener("mouseup", this._handleMouseUp);
-    document.addEventListener("mousemove", this._handleMouseMove);
-    document.addEventListener("contextmenu", this._handleContextMenu);
-    document.addEventListener("click", this._handleClick);
+    document.addEventListener("mousedown", this.handleMouseDown);
+    document.addEventListener("mouseup", this.handleMouseUp);
+    document.addEventListener("mousemove", this.handleMouseMove);
+    document.addEventListener("contextmenu", this.handleContextMenu);
+    document.addEventListener("click", this.handleClick);
 
-    this._isReady = true;
+    this.isReady = true;
   }
 
   // 销毁函数
   public destroy() {
-    this._listenerSet.forEach((unsubscribe) => unsubscribe());
-    this._listenerSet.clear();
+    this.listenerSet.forEach((unsubscribe) => unsubscribe());
+    this.listenerSet.clear();
 
-    this._contextMenu.removeEventListener("lt-context-menu-cancel", this._closeContextMenu);
+    this.contextMenu.removeEventListener("lt-context-menu-cancel", this.closeContextMenu);
 
-    document.removeEventListener("mousedown", this._handleMouseDown);
-    document.removeEventListener("mouseup", this._handleMouseUp);
-    document.removeEventListener("mousemove", this._handleMouseMove);
-    document.removeEventListener("contextmenu", this._handleContextMenu);
-    document.removeEventListener("click", this._handleClick);
+    document.removeEventListener("mousedown", this.handleMouseDown);
+    document.removeEventListener("mouseup", this.handleMouseUp);
+    document.removeEventListener("mousemove", this.handleMouseMove);
+    document.removeEventListener("contextmenu", this.handleContextMenu);
+    document.removeEventListener("click", this.handleClick);
 
-    this._isReady = false;
+    this.isReady = false;
   }
 
   static readonly ICON = html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
@@ -388,28 +388,28 @@ export class StickerIcon extends LitElement {
   render() {
     return html`<lt-context-menu></lt-context-menu>
       <lt-sticker-full-viewer
-        .show="${this._showPreview}"
-        .stickerPath="${this._previewStickerPath}"
+        .show="${this.showPreview}"
+        .stickerPath="${this.previewStickerPath}"
       ></lt-sticker-full-viewer>
-      ${this._isReady
+      ${this.isReady
         ? html`<div
             style=${styleMap({
-              maxWidth: `min(100vw, ${this._panelWidth}px)`,
-              maxHeight: `min(100vh, ${this._panelHeight}px)`,
+              maxWidth: `min(100vw, ${this.panelWidth}px)`,
+              maxHeight: `min(100vh, ${this.panelHeight}px)`,
             })}
-            class="lt-sticker-panel-container right ${this._showPanel ? "show" : ""}"
+            class="lt-sticker-panel-container right ${this.showPanel ? "show" : ""}"
           >
             <lt-sticker-panel
-              .panelWidth="${this._panelWidth}"
-              .panelHeight="${this._panelHeight}"
-              .stickersPerRow="${this._stickersPerRow}"
+              .panelWidth="${this.panelWidth}"
+              .panelHeight="${this.panelHeight}"
+              .stickersPerRow="${this.stickersPerRow}"
               .stickerStore="${this.stickerStore as any}"
-              .showPanel="${this._showPanel}"
+              .showPanel="${this.showPanel}"
             ></lt-sticker-panel>
           </div>`
         : ""}
-      <div @click="${this._showPanelHandler}" class="lt-sticker-icon">
-        <div style="display: ${!this._showPanel ? "block" : "none"}" class="flot-card">本地贴纸</div>
+      <div @click="${this.showPanelHandler}" class="lt-sticker-icon">
+        <div style="display: ${!this.showPanel ? "block" : "none"}" class="flot-card">本地贴纸</div>
         <div class="icon-item" aria-label="本地贴纸" tabindex="0">${StickerIcon.ICON}</div>
       </div>`;
   }

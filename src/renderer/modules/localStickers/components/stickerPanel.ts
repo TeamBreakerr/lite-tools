@@ -47,20 +47,20 @@ export class StickerPanel extends LitElement {
   showPanel = false;
 
   @state()
-  private _activeDirPath: StickerPack["dirPath"] = "";
+  private activeDirPath: StickerPack["dirPath"] = "";
 
-  private _updateActivePack(e: CustomEvent) {
+  private updateActivePack(e: CustomEvent) {
     if (!this.showPanel) return;
     console.log("更新激活贴纸");
-    this._activeDirPath = e.detail.dirPath;
+    this.activeDirPath = e.detail.dirPath;
     const stickerList = this.renderRoot.querySelector("lt-sticker-list")!;
     stickerList.gotoPackByPath(e.detail.dirPath);
   }
 
-  private _updateTopPack(e: CustomEvent) {
+  private updateTopPack(e: CustomEvent) {
     if (!this.showPanel) return;
     console.log("更新顶部贴纸");
-    this._activeDirPath = e.detail.dirPath;
+    this.activeDirPath = e.detail.dirPath;
     const stickerBar = this.renderRoot.querySelector("lt-sticker-bar")!;
     stickerBar.selectPackIcon(e.detail.dirPath);
   }
@@ -81,13 +81,13 @@ export class StickerPanel extends LitElement {
     return html`<div class="lt-sticker-panel" style=${styleMap(panelStyles)}>
       ${this.stickerStore.status === "success"
         ? html`<lt-sticker-list
-              @updateTopPack="${this._updateTopPack}"
+              @updateTopPack="${this.updateTopPack}"
               .stickerStore="${this.stickerStore}"
               .stickersPerRow="${this.stickersPerRow}"
             ></lt-sticker-list>
             <lt-sticker-bar
-              @gotoPack="${this._updateActivePack}"
-              .activeDirPath="${this._activeDirPath}"
+              @gotoPack="${this.updateActivePack}"
+              .activeDirPath="${this.activeDirPath}"
               .stickerStore="${this.stickerStore}"
             ></lt-sticker-bar>`
         : html`<lt-sticker-msg .stickerStore="${this.stickerStore}"></lt-sticker-msg>`}

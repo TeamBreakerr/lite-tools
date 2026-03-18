@@ -181,20 +181,20 @@ export class ContextMenuItem extends LitElement {
   item!: ContextMenuType;
 
   @state()
-  private _showLeft = false;
+  private showLeft = false;
 
   @state()
-  private _dynamicTop: string | null = null;
+  private dynamicTop: string | null = null;
 
   @state()
-  private _dynamicLeft: string | null = null;
+  private dynamicLeft: string | null = null;
 
-  private get _hasChildren() {
+  private get hasChildren() {
     return this.item?.children && this.item.children.length > 0;
   }
 
-  private _handleClick(e: MouseEvent) {
-    if (this._hasChildren) {
+  private handleClick(e: MouseEvent) {
+    if (this.hasChildren) {
       e.stopPropagation();
       e.preventDefault();
       // return;
@@ -204,8 +204,8 @@ export class ContextMenuItem extends LitElement {
     }
   }
 
-  private _handleMouseEnter(e: MouseEvent) {
-    if (this._hasChildren) {
+  private handleMouseEnter(e: MouseEvent) {
+    if (this.hasChildren) {
       const wrapperEl = this.renderRoot.querySelector(".item-wrapper")!;
       const childEl = this.renderRoot.querySelector<HTMLElement>(".submenu-panel")!;
 
@@ -218,12 +218,12 @@ export class ContextMenuItem extends LitElement {
 
       // 计算 X 轴
       let targetLeft = parentRect.right + offsetX;
-      this._showLeft = false;
+      this.showLeft = false;
 
       // 预测右侧溢出，如果溢出则向左翻转
       if (targetLeft + childRect.width > window.innerWidth - safeGap) {
         targetLeft = parentRect.left - childRect.width - offsetX;
-        this._showLeft = true;
+        this.showLeft = true;
       }
 
       // 计算 Y 轴
@@ -238,8 +238,8 @@ export class ContextMenuItem extends LitElement {
         }
       }
 
-      this._dynamicLeft = `${targetLeft}px`;
-      this._dynamicTop = `${targetTop}px`;
+      this.dynamicLeft = `${targetLeft}px`;
+      this.dynamicTop = `${targetTop}px`;
     }
   }
 
@@ -258,17 +258,17 @@ export class ContextMenuItem extends LitElement {
   render() {
     const childShowIcon = this.item?.children?.some((i) => i.icon) ?? false;
     return html`
-      <div class="item-wrapper ${this.item.type}" @click=${this._handleClick}>
-        <div class="item-context" @mouseenter=${this._handleMouseEnter}>
+      <div class="item-wrapper ${this.item.type}" @click=${this.handleClick}>
+        <div class="item-context" @mouseenter=${this.handleMouseEnter}>
           ${this.showIcon ? html`<span class="icon">${this.renderIcon(this.item.icon)}</span>` : ""}
           <span class="text">${this.item.label}</span>
-          ${this._hasChildren ? html`<span class="arrow-icon">${ContextMenuItem.foldIcon}</span>` : ""}
+          ${this.hasChildren ? html`<span class="arrow-icon">${ContextMenuItem.foldIcon}</span>` : ""}
         </div>
-        ${this._hasChildren
+        ${this.hasChildren
           ? html`
               <div
-                class="submenu-panel ${this._showLeft ? "left" : ""}"
-                style="top: ${this._dynamicTop || "0px"}; left: ${this._dynamicLeft || "0px"}"
+                class="submenu-panel ${this.showLeft ? "left" : ""}"
+                style="top: ${this.dynamicTop || "0px"}; left: ${this.dynamicLeft || "0px"}"
               >
                 <div class="submenu-content">
                   ${this.item.children!.map(
@@ -355,7 +355,7 @@ export class ContextMenu extends LitElement {
     }
   `;
 
-  private _cancel = (e: Event) => {
+  private cancel = (e: Event) => {
     e.stopPropagation();
     e.preventDefault();
     this.dispatchEvent(new CustomEvent("lt-context-menu-cancel"));
@@ -363,12 +363,12 @@ export class ContextMenu extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    window.addEventListener("resize", this._cancel);
+    window.addEventListener("resize", this.cancel);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    window.removeEventListener("resize", this._cancel);
+    window.removeEventListener("resize", this.cancel);
   }
 
   @property({ type: Boolean })
@@ -398,7 +398,7 @@ export class ContextMenu extends LitElement {
 
   render() {
     const showIcon = this.menuList?.some((i) => i.icon);
-    return html` <div @contextmenu=${this._cancel} @click=${this._cancel} class="mask ${this.show ? "show" : ""}"></div>
+    return html` <div @contextmenu=${this.cancel} @click=${this.cancel} class="mask ${this.show ? "show" : ""}"></div>
       <a
         style="
         --x: ${this.position.x}px; 

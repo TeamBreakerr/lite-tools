@@ -49,7 +49,7 @@ export class StickerFullViewer extends LitElement {
   `;
 
   @state()
-  _isError = false;
+  private isError = false;
 
   @property({ type: String })
   stickerPath?: string;
@@ -59,7 +59,7 @@ export class StickerFullViewer extends LitElement {
 
   willUpdate(changedProperties: PropertyValues<StickerFullViewer>) {
     if (changedProperties.has("stickerPath")) {
-      this._isError = false;
+      this.isError = false;
     }
   }
 
@@ -73,8 +73,8 @@ export class StickerFullViewer extends LitElement {
 
   render() {
     return html`<div class="lt-sticker-full-viewer ${this.show ? "show" : ""}">
-      ${!this._isError
-        ? html`<img src="appimg://${this.stickerPath}" @error="${() => (this._isError = true)}" />`
+      ${!this.isError
+        ? html`<img src="appimg://${this.stickerPath}" @error="${() => (this.isError = true)}" />`
         : StickerFullViewer.ERR_ICON}
     </div>`;
   }

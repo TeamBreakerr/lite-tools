@@ -27,8 +27,8 @@ class StickerPacksManager {
 
   constructor() {}
 
-  public onEvent(eventName: string, _filePath: string) {
-    const filePath = _filePath.replace(/\\/g, "/");
+  public onEvent(eventName: string, inputPath: string) {
+    const filePath = inputPath.replace(/\\/g, "/");
     const ext = path.extname(filePath).toLowerCase();
     switch (eventName) {
       case "addDir":

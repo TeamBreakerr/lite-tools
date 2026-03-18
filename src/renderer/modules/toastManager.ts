@@ -10,7 +10,7 @@ import errorIconPath from "@/assets/html/toast/errorIcon.html";
 import type { ToastType } from "@/common/types/toastManager";
 
 interface ToastHTMLElement extends HTMLElement {
-  _timeoutId?: number;
+  timeoutId?: number;
   close: () => void;
 }
 
@@ -124,8 +124,8 @@ class ToastManager {
 
     // 定义关闭逻辑
     toast.close = () => {
-      if (toast._timeoutId) {
-        window.clearTimeout(toast._timeoutId);
+      if (toast.timeoutId) {
+        window.clearTimeout(toast.timeoutId);
       }
 
       toast.classList.remove("lt-toast-show");
@@ -142,7 +142,7 @@ class ToastManager {
     };
 
     // 自动关闭
-    toast._timeoutId = window.setTimeout(() => {
+    toast.timeoutId = window.setTimeout(() => {
       toast.close();
     }, duration);
 

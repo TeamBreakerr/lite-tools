@@ -56,25 +56,25 @@ export class StickerItem extends LitElement {
     ></path>
   </svg>`;
 
-  protected willUpdate(_changedProperties: PropertyValues): void {
-    if (_changedProperties.has("sticker")) {
-      this._isError = false;
+  protected willUpdate(changedProperties: PropertyValues): void {
+    if (changedProperties.has("sticker")) {
+      this.isError = false;
     }
   }
 
-  private _handleImageLoad(e: Event) {
-    this._opacity = 1;
+  private handleImageLoad(e: Event) {
+    this.opacity = 1;
   }
 
-  private _handleImageError(e: Event) {
-    this._isError = true;
+  private handleImageError(e: Event) {
+    this.isError = true;
   }
 
   @state()
-  _isError = false;
+  private isError = false;
 
   @state()
-  _opacity = 0;
+  private opacity = 0;
 
   @property({ type: Object })
   sticker!: Sticker;
@@ -85,12 +85,12 @@ export class StickerItem extends LitElement {
   render() {
     return html`
       <div class="lt-sticker-item ${this.active ? "active" : ""}">
-        ${!this._isError
+        ${!this.isError
           ? html`<img
               loading="lazy"
-              style="opacity: ${this._opacity}"
-              @load="${this._handleImageLoad}"
-              @error="${this._handleImageError}"
+              style="opacity: ${this.opacity}"
+              @load="${this.handleImageLoad}"
+              @error="${this.handleImageError}"
               src="appimg://${this.sticker.path!}"
             />`
           : StickerItem.ERR_ICON}
@@ -157,7 +157,7 @@ export class StickerPack extends LitElement {
   @property({ type: Number })
   public stickersPerRow = 6;
 
-  private get _estimatedRows() {
+  private get estimatedRows() {
     const total = this.stickerPack?.stickers?.length ?? 0;
     const cols = this.stickersPerRow || 1; // 确保分母至少为 1
     return Math.ceil(total / cols);
@@ -176,7 +176,7 @@ export class StickerPack extends LitElement {
         <div class="lt-sticker-pack-top-bar">
           <div class="lt-sticker-pack-name">${this.stickerPack?.label}</div>
         </div>
-        <div style="--rows: ${this._estimatedRows}" class="lt-sticker-pack-content">
+        <div style="--rows: ${this.estimatedRows}" class="lt-sticker-pack-content">
           ${this.isVisible
             ? this.stickerPack.stickers.map(
                 (item) => html`<lt-sticker-item .isVisible="${this.isVisible}" .sticker="${item}"></lt-sticker-item>`,

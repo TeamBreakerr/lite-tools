@@ -33,70 +33,70 @@ export class StickerList extends LitElement {
   stickersPerRow = 6;
 
   @query(".lt-sticker-list")
-  private _stickerList!: HTMLDivElement;
+  private stickerList!: HTMLDivElement;
 
-  private _observer?: IntersectionObserver;
-  private _visibleItems = new Set<StickerPack>();
-  private _ignoreScroll = false;
+  private observer?: IntersectionObserver;
+  private visibleItems = new Set<StickerPack>();
+  private ignoreScroll = false;
 
   gotoPackByPath(dirPath: StickerPackType["dirPath"]) {
     const pack = Array.from(this.renderRoot.querySelectorAll(`lt-sticker-pack`)).find(
       (pack) => pack.stickerPack.dirPath === dirPath,
     );
     if (pack) {
-      this._ignoreScroll = true;
-      this._stickerList.scrollTop = pack.offsetTop;
-      setTimeout(() => (this._ignoreScroll = false), 10);
+      this.ignoreScroll = true;
+      this.stickerList.scrollTop = pack.offsetTop;
+      setTimeout(() => (this.ignoreScroll = false), 10);
     }
   }
 
   connectedCallback(): void {
     super.connectedCallback();
-    this._initObserver();
+    this.initObserver();
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    this._observer?.disconnect();
+    this.observer?.disconnect();
   }
 
-  get _sortStickerPacks() {
+  private get sortStickerPacks() {
     return this.stickerStore.stickerPacks
       ?.sort((a, b) => a.label.localeCompare(b.label))
       ?.sort((a, b) => a.index - b.index);
   }
 
-  private _itemMounted(e: CustomEvent) {
-    this._observer?.observe(e.detail.element);
+  private itemMounted(e: CustomEvent) {
+    this.observer?.observe(e.detail.element);
   }
 
-  private _initObserver() {
-    this._observer = new IntersectionObserver(
+  private initObserver() {
+    this.observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           const target = entry.target as StickerPack;
           if (entry.isIntersecting) {
-            this._visibleItems.add(target);
+            this.visibleItems.add(target);
             target.isVisible = true;
           } else {
-            this._visibleItems.delete(target);
+            this.visibleItems.delete(target);
             target.isVisible = false;
           }
         });
-        this._calculateClosest();
+        this.calculateClosest();
       },
       {
-        root: this._stickerList,
+        root: this.stickerList,
       },
     );
   }
 
-  private _calculateClosest() {
-    if (this._ignoreScroll) return;
+  private calculateClosest() {
+    if (this.ignoreScroll) return;
     let closest: StickerPack | null = null;
     let minTop = Infinity;
-    const containerRect = this._stickerList.getBoundingClientRect();
-    for (const stickerPack of this._visibleItems) {
+    const containerRect = this.stickerList.getBoundingClientRect();
+    for (const stickerPack of this.visibleItems) {
       const rect = stickerPack.getBoundingClientRect();
       const relativeTop = rect.bottom - containerRect.top;
       if (relativeTop > 0 && relativeTop < minTop) {
@@ -112,10 +112,10 @@ export class StickerList extends LitElement {
 
   render() {
     return html`<div class="lt-sticker-list">
-      ${this._sortStickerPacks?.map(
+      ${this.sortStickerPacks?.map(
         (stickerPack) =>
           html`<lt-sticker-pack
-            @item-mounted="${this._itemMounted}"
+            @item-mounted="${this.itemMounted}"
             .stickerPack="${stickerPack}"
             .stickersPerRow="${this.stickersPerRow}"
           ></lt-sticker-pack>`,
