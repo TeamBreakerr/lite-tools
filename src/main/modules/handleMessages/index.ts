@@ -2,12 +2,13 @@ import { configManager } from "@/main/modules/configManager";
 import { checkChatType } from "@/common/checkChatType";
 import { findEvent } from "@/main/utils/findEvent";
 import { createLogger } from "@/main/utils/createLogger";
-import { deleteBubbleSkin } from "@/main/modules/deleteBubbleSkin";
-import { convertMiniArkToWebArk } from "@/main/modules/convertMiniArkToWebArk";
-import { convertMarketFaceToPic } from "@/main/modules/convertMarketFaceToPic";
-import { preventRecall } from "@/main/modules/preventRecall";
 
-const log = createLogger("handleMessages",true);
+import { deleteBubbleSkin } from "./deleteBubbleSkin";
+import { convertMiniArkToWebArk } from "./convertMiniArkToWebArk";
+import { convertMarketFaceToPic } from "./convertMarketFaceToPic";
+import { preventRecall } from "./preventRecall";
+
+const log = createLogger("handleMessages", true);
 
 function handleMessages(...args: any[]) {
   try {
@@ -63,7 +64,6 @@ function processMessages(msgList: any[], webContentId: number, args: any[]) {
 
 function setupHandleMessages() {
   IpcInterceptor.interceptIpcSend(handleMessages);
-  log("注册事件");
 }
 
 export { setupHandleMessages };
