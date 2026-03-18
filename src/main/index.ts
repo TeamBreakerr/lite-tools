@@ -2,7 +2,7 @@ import { configManager } from "@/main/modules/configManager";
 import { createLogger } from "@/main/utils/createLogger";
 import { setupHandleMessages } from "@/main/modules/handleMessages";
 import { setupIpcMain } from "@/main/modules/ipcRegistrar";
-import { setupSideBar } from "@/main/modules/sideBar";
+import { setupSideBar } from "@/main/modules/sidebarManager";
 import { captureWindow } from "@/main/utils/captureWindow";
 import { setupIpcInterceptor } from "@/main/modules/ipcInterceptor";
 import { wallpaperService } from "@/main/modules/WallpaperService";
