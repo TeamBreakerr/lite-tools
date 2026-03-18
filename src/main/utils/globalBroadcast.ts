@@ -25,10 +25,10 @@ function globalBroadcast(channel: string, ...data: any[]) {
               const url = window.webContents.getURL();
               const hash = url.split("#")[1] || "";
               const firstSegment = hash.split("/")[1];
-              if (whiteList.has(firstSegment)) {
+              // if (whiteList.has(firstSegment)) {
                 log("send", firstSegment, b.channel);
                 window.webContents.send(b.channel, ...b.data);
-              }
+              // }
             }
           } catch (err) {
             log("广播失败:", err);
