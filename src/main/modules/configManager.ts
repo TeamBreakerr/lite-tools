@@ -9,13 +9,13 @@ import configTemplate from "@/config/main.template.json";
 type ConfigListener = (config: Config) => void;
 
 class ConfigManager {
-  private isIndependent = false;
+  private isUserSpecific = false;
   private isInitialized = false;
   private config = {} as Config;
   private defaultConfigPath = path.join(configPath, "config.json");
   private currentConfigPath = "";
   private userUid = "";
-  private listeners: Set<ConfigListener> = new Set();
+  private updateListeners: Set<ConfigListener> = new Set();
   private readyPromise: Promise<void>;
   private resolveReady: () => void;
   private userConfigRegistry: UserConfigRegistry;
@@ -30,8 +30,8 @@ class ConfigManager {
   }
 
   private setupIpcEvent() {
-    ipcMain.on("lite_tools.isIndependent", (event) => {
-      event.returnValue = this.isIndependent;
+    ipcMain.on("lite_tools.isUserSpecific", (event) => {
+      event.returnValue = this.isUserSpecific;
     });
     ipcMain.on("lite_tools.isInitialized", (event) => {
       event.returnValue = this.isInitialized;
@@ -105,38 +105,38 @@ class ConfigManager {
 
   setup(uid: string) {
     try {
-      const userConfigPath = this.userConfigRegistry.get(uid);
+      const userConfigPath = this.userConfigRegistry.resolve(uid);
       this.userUid = uid;
-      if (userConfigPath) {
-        this.config = this.loadConfig(userConfigPath);
-        this.currentConfigPath = userConfigPath;
-        this.isInitialized = true;
-        this.isIndependent = true;
-      } else {
-        this.config = this.loadConfig(this.defaultConfigPath);
-        this.currentConfigPath = this.defaultConfigPath;
-        this.isInitialized = true;
-      }
+      this.config = this.loadConfig(userConfigPath);
+      this.currentConfigPath = userConfigPath;
+      this.isInitialized = true;
+      this.isUserSpecific = true;
       this.resolveReady();
-    } catch (err) {}
+    } catch (err) {
+      this.userUid = uid;
+      this.config = this.loadConfig(this.defaultConfigPath);
+      this.currentConfigPath = this.defaultConfigPath;
+      this.isInitialized = true;
+      this.resolveReady();
+    }
   }
 
   updateConfig(newConfig: Config) {
     Object.assign(this.config, newConfig);
     fs.writeFileSync(this.currentConfigPath, JSON.stringify(this.config, null, 2), "utf-8");
-    for (const listener of this.listeners) {
+    for (const listener of this.updateListeners) {
       listener(this.config);
     }
     globalBroadcast("lite_tools.configChanged", this.config);
   }
 
   onConfigUpdate(listener: ConfigListener) {
-    this.listeners.add(listener);
+    this.updateListeners.add(listener);
     return () => this.offConfigUpdate(listener);
   }
 
   offConfigUpdate(listener: ConfigListener) {
-    this.listeners.delete(listener);
+    this.updateListeners.delete(listener);
   }
 
   get value(): Readonly<Config> {
