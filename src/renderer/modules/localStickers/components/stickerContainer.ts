@@ -143,6 +143,7 @@ export class StickerContainer extends LitElement {
     e.preventDefault();
     e.stopPropagation();
 
+    // 右键点击贴纸
     if (stickerItem) {
       stickerItem.active = true;
       const stickerPack = path.find((item) => item instanceof StickerPack)!;

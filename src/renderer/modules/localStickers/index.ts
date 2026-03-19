@@ -2,7 +2,7 @@ import { StickerPanel } from "./components/stickerPanel";
 import { StickerMsg } from "./components/stickerMsg";
 import { StickerList } from "./components/stickerList";
 import { StickerBar, StickerBarItem } from "./components/stickerBar";
-import { StickerPack, StickerItem } from "./components/stickerPack";
+import { StickerPack, StickerPackLabel, StickerItem } from "./components/stickerPack";
 import { StickerIcon } from "./components/stickerIcon";
 import { StickerFullViewer } from "./components/stickerFullViewer";
 import { StickerContainer } from "./components/stickerContainer";
@@ -17,7 +17,7 @@ import { ContextMenu, ContextMenuItem, ContextMenuType } from "@/renderer/compon
 import { toastManager } from "@/renderer/modules/toastManager";
 import { onComponentMount } from "@/renderer/modules/vueComponentTracker";
 
-import type { StickerPathItem, StickerPack as StickerPackType } from "@/common/types/localStickers";
+import type { StickerPack as StickerPackType } from "@/common/types/localStickers";
 
 const log = createLogger("localStickers");
 
@@ -27,6 +27,8 @@ declare global {
     "lt-sticker-msg": StickerMsg;
     "lt-sticker-list": StickerList;
     "lt-sticker-pack": StickerPack;
+    "lt-sticker-pack-name": StickerPackLabel;
+    "lt-sticker-item": StickerItem;
     "lt-sticker-bar": StickerBar;
     "lt-sticker-bar-item": StickerBarItem;
     "lt-sticker-icon": StickerIcon;

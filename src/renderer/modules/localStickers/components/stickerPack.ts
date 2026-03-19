@@ -99,6 +99,38 @@ export class StickerItem extends LitElement {
   }
 }
 
+@customElement("lt-sticker-pack-label")
+export class StickerPackLabel extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+    }
+    .lt-sticker-pack-label {
+      box-sizing: border-box;
+      padding: 6px 12px;
+      white-space: nowrap;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-secondary-01);
+      background-color: color(from var(--blur_middle_standard) srgb r g b / 1);
+      .lt-sticker-pack-name {
+        max-width: calc(100% - 20px);
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+    }
+  `;
+
+  @property({ type: String })
+  label = "";
+
+  render() {
+    return html`<div class="lt-sticker-pack-label">
+      <div class="lt-sticker-pack-name">${this.label}</div>
+    </div>`;
+  }
+}
+
 @customElement("lt-sticker-pack")
 export class StickerPack extends LitElement {
   static styles = css`
@@ -110,29 +142,16 @@ export class StickerPack extends LitElement {
       min-width: 0;
       box-sizing: border-box;
       container-type: inline-size;
-      & .lt-sticker-pack-top-bar {
+      .lt-sticker-pack-label {
         width: 100%;
-        box-sizing: border-box;
-        padding: 6px 12px;
-        font-weight: 600;
-        font-size: 14px;
-        color: var(--text-secondary-01);
         position: sticky;
         top: 0;
         left: 0;
         z-index: 1;
-        background-color: color(from var(--blur_middle_standard) srgb r g b / 1);
-        & .lt-sticker-pack-name {
-          max-width: calc(100% - 20px);
-          text-overflow: ellipsis;
-          overflow: hidden;
-          white-space: nowrap;
-        }
       }
-      & .lt-sticker-pack-content {
+      .lt-sticker-pack-content {
         --gap: 6px;
         --cols: var(--pack-columns-count);
-
         width: 100%;
         padding: 3px 8px 8px;
         box-sizing: border-box;
@@ -173,8 +192,8 @@ export class StickerPack extends LitElement {
   render() {
     return html`
       <div class="lt-sticker-pack">
-        <div class="lt-sticker-pack-top-bar">
-          <div class="lt-sticker-pack-name">${this.stickerPack?.label}</div>
+        <div class="lt-sticker-pack-label">
+          <lt-sticker-pack-label .label="${this.stickerPack?.label}"></lt-sticker-pack-label>
         </div>
         <div style="--rows: ${this.estimatedRows}" class="lt-sticker-pack-content">
           ${this.isVisible
