@@ -122,39 +122,53 @@ class StickerPacksManager {
     const dirPath = path.dirname(stickerPath);
     const pack = this.stickerPacks.get(dirPath);
     if (!pack) return;
+
+    const hasSticker = pack.stickerPaths.has(stickerPath);
+
+    try {
+      if (fs.existsSync(stickerPath)) {
+        fs.unlinkSync(stickerPath);
+      }
+    } catch (err) {}
+
+    if (!hasSticker) return;
+
     pack.stickerPaths.delete(stickerPath);
-    fs.unlinkSync(stickerPath);
-    if (pack.stickerPaths.size === 0) {
-      this.stickerPacks.delete(dirPath);
-      return;
-    }
+
     const baseName = path.basename(stickerPath);
-    if (pack.icon === baseName) {
+    if (pack.stickerPaths.size === 0) {
+      // 贴纸包如果删空了，则清空icon
+      if (pack.icon !== undefined) {
+        pack.icon = undefined;
+        this.writeConfig(pack);
+      }
+    } else if (pack.icon === baseName) {
+      // 贴纸没删空，且被删除的刚好是作为封面的贴纸，顺位继承下一个
       pack.icon = path.basename(pack.stickerPaths.values().next().value!);
       this.writeConfig(pack);
     }
   }
 
-  /**
-   * 在导出时进行数据转换：Set<string> -> Sticker[]
-   */
+  // 在导出时进行数据转换：Set<string> -> Sticker[]
   public getPackList(): StickerPack[] {
-    return Array.from(this.stickerPacks.values())
-      // .filter((pack) => pack.stickerPaths.size > 0) // 此处不进行过滤，后续在渲染进程过滤空文件夹
-      .map((pack) => {
-        const stickers = Array.from(pack.stickerPaths).map((filePath) => ({
-          name: path.basename(filePath, path.extname(filePath)),
-          path: filePath,
-        }));
+    return (
+      Array.from(this.stickerPacks.values())
+        // .filter((pack) => pack.stickerPaths.size > 0) // 此处不进行过滤，后续在渲染进程过滤空文件夹
+        .map((pack) => {
+          const stickers = Array.from(pack.stickerPaths).map((filePath) => ({
+            name: path.basename(filePath, path.extname(filePath)),
+            path: filePath,
+          }));
 
-        return {
-          label: pack.label,
-          dirPath: pack.dirPath,
-          index: pack.index,
-          icon: (pack.icon ? path.join(pack.dirPath, pack.icon) : stickers[0]?.path)?.replace(/\\/g, "/"),
-          stickers,
-        };
-      });
+          return {
+            label: pack.label,
+            dirPath: pack.dirPath,
+            index: pack.index,
+            icon: (pack.icon ? path.join(pack.dirPath, pack.icon) : stickers[0]?.path)?.replace(/\\/g, "/"),
+            stickers,
+          };
+        })
+    );
   }
 
   public updatePackConfig(path: string, key: "index" | "label" | "icon", value: string | number) {
