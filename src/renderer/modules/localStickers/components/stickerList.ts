@@ -112,14 +112,16 @@ export class StickerList extends LitElement {
 
   render() {
     return html`<div class="lt-sticker-list">
-      ${this.sortStickerPacks?.map(
-        (stickerPack) =>
-          html`<lt-sticker-pack
-            @item-mounted="${this.itemMounted}"
-            .stickerPack="${stickerPack}"
-            .stickersPerRow="${this.stickersPerRow}"
-          ></lt-sticker-pack>`,
-      ) || []}
+      ${this.sortStickerPacks
+        ?.filter((stickerPack) => stickerPack.stickers.length > 0)
+        ?.map(
+          (stickerPack) =>
+            html`<lt-sticker-pack
+              @item-mounted="${this.itemMounted}"
+              .stickerPack="${stickerPack}"
+              .stickersPerRow="${this.stickersPerRow}"
+            ></lt-sticker-pack>`,
+        ) || []}
     </div>`;
   }
 }

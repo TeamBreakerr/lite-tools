@@ -147,13 +147,15 @@ export class StickerBar extends LitElement {
   render() {
     return html`<div class="lt-sticker-bar">
       <div class="scroll-container">
-        ${this.stickerStore.stickerPacks?.map((stickerPack) => {
-          return html`<lt-sticker-bar-item
-            @click="${this.gotoPack}"
-            .activeDirPath="${this.activeDirPath}"
-            .stickerPack="${stickerPack}"
-          ></lt-sticker-bar-item>`;
-        })}
+        ${this.stickerStore.stickerPacks
+          ?.filter((stickerPack) => stickerPack.stickers.length > 0)
+          ?.map((stickerPack) => {
+            return html`<lt-sticker-bar-item
+              @click="${this.gotoPack}"
+              .activeDirPath="${this.activeDirPath}"
+              .stickerPack="${stickerPack}"
+            ></lt-sticker-bar-item>`;
+          })}
       </div>
     </div>`;
   }
