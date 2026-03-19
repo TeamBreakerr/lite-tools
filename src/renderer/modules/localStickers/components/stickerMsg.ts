@@ -1,5 +1,5 @@
-import { LitElement, html, css, PropertyValues } from "lit";
-import { customElement, state, property, query } from "lit/decorators.js";
+import { LitElement, html, css } from "lit";
+import { customElement, property } from "lit/decorators.js";
 
 import type { StickerStore } from "@/common/types/localStickers";
 

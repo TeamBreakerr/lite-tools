@@ -1,8 +1,6 @@
-import { LitElement, html, css, PropertyValues } from "lit";
+import { LitElement, html, css } from "lit";
 import { customElement, state, property } from "lit/decorators.js";
 import { styleMap } from "lit/directives/style-map.js";
-
-import { StickerBar, StickerList } from "../index";
 
 import type { StickerStore, StickerPack } from "@/common/types/localStickers";
 

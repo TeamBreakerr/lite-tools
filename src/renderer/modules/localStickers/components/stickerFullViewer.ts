@@ -1,5 +1,5 @@
 import { LitElement, html, css, PropertyValues } from "lit";
-import { customElement, state, property, query } from "lit/decorators.js";
+import { customElement, state, property } from "lit/decorators.js";
 
 @customElement("lt-sticker-full-viewer")
 export class StickerFullViewer extends LitElement {
