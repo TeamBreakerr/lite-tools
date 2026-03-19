@@ -3,7 +3,7 @@ import { serialize, deserialize } from "node:v8";
 import { deflateSync, inflateSync } from "node:zlib";
 import path from "node:path";
 import fs from "node:fs";
-import { dataPath, pluginPath } from "@/main/utils/pluginPaths";
+import { DATA_DIR, PLUGIN_DIR } from "@/main/utils/pluginPaths";
 import { settingsWindow } from "@/main/utils/windowTracker";
 import { createLogger } from "@/main/utils/createLogger";
 import { configManager } from "@/main/modules/configManager";
@@ -105,7 +105,7 @@ class RecallMessageStore {
   }
 
   private initLocalDataPath() {
-    const base = path.join(dataPath, "messageRecall", configManager.uid);
+    const base = path.join(DATA_DIR, "messageRecall", configManager.uid);
     const redirectDir = path.join(base, "redirectPic");
     const cacheFile = path.join(base, "activeRecallCache.bin");
 
@@ -223,11 +223,11 @@ class RecallMessageStore {
         height: 600,
         autoHideMenuBar: true,
         webPreferences: {
-          preload: path.join(pluginPath, `/dist/preload/recallMsgViewer.js`),
+          preload: path.join(PLUGIN_DIR, `/dist/preload/recallMsgViewer.js`),
         },
       });
       this.recallMsgListWindow.setMenuBarVisibility(false);
-      const htmlPath = path.join(pluginPath, `/dist/renderer/pages/recallMsgViewer/index.html`);
+      const htmlPath = path.join(PLUGIN_DIR, `/dist/renderer/pages/recallMsgViewer/index.html`);
       this.recallMsgListWindow.loadFile(htmlPath);
       this.recallMsgListWindow.webContents.on("before-input-event", (_, input) => {
         if (input.key == "F5" && input.type == "keyUp") {

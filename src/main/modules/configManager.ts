@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { dialog, ipcMain } from "electron";
-import { configPath, dataPath } from "@/main/utils/pluginPaths";
+import { CONFIG_DIR, DATA_DIR } from "@/main/utils/pluginPaths";
 import { UserConfigRegistry } from "@/main/modules/UserConfigRegistry";
 import { globalBroadcast } from "@/main/utils/globalBroadcast";
 import configTemplate from "@/config/main.template.json";
@@ -12,7 +12,7 @@ class ConfigManager {
   private isUserSpecific = false;
   private isInitialized = false;
   private config = {} as Config;
-  private defaultConfigPath = path.join(configPath, "config.json");
+  private defaultConfigPath = path.join(CONFIG_DIR, "config.json");
   private currentConfigPath = "";
   private userUid = "";
   private updateListeners: Set<ConfigListener> = new Set();
@@ -26,7 +26,7 @@ class ConfigManager {
     this.resolveReady = resolve;
     this.setupPath();
     this.setupIpcEvent();
-    this.userConfigRegistry = new UserConfigRegistry(configPath);
+    this.userConfigRegistry = new UserConfigRegistry(CONFIG_DIR);
   }
 
   private setupIpcEvent() {
@@ -46,11 +46,11 @@ class ConfigManager {
 
   private setupPath() {
     try {
-      if (!fs.existsSync(configPath)) {
-        fs.mkdirSync(path.join(configPath, "configs"), { recursive: true });
+      if (!fs.existsSync(CONFIG_DIR)) {
+        fs.mkdirSync(path.join(CONFIG_DIR, "configs"), { recursive: true });
       }
-      if (!fs.existsSync(dataPath)) {
-        fs.mkdirSync(dataPath, { recursive: true });
+      if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
       }
     } catch (err) {
       dialog.showMessageBox({
