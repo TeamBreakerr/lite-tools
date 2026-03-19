@@ -8,7 +8,7 @@ const exposeFunctions = {
   // 配置相关
   updateConfig: (config: Config) => ipcRenderer.send("lite_tools.updateConfig", config),
   getConfig: async (): Promise<Config> => ipcRenderer.invoke("lite_tools.getConfig"),
-  isIndependent: (): boolean => ipcRenderer.sendSync("lite_tools.isIndependent"),
+  isUserSpecific: (): boolean => ipcRenderer.sendSync("lite_tools.isUserSpecific"),
   isInitialized: (): boolean => ipcRenderer.sendSync("lite_tools.isInitialized"),
   onConfigChange: (callback: (config: Config) => void) =>
     ipcRenderer.on("lite_tools.configChanged", (_, config: Config) => callback(config)),

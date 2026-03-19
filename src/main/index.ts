@@ -1,12 +1,12 @@
 import { configManager } from "@/main/modules/configManager";
 import { createLogger } from "@/main/utils/createLogger";
 import { setupHandleMessages } from "@/main/modules/handleMessages";
-import { setupIpcMain } from "@/main/modules/ipcMain";
-import { setupSideBar } from "@/main/modules/sideBar";
-import { captureWindow } from "@/main/utils/captureWindow";
+import { setupIpcMain } from "@/main/modules/ipcRegistrar";
+import { setupSideBar } from "@/main/modules/sidebarManager";
+import { trackWindow } from "@/main/utils/windowTracker";
 import { setupIpcInterceptor } from "@/main/modules/ipcInterceptor";
-import { wallpaperService } from "@/main/modules/WallpaperService";
 import { localStickers } from "@/main/modules/localStickers";
+import { wallpaperService } from "@/main/modules/wallpaper";
 import { setupDevWindow } from "@/main/modules/devWindow";
 import type { BrowserWindow } from "electron";
 
@@ -37,7 +37,7 @@ function setupMain(uid: string) {
 }
 
 function onBrowserWindowCreated(window: BrowserWindow) {
-  captureWindow(window);
+  trackWindow(window);
 }
 
 if ("qwqnt" in globalThis) {
