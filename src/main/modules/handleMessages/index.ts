@@ -6,7 +6,7 @@ import { createLogger } from "@/main/utils/createLogger";
 import { deleteBubbleSkin } from "./deleteBubbleSkin";
 import { convertMiniArkToWebArk } from "./convertMiniArkToWebArk";
 import { convertMarketFaceToPic } from "./convertMarketFaceToPic";
-import { preventRecall } from "./preventRecall";
+import { interceptMessageRecalls } from "./antiRecall";
 
 const log = createLogger("handleMessages", true);
 
@@ -42,7 +42,7 @@ function processMessages(msgList: any[], webContentId: number, args: any[]) {
     log("捕获到消息", msgList);
     if (config.message.preventRecall.enabled) {
       log("执行 阻止撤回 ");
-      preventRecall(msgList);
+      interceptMessageRecalls(msgList);
     }
     if (config.interface.deleteBubbleSkin) {
       log("执行 删除气泡皮肤 ");
