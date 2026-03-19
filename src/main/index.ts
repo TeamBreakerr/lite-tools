@@ -3,7 +3,7 @@ import { createLogger } from "@/main/utils/createLogger";
 import { setupHandleMessages } from "@/main/modules/handleMessages";
 import { setupIpcMain } from "@/main/modules/ipcRegistrar";
 import { setupSideBar } from "@/main/modules/sidebarManager";
-import { captureWindow } from "@/main/utils/captureWindow";
+import { trackWindow } from "@/main/utils/windowTracker";
 import { setupIpcInterceptor } from "@/main/modules/ipcInterceptor";
 import { wallpaperService } from "@/main/modules/wallpaperService";
 import { setupDevWindow } from "@/main/modules/devWindow";
@@ -35,7 +35,7 @@ function setupMain(uid: string) {
 }
 
 function onBrowserWindowCreated(window: BrowserWindow) {
-  captureWindow(window);
+  trackWindow(window);
 }
 
 if ("qwqnt" in globalThis) {

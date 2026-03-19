@@ -4,7 +4,7 @@ import { deflateSync, inflateSync } from "node:zlib";
 import path from "node:path";
 import fs from "node:fs";
 import { dataPath, pluginPath } from "@/main/utils/pluginPaths";
-import { settingWindow } from "@/main/utils/captureWindow";
+import { settingsWindow } from "@/main/utils/windowTracker";
 import { createLogger } from "@/main/utils/createLogger";
 import { configManager } from "@/main/modules/configManager";
 import { globalBroadcast } from "@/main/utils/globalBroadcast";
@@ -413,8 +413,8 @@ class RecallMessageStore {
   }
 
   private async clearPersistedFiles() {
-    if (settingWindow && settingWindow?.isDestroyed() === false) {
-      const { response } = await dialog.showMessageBox(settingWindow, {
+    if (settingsWindow && settingsWindow?.isDestroyed() === false) {
+      const { response } = await dialog.showMessageBox(settingsWindow, {
         type: "question",
         title: "确认",
         message: "确定要清除所有撤回数据吗？",
@@ -429,7 +429,7 @@ class RecallMessageStore {
         this.inMemoryChunkCache.clear();
         this.stagingRecallCache.clear();
         fs.writeFileSync(path.join(this.LOCAL_DATA_PATH, "activeRecallCache.bin"), Buffer.alloc(0));
-        settingWindow.webContents.send("lite_tools.updateRecallCacheSize", 0);
+        settingsWindow.webContents.send("lite_tools.updateRecallCacheSize", 0);
       }
     }
   }
@@ -546,8 +546,8 @@ class RecallMessageStore {
       this.stagingRecallCache.set(msgId, hit);
       log("命中缓存", msgId, hit);
 
-      if (settingWindow?.isDestroyed() === false) {
-        settingWindow.webContents.send("lite_tools.updateRecallCacheSize", this.recallCacheSize);
+      if (settingsWindow?.isDestroyed() === false) {
+        settingsWindow.webContents.send("lite_tools.updateRecallCacheSize", this.recallCacheSize);
       }
 
       if (configManager.value.message.preventRecall.persistedFiles) {

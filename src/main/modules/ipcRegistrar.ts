@@ -1,5 +1,5 @@
 import { ipcMain, dialog, BrowserWindow } from "electron";
-import { mainWindow } from "@/main/utils/captureWindow";
+import { mainWindow } from "@/main/utils/windowTracker";
 
 function setupIpcMain() {
   // 返回窗口id
