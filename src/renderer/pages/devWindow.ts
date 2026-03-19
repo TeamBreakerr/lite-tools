@@ -9,5 +9,5 @@ document.addEventListener("DOMContentLoaded", () => {
     document
       .querySelector(".func-bar-native")
       ?.insertAdjacentHTML("afterbegin", `<lt-sticker-container></lt-sticker-container>`);
-  }, 3000);
+  }, 100);
 });
