@@ -3,8 +3,8 @@ import { serialize, deserialize } from "node:v8";
 import { deflateSync, inflateSync } from "node:zlib";
 import path from "node:path";
 import fs from "node:fs";
-import { dataPath, pluginPath } from "@/main/utils/pluginPaths";
-import { settingWindow } from "@/main/utils/captureWindow";
+import { DATA_DIR, PLUGIN_DIR } from "@/main/utils/pluginPaths";
+import { settingsWindow } from "@/main/utils/windowTracker";
 import { createLogger } from "@/main/utils/createLogger";
 import { configManager } from "@/main/modules/configManager";
 import { globalBroadcast } from "@/main/utils/globalBroadcast";
@@ -19,10 +19,10 @@ type MsgId = string;
 type Uid = string;
 type PicElement = any;
 type RecallCache = Map<MsgId, Message>;
-type AllRecallCache = Map<Uid, Message[]>;
+type ViewerMessageMap = Map<Uid, Message[]>;
 type FilePath = string;
-type PersistedFiles = { time: number; path: FilePath; info: { version: number; msgCount: number } }[];
-type RecallElement = {
+type PersistedFileMeta = { time: number; path: FilePath; info: { version: number; msgCount: number } };
+type RevokeEventInfo = {
   isSelfOperate: boolean;
   operatorNick: string;
   operatorRemark: string;
@@ -52,19 +52,24 @@ enum ElementType {
   multiForwardMsgElement = 16,
 }
 
-class MsgStore {
+class RecallMessageStore {
   // 最近消息 <msgId, msg>
-  private recentMessages: RecallCache = new Map();
+  private liveMessageCache: RecallCache = new Map();
   // 实时阻止撤回的消息 <msgId, msg>
-  private activeRecallCache: RecallCache = new Map();
+  private stagingRecallCache: RecallCache = new Map();
   // 持久化保存的文件列表
-  private persistedFiles: PersistedFiles = [];
+  private diskChunkIndex: PersistedFileMeta[] = [];
   // 缓存的已加载持久化撤回数据
-  private loadedPersistedCache: Map<FilePath, RecallCache> = new Map();
+  private inMemoryChunkCache: Map<FilePath, RecallCache> = new Map();
   // 撤回消息查看窗口
   private recallMsgListWindow: BrowserWindow | null = null;
   // 所有撤回消息缓存，仅用于打开查看撤回消息列表页面时使用
-  private allCaches: AllRecallCache = new Map();
+  private allCaches: ViewerMessageMap = new Map();
+  // 下载中的图片地址
+  private pendingImageDownloads = new Set<string>();
+  // 实例是否就绪
+  private isReady = false;
+
   private readonly RECALL_CACHE_VERSION = 1;
   private readonly RECALL_CACHE_MAGIC = Buffer.from("LTRECALL");
   // 缓存持久化文件的数量
@@ -77,10 +82,6 @@ class MsgStore {
   private LOCAL_DATA_PATH!: string;
   // 重定向图片路径
   private LOCAL_REDIRECT_PIC_PATH!: string;
-  // 下载中的图片地址
-  private downloadingPics = new Set<string>();
-  // 实例是否就绪
-  private isReady = false;
 
   constructor() {
     this.setup();
@@ -104,7 +105,7 @@ class MsgStore {
   }
 
   private initLocalDataPath() {
-    const base = path.join(dataPath, "messageRecall", configManager.uid);
+    const base = path.join(DATA_DIR, "messageRecall", configManager.uid);
     const redirectDir = path.join(base, "redirectPic");
     const cacheFile = path.join(base, "activeRecallCache.bin");
 
@@ -146,13 +147,13 @@ class MsgStore {
     const allMessages: Message[] = [];
     this.allCaches.clear();
 
-    for (const persistedFile of this.persistedFiles) {
+    for (const persistedFile of this.diskChunkIndex) {
       const persistedCache = this.loadPersistedFile(persistedFile.path);
       if (persistedCache) {
         allMessages.push(...persistedCache.values());
       }
     }
-    allMessages.push(...this.activeRecallCache.values());
+    allMessages.push(...this.stagingRecallCache.values());
 
     // 先找出所有需要请求用户信息的 uid
     const unknownUids = new Set<string>();
@@ -222,11 +223,11 @@ class MsgStore {
         height: 600,
         autoHideMenuBar: true,
         webPreferences: {
-          preload: path.join(pluginPath, `/dist/preload/recallMsgViewer.js`),
+          preload: path.join(PLUGIN_DIR, `/dist/preload/recallMsgViewer.js`),
         },
       });
       this.recallMsgListWindow.setMenuBarVisibility(false);
-      const htmlPath = path.join(pluginPath, `/dist/renderer/pages/recallMsgViewer/index.html`);
+      const htmlPath = path.join(PLUGIN_DIR, `/dist/renderer/pages/recallMsgViewer/index.html`);
       this.recallMsgListWindow.loadFile(htmlPath);
       this.recallMsgListWindow.webContents.on("before-input-event", (_, input) => {
         if (input.key == "F5" && input.type == "keyUp") {
@@ -257,19 +258,19 @@ class MsgStore {
         const msgBuf = data.subarray(offset, offset + len);
         offset += len;
         const message = deserialize(inflateSync(msgBuf));
-        this.activeRecallCache.set(message.msgId, message);
+        this.stagingRecallCache.set(message.msgId, message);
       } catch (e) {
         log(`读取缓存数据出错 offset=${offset}`, e);
         break;
       }
     }
 
-    log(`成功读取 ${this.activeRecallCache.size} 条缓存数据`);
+    log(`成功读取 ${this.stagingRecallCache.size} 条缓存数据`);
   }
 
   private loadPersistedFiles() {
     const filterRegex = /^\d+\.bin$/;
-    this.persistedFiles = fs
+    this.diskChunkIndex = fs
       .readdirSync(this.LOCAL_DATA_PATH, { withFileTypes: true })
       .filter((file) => filterRegex.test(file.name))
       .map((file) => {
@@ -281,10 +282,10 @@ class MsgStore {
         };
       })
       .sort((a, b) => a.time - b.time);
-    log(`读取到 ${this.persistedFiles.length} 个持久化文件`);
+    log(`读取到 ${this.diskChunkIndex.length} 个持久化文件`);
   }
 
-  private saveToTempFile(message: Message) {
+  private appendStagingCache(message: Message) {
     try {
       const buf = deflateSync(serialize(message));
       const lenBuf = Buffer.alloc(4);
@@ -316,9 +317,9 @@ class MsgStore {
     };
   }
 
-  private saveToPersistedFile(date: number) {
-    const messageCount = this.activeRecallCache.size;
-    const compressed = deflateSync(serialize(this.activeRecallCache));
+  private createDiskChunk(date: number) {
+    const messageCount = this.stagingRecallCache.size;
+    const compressed = deflateSync(serialize(this.stagingRecallCache));
 
     const header = Buffer.alloc(8 + 4 + 4);
     this.RECALL_CACHE_MAGIC.copy(header, 0);
@@ -331,7 +332,7 @@ class MsgStore {
 
     fs.writeFileSync(filePath, finalBuffer);
 
-    this.persistedFiles.push({
+    this.diskChunkIndex.push({
       time: date,
       path: filePath,
       info: { version: this.RECALL_CACHE_VERSION, msgCount: messageCount },
@@ -358,7 +359,7 @@ class MsgStore {
   }
 
   private findPersistedFile(recallTime: number): string | null {
-    const find = this.persistedFiles.find((item) => item.time >= recallTime);
+    const find = this.diskChunkIndex.find((item) => item.time >= recallTime);
     if (!find) {
       log("没有创建持久化文件");
       return null;
@@ -369,9 +370,9 @@ class MsgStore {
   }
 
   private loadPersistedFile(filePath: string): RecallCache | null {
-    if (this.loadedPersistedCache.has(filePath)) {
+    if (this.inMemoryChunkCache.has(filePath)) {
       log("持久化文件已缓存到内存", filePath);
-      return this.loadedPersistedCache.get(filePath)!;
+      return this.inMemoryChunkCache.get(filePath)!;
     }
 
     if (!fs.existsSync(filePath)) {
@@ -397,10 +398,10 @@ class MsgStore {
       const persistedCache = deserialize(inflateSync(compressed)) as RecallCache;
 
       // 缓存到内存
-      this.loadedPersistedCache.set(filePath, persistedCache);
-      if (this.loadedPersistedCache.size > this.MAX_PERSISTED_FILES) {
-        const oldest = this.loadedPersistedCache.keys().next().value!;
-        this.loadedPersistedCache.delete(oldest);
+      this.inMemoryChunkCache.set(filePath, persistedCache);
+      if (this.inMemoryChunkCache.size > this.MAX_PERSISTED_FILES) {
+        const oldest = this.inMemoryChunkCache.keys().next().value!;
+        this.inMemoryChunkCache.delete(oldest);
         log(`缓存文件超出上限 ${this.MAX_PERSISTED_FILES}，卸载`, oldest);
       }
 
@@ -411,74 +412,9 @@ class MsgStore {
     }
   }
 
-  private loadFromPersistedFile(msgId: MsgId, recallTime: number) {
-    const find = this.persistedFiles.find((item) => item.time >= recallTime);
-    if (!find) {
-      log("没有创建持久化文件");
-      return null;
-    }
-
-    const filePath = find.path;
-
-    if (this.loadedPersistedCache.has(filePath)) {
-      log("持久化文件已缓存到内存", filePath);
-      const persistedCache = this.loadedPersistedCache.get(filePath)!;
-      const msg = persistedCache.get(msgId);
-      if (msg) {
-        log("从已加载的持久化文件中找到消息", msgId);
-        return msg;
-      }
-      log("已加载的持久化文件中未找到消息", msgId);
-      return null;
-    }
-
-    // 文件未缓存，需要检查磁盘
-    if (!fs.existsSync(filePath)) {
-      log("磁盘上不存在持久化文件", filePath);
-      return null;
-    }
-
-    log("磁盘上找到持久化文件，准备加载", filePath);
-
-    try {
-      const data = fs.readFileSync(filePath);
-
-      // 读取头部
-      const magic = data.subarray(0, 8);
-      if (!magic.equals(this.RECALL_CACHE_MAGIC)) {
-        throw new Error(`文件魔数错误: ${magic}`);
-      }
-      const version = data.readUInt32LE(8);
-      const messageCount = data.readUInt32LE(12);
-      log(`加载持久化文件 版本:${version} 消息数:${messageCount}`);
-
-      // 解压剩余部分
-      const compressed = data.subarray(16);
-      const persistedCache = deserialize(inflateSync(compressed)) as RecallCache;
-
-      this.loadedPersistedCache.set(filePath, persistedCache);
-      if (this.loadedPersistedCache.size > this.MAX_PERSISTED_FILES) {
-        const oldest = this.loadedPersistedCache.keys().next().value!;
-        this.loadedPersistedCache.delete(oldest);
-        log(`缓存文件超出上限 ${this.MAX_PERSISTED_FILES}，卸载`, oldest);
-      }
-
-      const msg = persistedCache.get(msgId);
-      if (msg) {
-        log("从持久化文件中找到数据", msgId);
-        return msg;
-      }
-      log("消息不在持久化文件中");
-      return null;
-    } catch (e) {
-      log("加载持久化文件失败", filePath, e);
-      return null;
-    }
-  }
-
   private async clearPersistedFiles() {
-    if (settingWindow && settingWindow?.isDestroyed() === false) {
-      const { response } = await dialog.showMessageBox(settingWindow, {
+    if (settingsWindow && settingsWindow?.isDestroyed() === false) {
+      const { response } = await dialog.showMessageBox(settingsWindow, {
         type: "question",
         title: "确认",
         message: "确定要清除所有撤回数据吗？",
@@ -486,19 +422,19 @@ class MsgStore {
       });
 
       if (response === 1) {
-        for (const file of this.persistedFiles) {
+        for (const file of this.diskChunkIndex) {
           fs.unlinkSync(file.path);
         }
-        this.persistedFiles = [];
-        this.loadedPersistedCache.clear();
-        this.activeRecallCache.clear();
+        this.diskChunkIndex = [];
+        this.inMemoryChunkCache.clear();
+        this.stagingRecallCache.clear();
         fs.writeFileSync(path.join(this.LOCAL_DATA_PATH, "activeRecallCache.bin"), Buffer.alloc(0));
-        settingWindow.webContents.send("lite_tools.updateRecallCacheSize", 0);
+        settingsWindow.webContents.send("lite_tools.updateRecallCacheSize", 0);
       }
     }
   }
 
-  private processMsgImages(message: Message) {
+  private localizeMessageImages(message: Message) {
     for (const element of message.elements) {
       if (element.elementType === ElementType.picElement) {
         log("撤回消息含有图片");
@@ -529,11 +465,11 @@ class MsgStore {
     if (downloadUrl) {
       const md5HexStr = picElement.md5HexStr;
       const localPath = picElement.sourcePath;
-      if (this.downloadingPics.has(md5HexStr)) {
+      if (this.pendingImageDownloads.has(md5HexStr)) {
         log("图片正在下载", md5HexStr);
         return;
       }
-      this.downloadingPics.add(md5HexStr);
+      this.pendingImageDownloads.add(md5HexStr);
       log("下载图片", md5HexStr);
       fetch(downloadUrl)
         .then((res) => res.arrayBuffer())
@@ -550,7 +486,7 @@ class MsgStore {
   }
 
   static createRecallData(message: Message) {
-    const recallInfo = MsgStore.getRecallInfo(message)!;
+    const recallInfo = RecallMessageStore.getRecallInfo(message)!;
     return {
       operatorNick: recallInfo.operatorNick,
       operatorRemark: recallInfo.operatorRemark,
@@ -562,7 +498,7 @@ class MsgStore {
     };
   }
 
-  static getRecallInfo(message: Message): RecallElement | null {
+  static getRecallInfo(message: Message): RevokeEventInfo | null {
     if (message.elements.length === 1) {
       if (message.elements[0]?.grayTipElement?.subElementType === 1) {
         return message.elements[0].grayTipElement.revokeElement;
@@ -572,7 +508,7 @@ class MsgStore {
   }
 
   get recallCacheSize() {
-    const size = this.activeRecallCache.size + this.persistedFiles.reduce((acc, item) => acc + item.info.msgCount, 0);
+    const size = this.stagingRecallCache.size + this.diskChunkIndex.reduce((acc, item) => acc + item.info.msgCount, 0);
     return size;
   }
 
@@ -585,9 +521,9 @@ class MsgStore {
     if (!message.elements.length) {
       return;
     }
-    this.recentMessages.set(message.msgId, message);
-    if (this.recentMessages.size >= this.MAX_RECALL_CACHE_SIZE) {
-      this.recentMessages.delete(this.recentMessages.keys().next().value!);
+    this.liveMessageCache.set(message.msgId, message);
+    if (this.liveMessageCache.size >= this.MAX_RECALL_CACHE_SIZE) {
+      this.liveMessageCache.delete(this.liveMessageCache.keys().next().value!);
     }
   }
 
@@ -596,31 +532,31 @@ class MsgStore {
     const recallTime = Number(message.recallTime) * 1000;
 
     let hit =
-      this.recentMessages.get(msgId) ||
-      this.activeRecallCache.get(msgId) ||
+      this.liveMessageCache.get(msgId) ||
+      this.stagingRecallCache.get(msgId) ||
       this.getMessageFromPersisted(msgId, recallTime);
 
     if (!hit) return null;
 
     // 命中 recentMessages 的情况
-    if (this.recentMessages.has(msgId) && !this.activeRecallCache.has(msgId)) {
-      hit.lt_recall = MsgStore.createRecallData(message);
-      this.processMsgImages(hit);
-      this.recentMessages.delete(msgId);
-      this.activeRecallCache.set(msgId, hit);
+    if (this.liveMessageCache.has(msgId) && !this.stagingRecallCache.has(msgId)) {
+      hit.lt_recall = RecallMessageStore.createRecallData(message);
+      this.localizeMessageImages(hit);
+      this.liveMessageCache.delete(msgId);
+      this.stagingRecallCache.set(msgId, hit);
       log("命中缓存", msgId, hit);
 
-      if (settingWindow?.isDestroyed() === false) {
-        settingWindow.webContents.send("lite_tools.updateRecallCacheSize", this.recallCacheSize);
+      if (settingsWindow?.isDestroyed() === false) {
+        settingsWindow.webContents.send("lite_tools.updateRecallCacheSize", this.recallCacheSize);
       }
 
       if (configManager.value.message.preventRecall.persistedFiles) {
-        if (this.activeRecallCache.size >= this.MAX_MESSAGES_PER_FILE) {
-          this.saveToPersistedFile(Date.now());
+        if (this.stagingRecallCache.size >= this.MAX_MESSAGES_PER_FILE) {
+          this.createDiskChunk(Date.now());
           fs.writeFileSync(path.join(this.LOCAL_DATA_PATH, "activeRecallCache.bin"), Buffer.alloc(0));
-          this.activeRecallCache.clear();
+          this.stagingRecallCache.clear();
         } else {
-          this.saveToTempFile(hit);
+          this.appendStagingCache(hit);
         }
       }
     } else {
@@ -630,14 +566,14 @@ class MsgStore {
   }
 }
 
-const msgStore = new MsgStore();
+const msgStore = new RecallMessageStore();
 
-function preventRecall(msgList: Message[]) {
+function interceptMessageRecalls(msgList: Message[]) {
   if (!msgStore.ready) return;
   const recallMsgIds: RecallMsgId[] = [];
   for (let index = 0; index < msgList.length; index++) {
     const message = msgList[index];
-    const recallInfo = MsgStore.getRecallInfo(message);
+    const recallInfo = RecallMessageStore.getRecallInfo(message);
     if (recallInfo) {
       log("找到撤回标记");
       if (recallInfo.isSelfOperate && !configManager.value.message.preventRecall.preventSelfMsg) {
@@ -658,4 +594,4 @@ function preventRecall(msgList: Message[]) {
   }
 }
 
-export { preventRecall };
+export { interceptMessageRecalls };

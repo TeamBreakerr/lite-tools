@@ -15,17 +15,17 @@ type ResponseHeaders = {
 /**
  * 视频背景http服务类
  */
-class RangesServer {
+class VideoStreamServer {
   private port: number;
   private server: ReturnType<typeof createHttpServer>;
   private filePath: string | undefined;
-  private mimeNames: {
+  private MIME_TYPES: {
     [key: string]: string;
   };
   constructor() {
     this.port = 0;
-    this.server = createHttpServer(this.httpListener.bind(this));
-    this.mimeNames = {
+    this.server = createHttpServer(this.handleHttpRequest.bind(this));
+    this.MIME_TYPES = {
       ".mp4": "video/mp4",
       ".webm": "video/webm",
     };
@@ -77,7 +77,7 @@ class RangesServer {
       this.server.close();
     }
   }
-  private httpListener(request: IncomingMessage, response: ServerResponse) {
+  private handleHttpRequest(request: IncomingMessage, response: ServerResponse) {
     // 仅响应 GET 请求
     if (request.method != "GET") {
       log("请求视频数据");
@@ -96,7 +96,7 @@ class RangesServer {
     const rangeRequest = this.readRangeHeader(request.headers["range"]!, stat.size);
     // 如果 Header 存在 Range，使用正则表达式对其进行解析。
     if (rangeRequest === null) {
-      responseHeaders["Content-Type"] = this.getMimeNameFromExt(extname(this.filePath!));
+      responseHeaders["Content-Type"] = this.getMimeType(extname(this.filePath!));
       responseHeaders["Content-Length"] = stat.size; // 文件大小
       responseHeaders["Accept-Ranges"] = "bytes";
 
@@ -120,7 +120,7 @@ class RangesServer {
     // 指示当前范围。
     responseHeaders["Content-Range"] = "bytes " + start + "-" + end + "/" + stat.size;
     responseHeaders["Content-Length"] = start == end ? 0 : end - start + 1;
-    responseHeaders["Content-Type"] = this.getMimeNameFromExt(extname(this.filePath!));
+    responseHeaders["Content-Type"] = this.getMimeType(extname(this.filePath!));
     responseHeaders["Accept-Ranges"] = "bytes";
     responseHeaders["Cache-Control"] = "no-cache";
 
@@ -131,7 +131,7 @@ class RangesServer {
     response: ServerResponse,
     responseStatus: number,
     responseHeaders: ResponseHeaders,
-    readable: fs.ReadStream | null
+    readable: fs.ReadStream | null,
   ) {
     response.writeHead(responseStatus, responseHeaders);
     if (readable === null) {
@@ -156,9 +156,9 @@ class RangesServer {
     if (range == null || range.length == 0) {
       return null;
     }
-    const array = range.split(/bytes=([0-9]*)-([0-9]*)/);
-    const start = parseInt(array[1]);
-    const end = parseInt(array[2]);
+    const matchResult = range.split(/bytes=([0-9]*)-([0-9]*)/);
+    const start = parseInt(matchResult[1]);
+    const end = parseInt(matchResult[2]);
     const result = {
       Start: isNaN(start) ? 0 : start,
       End: isNaN(end) ? totalLength - 1 : end,
@@ -175,8 +175,8 @@ class RangesServer {
     }
     return result;
   }
-  private getMimeNameFromExt(ext: string) {
-    let result = this.mimeNames[ext.toLowerCase()];
+  private getMimeType(ext: string) {
+    let result = this.MIME_TYPES[ext.toLowerCase()];
     if (!result) {
       result = "application/octet-stream";
     }
@@ -184,6 +184,6 @@ class RangesServer {
   }
 }
 
-const rangesServer = new RangesServer();
+const videoStreamServer = new VideoStreamServer();
 
-export { rangesServer };
+export { videoStreamServer };

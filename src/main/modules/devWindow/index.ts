@@ -1,5 +1,5 @@
 import { ipcMain, BrowserWindow } from "electron";
-import { pluginPath } from "@/main/utils/pluginPaths";
+import { PLUGIN_DIR } from "@/main/utils/pluginPaths";
 import path from "node:path";
 
 let devWindow: Electron.BrowserWindow | null = null;
@@ -20,11 +20,11 @@ function openRecallMsgList() {
       autoHideMenuBar: true,
       webPreferences: {
         // 不是错误，需要绑定一个预加载脚本才能通过loader注入流程
-        preload: path.join(pluginPath, `/dist/preload/recallMsgViewer.js`),
+        preload: path.join(PLUGIN_DIR, `/dist/preload/recallMsgViewer.js`),
       },
     });
     devWindow.setMenuBarVisibility(false);
-    const htmlPath = path.join(pluginPath, `/dist/renderer/pages/devWindow/index.html`);
+    const htmlPath = path.join(PLUGIN_DIR, `/dist/renderer/pages/devWindow/index.html`);
     devWindow.loadFile(htmlPath);
     devWindow.webContents.on("before-input-event", (_, input) => {
       if (input.key == "F5" && input.type == "keyUp") {

@@ -1,24 +1,33 @@
 import { configManager } from "@/main/modules/configManager";
 import { createLogger } from "@/main/utils/createLogger";
 
-type SideBarConfig = {
+type IpcSidebarStatus = {
   barId: number;
   status: number;
   weight: number;
 };
 
+// 侧边栏开启状态枚举
+enum SidebarStatus {
+  ENABLED = 1,
+  DISABLED = 2,
+}
+
+// 侧边栏分组 ID 常量
+const SIDEBAR_GROUP_ID = "100073";
+
 function setupSideBar() {
-  const log = createLogger("sideBar",true);
+  const log = createLogger("sideBar", true);
   log("load");
-  let isInitSideBar = false;
+  let isPendingInit = false;
   IpcInterceptor.onIpcReceiveEvents("nodeIKernelConfigMgrService/saveSideBarConfig", (meat, _, channel, payload) => {
-    const sideBarConfig = payload[1]?.payload?.[0]?.config as SideBarConfig[];
+    const sideBarConfig = payload[1]?.payload?.[0]?.config as IpcSidebarStatus[];
     const config = configManager.value;
     const topMap = new Map(config.sideBar.top.map((item) => [item.id, item]));
     for (const { barId, status } of sideBarConfig ?? []) {
-      const el = topMap.get(barId);
-      if (el) {
-        el.enabled = status === 1;
+      const localMatchedItem = topMap.get(barId);
+      if (localMatchedItem) {
+        localMatchedItem.enabled = status === SidebarStatus.ENABLED;
       }
     }
 
@@ -26,45 +35,45 @@ function setupSideBar() {
   });
 
   IpcInterceptor.interceptIpcSendEvents("nodeIKernelConfigMgrListener/onSideBarChanged", (channel, meta, payload) => {
-    if (isInitSideBar) {
-      isInitSideBar = false;
+    if (isPendingInit) {
+      isPendingInit = false;
       log("初始化侧边栏", payload.payload.config);
-      const sideBarConfig = payload.payload.config as SideBarConfig[];
+      const sideBarConfig = payload.payload.config as IpcSidebarStatus[];
       const config = configManager.value;
       for (const item of sideBarConfig) {
-        const findItem = config.sideBar.top.find((i) => i.id === item.barId);
-        if (findItem !== undefined) {
-          findItem.enabled = item.status === 1;
+        const localMatchedItem = config.sideBar.top.find((i) => i.id === item.barId);
+        if (localMatchedItem !== undefined) {
+          localMatchedItem.enabled = item.status === SidebarStatus.ENABLED;
         }
       }
       configManager.updateConfig(config);
     } else {
       log("更新侧边栏", payload.payload.config);
-      const sideBarConfig = payload.payload.config as SideBarConfig[];
+      const sideBarConfig = payload.payload.config as IpcSidebarStatus[];
       const config = configManager.value;
       for (const item of sideBarConfig) {
-        const findItem = config.sideBar.top.find((i) => i.id === item.barId);
-        if (findItem !== undefined) {
-          item.status = findItem.enabled ? 1 : 2;
+        const localMatchedItem = config.sideBar.top.find((i) => i.id === item.barId);
+        if (localMatchedItem !== undefined) {
+          item.status = localMatchedItem.enabled ? SidebarStatus.ENABLED : SidebarStatus.DISABLED;
         }
       }
     }
   });
 
   const unSubscribe = IpcInterceptor.interceptIpcSend((channel, meta, payload) => {
-    if (payload?.configData?.group === "100073") {
+    if (payload?.configData?.group === SIDEBAR_GROUP_ID) {
       try {
         unSubscribe();
-        const rawSideBar = JSON.parse(payload.configData.content);
+        const remoteSidebarPayload = JSON.parse(payload.configData.content);
         const config = configManager.value;
-        if (rawSideBar.length !== config.sideBar.top.length - 3) {
-          log("侧边栏数量不匹配，执行初始化", rawSideBar.length, config.sideBar.top.length);
-          isInitSideBar = true;
+        if (remoteSidebarPayload.length !== config.sideBar.top.length - 3) {
+          log("侧边栏数量不匹配，执行初始化", remoteSidebarPayload.length, config.sideBar.top.length);
+          isPendingInit = true;
         }
-        for (const item of rawSideBar) {
+        for (const item of remoteSidebarPayload) {
           item.isFixed = false;
         }
-        const sideBar = rawSideBar.map((item: any) => {
+        const customSidebarItems = remoteSidebarPayload.map((item: any) => {
           return {
             id: item.id,
             name: item.label,
@@ -82,7 +91,7 @@ function setupSideBar() {
             name: "联系人",
             enabled: config.sideBar.top[1].enabled,
           },
-          ...sideBar,
+          ...customSidebarItems,
           {
             id: -1,
             name: "更多",
@@ -90,12 +99,11 @@ function setupSideBar() {
           },
         ];
         configManager.updateConfig(config);
-        payload.configData.content = JSON.stringify(rawSideBar);
-        log("更新侧边栏项目列表", rawSideBar);
+        payload.configData.content = JSON.stringify(remoteSidebarPayload);
+        log("更新侧边栏项目列表", remoteSidebarPayload);
       } catch (err) {
         log("更新侧边栏项目列表出错", err);
       }
-      unSubscribe();
     }
   });
 }

@@ -1,7 +1,12 @@
 import { configManager } from "@/main/modules/configManager";
 import { createLogger } from "@/main/utils/createLogger";
 
-type PicElement = any;
+// 1. 明确已知字段，告别 any
+type PicElement = {
+  originImageUrl?: string;
+  md5HexStr?: string;
+  [key: string]: any; // 保留扩展性
+};
 
 type RkeyData = {
   private_rkey: string;
@@ -12,7 +17,9 @@ type RkeyData = {
 const IMAGE_HOST = "https://gchat.qpic.cn";
 const IMAGE_HOST_NT = "https://multimedia.nt.qq.com.cn";
 const log = createLogger("getImageUrl");
-const rkeyData = {
+
+// 2. 更清晰的缓存命名
+const cachedRkey = {
   private_rkey: "",
   group_rkey: "",
   expired_time: 0,
@@ -30,45 +37,50 @@ async function getImageUrl(picElement: PicElement): Promise<string | null> {
     return null;
   }
 
-  const parsedUrl = new URL(IMAGE_HOST + url);
+  const parsedUrl = new URL(url, IMAGE_HOST);
   const imageAppid = parsedUrl.searchParams.get("appid");
 
   if (!imageAppid || !["1406", "1407"].includes(imageAppid)) {
-    return IMAGE_HOST + url;
+    return parsedUrl.toString();
   }
 
   let rkey = parsedUrl.searchParams.get("rkey");
   if (!rkey) {
     const rkeyType = imageAppid === "1406" ? "private_rkey" : "group_rkey";
-    rkey = await getRkey(rkeyType);
+    const rawRkey = await fetchRkey(rkeyType);
+
+    if (rawRkey) {
+      const cleanRkey = rawRkey.replace(/^&rkey=/, "");
+      parsedUrl.searchParams.set("rkey", cleanRkey);
+    }
   }
 
-  return IMAGE_HOST_NT + url + (rkey || "");
+  parsedUrl.host = new URL(IMAGE_HOST_NT).host;
+
+  return parsedUrl.toString();
 }
 
-async function getRkey(type: "private_rkey" | "group_rkey") {
+async function fetchRkey(type: "private_rkey" | "group_rkey") {
   const now = Date.now();
 
-  if (now <= rkeyData.expired_time) {
+  if (now <= cachedRkey.expired_time) {
     log("rkey未过期，使用缓存");
-    return rkeyData[type];
+    return cachedRkey[type];
   }
 
-  // 如果已有请求在进行，等待它完成
   if (pendingRkeyPromise) {
     await pendingRkeyPromise;
-    return rkeyData[type];
+    return cachedRkey[type];
   }
 
-  // 发起新的请求
   pendingRkeyPromise = (async () => {
     try {
       const res = await fetch(configManager.value.global.rkeyServerUrl);
-      const data = await res.json();
-      const { expired_time, private_rkey, group_rkey } = data as RkeyData;
-      rkeyData.expired_time = expired_time * 1000;
-      rkeyData.private_rkey = private_rkey;
-      rkeyData.group_rkey = group_rkey;
+      const data = (await res.json()) as RkeyData;
+
+      cachedRkey.expired_time = data.expired_time * 1000;
+      cachedRkey.private_rkey = data.private_rkey;
+      cachedRkey.group_rkey = data.group_rkey;
       log("rkey更新成功", data);
     } catch (err) {
       log("获取rkey失败", err);
@@ -78,7 +90,7 @@ async function getRkey(type: "private_rkey" | "group_rkey") {
   })();
 
   await pendingRkeyPromise;
-  return rkeyData[type];
+  return cachedRkey[type];
 }
 
 export { getImageUrl };

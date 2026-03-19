@@ -2,12 +2,13 @@ import { configManager } from "@/main/modules/configManager";
 import { checkChatType } from "@/common/checkChatType";
 import { findEvent } from "@/main/utils/findEvent";
 import { createLogger } from "@/main/utils/createLogger";
-import { deleteBubbleSkin } from "@/main/modules/deleteBubbleSkin";
-import { convertMiniArkToWebArk } from "@/main/modules/convertMiniArkToWebArk";
-import { convertMarketFaceToPic } from "@/main/modules/convertMarketFaceToPic";
-import { preventRecall } from "@/main/modules/preventRecall";
 
-const log = createLogger("handleMessages",true);
+import { deleteBubbleSkin } from "./deleteBubbleSkin";
+import { convertMiniArkToWebArk } from "./convertMiniArkToWebArk";
+import { convertMarketFaceToPic } from "./convertMarketFaceToPic";
+import { interceptMessageRecalls } from "./antiRecall";
+
+const log = createLogger("handleMessages", true);
 
 function handleMessages(...args: any[]) {
   try {
@@ -41,7 +42,7 @@ function processMessages(msgList: any[], webContentId: number, args: any[]) {
     log("捕获到消息", msgList);
     if (config.message.preventRecall.enabled) {
       log("执行 阻止撤回 ");
-      preventRecall(msgList);
+      interceptMessageRecalls(msgList);
     }
     if (config.interface.deleteBubbleSkin) {
       log("执行 删除气泡皮肤 ");
@@ -63,7 +64,6 @@ function processMessages(msgList: any[], webContentId: number, args: any[]) {
 
 function setupHandleMessages() {
   IpcInterceptor.interceptIpcSend(handleMessages);
-  log("注册事件");
 }
 
 export { setupHandleMessages };
