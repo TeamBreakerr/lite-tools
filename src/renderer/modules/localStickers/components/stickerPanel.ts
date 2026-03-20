@@ -9,13 +9,18 @@ export class StickerPanel extends LitElement {
   static styles = css`
     :host {
       display: block;
+      --edge-padding: 3px;
+      --container-topbar-height: 40px;
     }
     .lt-sticker-panel {
       border-radius: 8px;
       isolation: isolate;
       width: min(100vw, var(--panel-width));
       height: 100%;
-      max-height: min(100vh, var(--panel-height));
+      max-height: min(
+        calc(100vh - var(--container-topbar-height) - (var(--offset-y) * 2) - var(--icon-to-bottom-dist)),
+        var(--panel-height)
+      );
       box-sizing: border-box;
       overflow: hidden;
       position: relative;

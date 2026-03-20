@@ -59,7 +59,6 @@ export class StickerContainer extends LitElement {
       filter: drop-shadow(0 8px var(--shadow-width) rgba(0, 0, 0, 0.14));
       border-radius: 6px;
       padding: var(--shadow-offset);
-
       &.left {
         right: unset;
         left: calc(var(--offset-x) - var(--shadow-offset));
@@ -134,6 +133,9 @@ export class StickerContainer extends LitElement {
 
   @state()
   private showPreview = false;
+
+  @state()
+  private iconRect?: DOMRect;
 
   private handleContextMenu = (e: MouseEvent) => {
     const path = e.composedPath() as HTMLElement[];
@@ -286,9 +288,9 @@ export class StickerContainer extends LitElement {
     }
   };
 
-  private showPanelHandler = () => {
-    log("更新", this.showPanel);
+  private showPanelHandler = (e: MouseEvent) => {
     this.showPanel = !this.showPanel;
+    this.iconRect = (e.target as HTMLElement).getBoundingClientRect();
   };
 
   protected async firstUpdated(): Promise<void> {
@@ -349,6 +351,7 @@ export class StickerContainer extends LitElement {
             style=${styleMap({
               maxWidth: `min(100vw, ${this.panelWidth}px)`,
               maxHeight: `min(100vh, ${this.panelHeight}px)`,
+              "--icon-to-bottom-dist": `${window.innerHeight - (this.iconRect?.top || 0)}px`,
             })}
             class="lt-sticker-panel-container right ${this.showPanel ? "show" : ""}"
           >
