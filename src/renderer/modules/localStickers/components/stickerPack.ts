@@ -104,8 +104,6 @@ export class StickerPackLabel extends LitElement {
   static styles = css`
     :host {
       display: block;
-    }
-    .lt-sticker-pack-label {
       box-sizing: border-box;
       padding: 6px 12px;
       white-space: nowrap;
@@ -113,20 +111,93 @@ export class StickerPackLabel extends LitElement {
       font-size: 14px;
       color: var(--text-secondary-01);
       background-color: color(from var(--blur_middle_standard) srgb r g b / 1);
-      .lt-sticker-pack-name {
-        max-width: calc(100% - 20px);
-        text-overflow: ellipsis;
-        overflow: hidden;
+    }
+
+    .lt-sticker-pack-name {
+      width: 100%;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      border-radius: 4px;
+      transition:
+        padding 150ms,
+        background-color 150ms;
+      box-sizing: border-box;
+      input {
+        width: 100%;
+        outline: none;
+        border: unset;
+        font: inherit;
+        color: inherit;
+        background-color: transparent;
+      }
+      &.editing {
+        padding: 6px 0 6px 6px;
+        background-color: var(--overlay_hover);
       }
     }
   `;
 
+  // 新增：用于保存 Promise 的 resolve 函数
+  private editPromiseResolver: ((value: string | null) => void) | null = null;
+
   @property({ type: String })
   label = "";
 
+  // 修改：返回一个 Promise
+  public enterEditMode(): Promise<string | null> {
+    this.editing = true;
+
+    return new Promise(async (resolve) => {
+      this.editPromiseResolver = resolve; // 把 resolve 存起来
+
+      await this.updateComplete;
+      const inputElement = this.renderRoot?.querySelector("input") as HTMLInputElement;
+      if (inputElement) {
+        inputElement.focus();
+        inputElement.select();
+      } else {
+        resolve(null);
+        this.editPromiseResolver = null;
+      }
+    });
+  }
+
+  private handleBlur(e: FocusEvent) {
+    if (!this.editing) return;
+
+    const inputElement = this.renderRoot?.querySelector("input") as HTMLInputElement;
+    const newLabel = inputElement?.value.trim() || this.label;
+    const finalLabel = newLabel !== this.label ? newLabel : null;
+
+    this.editing = false;
+
+    if (this.editPromiseResolver) {
+      this.editPromiseResolver(finalLabel);
+      this.editPromiseResolver = null;
+    }
+  }
+
+  private handleKeyDown(e: KeyboardEvent) {
+    const target = e.target as HTMLInputElement;
+    if (e.key === "Enter") {
+      e.preventDefault();
+      target.blur();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      target.value = this.label;
+      target.blur();
+    }
+  }
+
+  @state()
+  private editing = false;
+
   render() {
-    return html`<div class="lt-sticker-pack-label">
-      <div class="lt-sticker-pack-name">${this.label}</div>
+    return html` <div title=${this.label} class="lt-sticker-pack-name ${this.editing ? "editing" : ""}">
+      ${this.editing
+        ? html`<input type="text" @blur=${this.handleBlur} @keydown=${this.handleKeyDown} value=${this.label} />`
+        : this.label}
     </div>`;
   }
 }

@@ -6,7 +6,7 @@ import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/configStore";
 import { ContextMenu } from "@/renderer/components/contextMenu";
 import { openFolder } from "@/renderer/utils/nativeCall";
-import { StickerPack, StickerItem } from "./stickerPack";
+import { StickerPack, StickerItem, StickerPackLabel } from "./stickerPack";
 
 import type { StickerStore } from "@/common/types/localStickers";
 
@@ -127,6 +127,8 @@ export class StickerContainer extends LitElement {
 
   private activeStickerItem?: StickerItem;
 
+  private activeStickerPackLabel?: StickerPackLabel;
+
   @state()
   private previewStickerPath?: string;
 
@@ -136,7 +138,8 @@ export class StickerContainer extends LitElement {
   private handleContextMenu = (e: MouseEvent) => {
     const path = e.composedPath() as HTMLElement[];
     const stickerItem = path.find((item) => item instanceof StickerItem);
-    // 关键更改：识别到 Container 范围内的右键事件才拦截
+    const stickerPackLabel = path.find((item) => item instanceof StickerPackLabel);
+
     const container = path.find((item) => item instanceof StickerContainer);
     if (!container) return;
 
@@ -173,6 +176,30 @@ export class StickerContainer extends LitElement {
           callback: () => {
             this.closeContextMenu();
             lite_tools.deleteSticker(stickerItem.sticker.path);
+          },
+        },
+      ];
+    }
+
+    // 右键点击贴纸标题
+    if (stickerPackLabel) {
+      this.contextMenu.show = true;
+      this.contextMenu.position = { x: e.clientX, y: e.clientY };
+      this.contextMenu.menuList = [
+        {
+          label: "重命名",
+          callback: async () => {
+            this.closeContextMenu();
+            const newLabel = await stickerPackLabel.enterEditMode();
+            if (newLabel) {
+              const stickerPack = path.find((item) => item instanceof StickerPack)!;
+              console.log("newLabel", newLabel);
+              stickerPack.stickerPack = {
+                ...stickerPack.stickerPack,
+                label: newLabel,
+              };
+              lite_tools.updateStickerPackConfig(stickerPack.stickerPack.dirPath, "label", newLabel);
+            }
           },
         },
       ];
@@ -255,10 +282,13 @@ export class StickerContainer extends LitElement {
       this.activeStickerItem.active = false;
       this.activeStickerItem = undefined;
     }
+    if (this.activeStickerPackLabel) {
+      this.activeStickerPackLabel = undefined;
+    }
   };
 
   private showPanelHandler = () => {
-    console.log("更新", this.showPanel);
+    log("更新", this.showPanel);
     this.showPanel = !this.showPanel;
   };
 
