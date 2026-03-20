@@ -1,7 +1,7 @@
 type Path = string;
 
 type Sticker = {
-  name: string;
+  label: string;
   path: Path;
 };
 

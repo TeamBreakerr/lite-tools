@@ -153,10 +153,9 @@ class StickerPacksManager {
   public getPackList(): StickerPack[] {
     return (
       Array.from(this.stickerPacks.values())
-        // .filter((pack) => pack.stickerPaths.size > 0) // 此处不进行过滤，后续在渲染进程过滤空文件夹
         .map((pack) => {
           const stickers = Array.from(pack.stickerPaths).map((filePath) => ({
-            name: path.basename(filePath, path.extname(filePath)),
+            label: path.basename(filePath, path.extname(filePath)),
             path: filePath,
           }));
 
