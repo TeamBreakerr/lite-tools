@@ -398,7 +398,7 @@ export class ContextMenu extends LitElement {
 
   render() {
     const showIcon = this.menuList?.some((i) => i.icon);
-    return html` <div @contextmenu=${this.cancel} @click=${this.cancel} class="mask ${this.show ? "show" : ""}"></div>
+    return html` <div @contextmenu=${this.cancel} @mousedown=${this.cancel} class="mask ${this.show ? "show" : ""}"></div>
       <a
         style="
         --x: ${this.position.x}px; 
