@@ -193,7 +193,6 @@ export class StickerContainer extends LitElement {
             const newLabel = await stickerPackLabel.enterEditMode();
             if (newLabel) {
               const stickerPack = path.find((item) => item instanceof StickerPack)!;
-              console.log("newLabel", newLabel);
               stickerPack.stickerPack = {
                 ...stickerPack.stickerPack,
                 label: newLabel,

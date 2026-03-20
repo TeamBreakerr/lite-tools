@@ -401,9 +401,9 @@ export class ContextMenu extends LitElement {
     return html` <div @contextmenu=${this.cancel} @mousedown=${this.cancel} class="mask ${this.show ? "show" : ""}"></div>
       <a
         style="
-        --x: ${this.position.x}px; 
-        --y: ${this.position.y}px; 
-        --width: ${this.rect.width}px; 
+        --x: ${this.position.x}px;
+        --y: ${this.position.y}px;
+        --width: ${this.rect.width}px;
         --height: ${this.rect.height}px"
         class="context-menu ${this.show ? "show" : ""}"
       >
