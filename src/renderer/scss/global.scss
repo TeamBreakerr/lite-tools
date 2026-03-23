@@ -342,10 +342,10 @@
         flex-shrink: 0;
         margin-right: 8px;
       }
-      span{
+      span {
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;        
+        white-space: nowrap;
       }
     }
     &.lt-toast-show {
@@ -404,4 +404,9 @@
     padding-top: 0 !important;
     padding-bottom: 0 !important;
   }
+}
+
+.group-chat {
+  container-type: inline-size;
+  container-name: group-chat;
 }

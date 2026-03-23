@@ -9,23 +9,29 @@ export class StickerPanel extends LitElement {
   static styles = css`
     :host {
       display: block;
-      --edge-padding: 3px;
+      --edge-padding: 6px;
       --container-topbar-height: 40px;
+      --container-label-height: 52px;
     }
     .lt-sticker-panel {
       border-radius: 8px;
       isolation: isolate;
-      width: min(100vw, var(--panel-width));
+      --actual-panel-width: min(var(--panel-width), calc(100cqw - (var(--edge-padding) * 2)));
+      --bar-width: var(--actual-panel-width);
+      width: var(--actual-panel-width);
       height: 100%;
       max-height: min(
-        calc(100vh - var(--container-topbar-height) - (var(--offset-y) * 2) - var(--icon-to-bottom-dist)),
+        calc(
+          100vh - var(--container-topbar-height) - var(--container-label-height) -
+            (var(--offset-y) * 2) - var(--icon-to-bottom-dist)
+        ),
         var(--panel-height)
       );
       box-sizing: border-box;
       overflow: hidden;
       position: relative;
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       grid-template-rows: minmax(0, 1fr) var(--bar-height);
     }
 
@@ -75,7 +81,6 @@ export class StickerPanel extends LitElement {
       "--panel-width": `${this.panelWidth}px`,
       "--panel-background": "var(--background-05)",
       "--bar-height": "36px",
-      "--bar-width": `${this.panelWidth}px`,
       "--bar-item-padding": "3px",
       "--pack-columns-count": this.stickersPerRow,
       "--hover-background": "var(--background-02)",

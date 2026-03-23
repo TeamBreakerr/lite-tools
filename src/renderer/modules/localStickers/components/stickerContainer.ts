@@ -34,7 +34,7 @@ export class StickerContainer extends LitElement {
       --transition-time: 150ms;
       --shadow-width: 8px;
       --shadow-offset: calc(var(--shadow-width) * 3);
-      --offset-x: -38px;
+      --offset-x: -46px;
       --offset-y: 6px;
       position: relative;
     }
@@ -61,6 +61,7 @@ export class StickerContainer extends LitElement {
       padding: var(--shadow-offset);
       &.left {
         right: unset;
+        --offset-x: -10px;
         left: calc(var(--offset-x) - var(--shadow-offset));
         clip-path: inset(60% 60% 0 0 round 6px);
       }
