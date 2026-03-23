@@ -122,6 +122,7 @@
     }
   ],
   "global": {
-    "rkeyServerUrl": "https://rkey.furrycloud.top"
+    "rkeyServerUrl": "https://rkey.furrycloud.top",
+    "httpProxy": ""
   }
 }
