@@ -44,7 +44,8 @@ let picPath: string;
 
 async function setupLocalStickers() {
   await configStore.ready;
-  const injectPosition = ".chat-func-bar .func-bar-native.func-bar-shortcuts:last-child";
+  const injectPositionRight = ".chat-func-bar .func-bar-native.func-bar-shortcuts:last-child";
+  const injectPositionLeft = ".chat-func-bar .func-bar-native.func-bar-shortcuts:first-child";
   const stickerContainer = document.createElement("lt-sticker-container");
   const addToLocalStickerContextMenu = document.createElement("lt-context-menu-item") as ContextMenuItem;
   addToLocalStickerContextMenu.showIcon = true;
@@ -103,7 +104,9 @@ async function setupLocalStickers() {
     const isEnabled = configStore.value.localStickers.enabled;
 
     if (isEnabled) {
-      const target = await waitForElement(injectPosition);
+      const target = await waitForElement(
+        configStore.value.localStickers.iconOnLeft ? injectPositionLeft : injectPositionRight,
+      );
       if (target) {
         target.insertAdjacentElement("afterbegin", stickerContainer);
         offObserver?.();
@@ -151,7 +154,6 @@ function buildStickerMenu(packs: StickerPackType[], sourceFilePath: string, getR
     const packPath = pack.dirPath.replace(/\\/g, "/");
     const nodeChain: { label: string; path: string; isLeaf: boolean }[] = [];
 
-    // 1. 构建链条 (区分中间目录和最终叶子节点)
     if (packPath.startsWith(rootPathStr)) {
       const relativePart = packPath.slice(rootPathStr.length).replace(/^\//, "");
       const relSegments = relativePart.split("/").filter(Boolean);
@@ -192,7 +194,7 @@ function buildStickerMenu(packs: StickerPackType[], sourceFilePath: string, getR
       if (!existingNode) {
         existingNode = { label, path };
 
-        // 【核心逻辑】：如果是叶子节点，绑定复制文件的回调
+        // 如果是叶子节点，绑定复制文件的回调
         if (isLeaf) {
           existingNode.callback = async (e) => {
             e.stopPropagation();

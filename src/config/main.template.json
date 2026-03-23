@@ -10,6 +10,7 @@
     "panelWidth": 350,
     "panelHeight": 420,
     "sendAsPic": false,
+    "iconOnLeft": false,
     "recentStickers": {
       "enabled": false,
       "limit": 3

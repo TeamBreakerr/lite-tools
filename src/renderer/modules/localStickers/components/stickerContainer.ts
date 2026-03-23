@@ -353,7 +353,10 @@ export class StickerContainer extends LitElement {
               maxHeight: `min(100vh, ${this.panelHeight}px)`,
               "--icon-to-bottom-dist": `${window.innerHeight - (this.iconRect?.top || 0)}px`,
             })}
-            class="lt-sticker-panel-container right ${this.showPanel ? "show" : ""}"
+            class="lt-sticker-panel-container ${configStore.value.localStickers.iconOnLeft ? "left" : ""} ${this
+              .showPanel
+              ? "show"
+              : ""}"
           >
             <lt-sticker-panel
               .panelWidth="${this.panelWidth}"
