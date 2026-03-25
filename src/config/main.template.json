@@ -11,6 +11,7 @@
     "panelHeight": 420,
     "sendAsPic": false,
     "iconOnLeft": false,
+    "telegramBotToken": "",
     "recentStickers": {
       "enabled": false,
       "limit": 3
