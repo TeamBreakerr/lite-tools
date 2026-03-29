@@ -151,23 +151,20 @@ class StickerPacksManager {
 
   // 在导出时进行数据转换：Set<string> -> Sticker[]
   public getPackList(): StickerPack[] {
-    return (
-      Array.from(this.stickerPacks.values())
-        .map((pack) => {
-          const stickers = Array.from(pack.stickerPaths).map((filePath) => ({
-            label: path.basename(filePath, path.extname(filePath)),
-            path: filePath,
-          }));
+    return Array.from(this.stickerPacks.values()).map((pack) => {
+      const stickers = Array.from(pack.stickerPaths).map((filePath) => ({
+        label: path.basename(filePath, path.extname(filePath)),
+        path: filePath,
+      }));
 
-          return {
-            label: pack.label,
-            dirPath: pack.dirPath,
-            index: pack.index,
-            icon: (pack.icon ? path.join(pack.dirPath, pack.icon) : stickers[0]?.path)?.replace(/\\/g, "/"),
-            stickers,
-          };
-        })
-    );
+      return {
+        label: pack.label,
+        dirPath: pack.dirPath,
+        index: pack.index,
+        icon: (pack.icon ? path.join(pack.dirPath, pack.icon) : stickers[0]?.path)?.replace(/\\/g, "/"),
+        stickers,
+      };
+    });
   }
 
   public updatePackConfig(path: string, key: "index" | "label" | "icon", value: string | number) {
@@ -185,4 +182,6 @@ class StickerPacksManager {
   }
 }
 
-export { StickerPacksManager };
+const stickerPacksManager = new StickerPacksManager();
+
+export { stickerPacksManager };

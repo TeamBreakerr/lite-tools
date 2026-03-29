@@ -3,7 +3,7 @@ import { ipcMain } from "electron";
 import chokidar from "chokidar";
 import { createLogger } from "@/main/utils/createLogger";
 import { globalBroadcast } from "@/main/utils/globalBroadcast";
-import { StickerPacksManager } from "./StickerPacksManager";
+import { stickerPacksManager } from "./stickerPacksManager";
 import { createThrottledDispatcher } from "@/common/createThrottledDispatcher";
 import { configManager } from "@/main/modules/configManager";
 
@@ -17,7 +17,7 @@ class LocalStickers {
   private watcher: FSWatcher | null = null;
   private currentListeningPath = "";
   private stickerStore = this.createStickerStoreResult("info", "初始化中...");
-  private stickerPacksManager: StickerPacksManager = new StickerPacksManager();
+  private stickerPacksManager = stickerPacksManager;
 
   constructor() {}
 
