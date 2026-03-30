@@ -11,6 +11,7 @@ class ProxyManager {
   private targetProxyUrl?: string; // 配置中指定的目标代理
   private dispatcher: Dispatcher = new Agent();
   private isInitialized = false;
+  public proxyIsValid = false;
 
   async setup() {
     if (this.isInitialized) {
@@ -43,8 +44,8 @@ class ProxyManager {
       return false;
     }
 
-    const isValid = await this.checkProxy(proxyUrl);
-    if (isValid) {
+    this.proxyIsValid = await this.checkProxy(proxyUrl);
+    if (this.proxyIsValid) {
       this.updateDispatcher(proxyUrl);
       return true;
     } else {
@@ -74,7 +75,7 @@ class ProxyManager {
     ipcMain.handle("lite_tools.applyProxy", async (_event, proxyUrl: string) => {
       this.targetProxyUrl = proxyUrl;
 
-      const isValid = await this.checkAndApplyProxy(proxyUrl);
+      this.proxyIsValid = await this.checkAndApplyProxy(proxyUrl);
       const currentConfig = configManager.value;
 
       // 更新全局配置
@@ -87,7 +88,7 @@ class ProxyManager {
       };
 
       configManager.updateConfig(newConfig as any);
-      return isValid;
+      return this.proxyIsValid;
     });
   }
 
