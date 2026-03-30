@@ -30,7 +30,7 @@
     "check:types": "tsc --build --emitDeclarationOnly"
   },
   "keywords": [],
-  "packageManager": "pnpm@10.28.0",
+  "packageManager": "pnpm@10.32.1",
   "devDependencies": {
     "@qwqnt/types": "github:QwQ-002/types",
     "@types/adm-zip": "^0.5.7",
@@ -42,5 +42,9 @@
     "sass": "^1.89.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "undici": "^7.24.5",
+    "lit": "^3.3.2"
   }
 }

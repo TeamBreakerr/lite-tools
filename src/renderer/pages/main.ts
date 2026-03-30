@@ -9,6 +9,7 @@ import { setupHandleMessages } from "@/renderer/modules/handleMessages";
 import { onComponentMount } from "@/renderer/modules/vueComponentTracker";
 import { waitForInstance } from "@/renderer/utils/domWaitFor";
 import { wallpaperManager } from "@/renderer/modules/wallpaperManager";
+import { setupLocalStickers } from "@/renderer/modules/localStickers";
 
 const log = createLogger("main");
 
@@ -25,6 +26,7 @@ async function setupMainPage() {
   setupHandleMessages();
   setupIpcToBroadcast();
   setupGoBackMainList();
+  setupLocalStickers();
   wallpaperManager.setup();
   aioStore.onChange(() => {
     updateTopFuncBar();
@@ -62,7 +64,7 @@ async function setupMainPage() {
         }
       }
     },
-    { childList: true, autoDisconnect: 5000 }
+    { childList: true, autoDisconnect: 5000 },
   );
   log("initialized");
 }
@@ -70,7 +72,7 @@ async function setupMainPage() {
 async function setupGoBackMainList() {
   const { value: goBackMainList } = await waitForInstance(
     ".two-col-layout__aside .recent-contact .list-toggler",
-    "proxy.goBackMainList"
+    "proxy.goBackMainList",
   );
   document.addEventListener("mouseup", (event) => {
     if (event.button === 3 && configStore.value.interface.goBackMainList) {

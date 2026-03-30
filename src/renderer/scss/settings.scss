@@ -645,6 +645,9 @@
     display: block !important;
   }
 
+  .q-button {
+    border-radius: 4px !important;
+  }
   // 危险按钮
   .q-button--danger {
     background-color: var(--lt-btn-danger-bg);

@@ -6,6 +6,7 @@ import { updateTopFuncBar, updateChatFuncBar } from "@/renderer/modules/funcBarM
 import { setupHandleMessages } from "@/renderer/modules/handleMessages";
 import { waitForInstance } from "@/renderer/utils/domWaitFor";
 import { wallpaperManager } from "@/renderer/modules/wallpaperManager";
+import { setupLocalStickers } from "@/renderer/modules/localStickers";
 
 const log = createLogger("chat");
 
@@ -18,6 +19,7 @@ async function setupChatPage() {
   setupPreventMutipleSelect("chat-msg-area");
   setupHandleMessages();
   setupGoBackMainList();
+  setupLocalStickers();
   updateTopFuncBar();
   updateChatFuncBar();
   updateRecallConfig(configStore.value);

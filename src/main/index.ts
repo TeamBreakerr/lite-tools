@@ -1,11 +1,14 @@
 import { configManager } from "@/main/modules/configManager";
 import { createLogger } from "@/main/utils/createLogger";
 import { setupHandleMessages } from "@/main/modules/handleMessages";
-import { setupIpcMain } from "@/main/modules/ipcMain";
-import { setupSideBar } from "@/main/modules/sideBar";
-import { captureWindow } from "@/main/utils/captureWindow";
+import { setupIpcMain } from "@/main/modules/ipcRegistrar";
+import { setupSideBar } from "@/main/modules/sidebarManager";
+import { trackWindow } from "@/main/utils/windowTracker";
 import { setupIpcInterceptor } from "@/main/modules/ipcInterceptor";
-import { wallpaperService } from "@/main/modules/WallpaperService";
+import { localStickers } from "@/main/modules/localStickers";
+import { wallpaperService } from "@/main/modules/wallpaper";
+import { setupDevWindow } from "@/main/modules/devWindow";
+import { proxyManager } from "@/main/modules/proxyManager";
 import type { BrowserWindow } from "electron";
 
 const log = createLogger("lt_main");
@@ -26,14 +29,17 @@ function setupMain(uid: string) {
     setupIpcMain();
     setupSideBar();
     setupIpcInterceptor();
+    setupDevWindow();
     wallpaperService.setup();
+    localStickers.setup();
+    proxyManager.setup();
   } catch (err) {
     log("初始化出错", err);
   }
 }
 
 function onBrowserWindowCreated(window: BrowserWindow) {
-  captureWindow(window);
+  trackWindow(window);
 }
 
 if ("qwqnt" in globalThis) {

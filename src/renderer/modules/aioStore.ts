@@ -34,6 +34,14 @@ class AioStore {
     return this.readyPromise;
   }
 
+  getPeer() {
+    return {
+      chatType: this.curAioData?.chatType,
+      guildId: "",
+      peerUid: this.curAioData?.header?.uid,
+    };
+  }
+
   async setupCaptureAIO(): Promise<void> {
     log("开始初始化");
     const { value: aioStore } = await waitForInstance(".aio.vue-component", "proxy.commonAioStore");
