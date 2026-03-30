@@ -70,11 +70,47 @@ async function initSettings(view: HTMLDivElement, config: Config) {
   initInput(view, config);
   // 初始化按钮
   initButton(view, config);
+  // 初始化tg贴纸下载
+  initTgStickerDownload(view, config);
+  // 初始化代理设置
+  initProxy(view, config);
+  // 初始化链接
+  initLink(view, config);
   // debug
   view.querySelector("button.open-debug")?.addEventListener("click", () => {
     lite_tools.openDevWindow();
   });
   log("初始化设置页面完成");
+}
+
+// 初始化链接
+function initLink(view: HTMLDivElement, config: Config) {
+  view.querySelectorAll(".link").forEach((el) => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      const href = el.getAttribute("data-href");
+      if (href) {
+        lite_tools.openExternal(href);
+      }
+    });
+  });
+}
+
+// 初始化代理设置
+function initProxy(view: HTMLDivElement, config: Config) {
+  const btn = view.querySelector<HTMLButtonElement>(".check-proxy-btn");
+  btn?.addEventListener("click", () => {
+    lite_tools.checkProxy();
+  });
+}
+
+// 初始化tg贴纸下载
+function initTgStickerDownload(view: HTMLDivElement, config: Config) {
+  const btn = view.querySelector<HTMLButtonElement>(".tg-sticker-download-btn")!;
+  btn.addEventListener("click", () => {
+    const url = view.querySelector<HTMLInputElement>(".tg-sticker-download-url")!.value;
+    lite_tools.downloadTgSticker(url);
+  });
 }
 
 // 初始化按钮
