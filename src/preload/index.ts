@@ -15,6 +15,7 @@ const exposeFunctions = {
   getWebContentId: (): number => ipcRenderer.sendSync("lite_tools.getWebContentId"),
   showOpenDialog: (options: Electron.OpenDialogOptions): Promise<Electron.OpenDialogReturnValue> =>
     ipcRenderer.invoke("lite_tools.showOpenDialog", options),
+  openExternal: (url: string) => ipcRenderer.send("lite_tools.openExternal", url),
 
   // 本地表情相关
   onStickerStoreUpdated: (callback: (stickerStore: StickerStore) => void) => {

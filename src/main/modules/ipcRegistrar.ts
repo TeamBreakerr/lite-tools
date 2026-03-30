@@ -1,4 +1,4 @@
-import { ipcMain, dialog, BrowserWindow } from "electron";
+import { ipcMain, dialog, BrowserWindow, shell } from "electron";
 import fsPromises from "node:fs/promises";
 import path from "node:path";
 import { mainWindow } from "@/main/utils/windowTracker";
@@ -18,6 +18,10 @@ function setupIpcMain() {
   ipcMain.handle("lite_tools.showOpenDialog", (event, options: Electron.OpenDialogOptions) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     return dialog.showOpenDialog(win!, options);
+  });
+  // 通用外部打开链接
+  ipcMain.on("lite_tools.openExternal", (event, url: string) => {
+    shell.openExternal(url);
   });
   // 通用文件复制
   ipcMain.handle("lite_tools.copyFile", async (event, currentPath: string, targetPath: string) => {
