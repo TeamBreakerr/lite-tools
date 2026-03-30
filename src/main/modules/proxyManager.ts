@@ -67,28 +67,8 @@ class ProxyManager {
 
   private setupIpcEvent() {
     // 纯测试指令：测试当前配置中的代理，不修改任何状态
-    ipcMain.on("lite_tools.checkProxy", () => {
-      this.checkProxy(this.targetProxyUrl);
-    });
-
-    // 应用代理指令：测试并尝试应用，无论成功与否都将该地址写入配置文件
-    ipcMain.handle("lite_tools.applyProxy", async (_event, proxyUrl: string) => {
-      this.targetProxyUrl = proxyUrl;
-
-      this.proxyIsValid = await this.checkAndApplyProxy(proxyUrl);
-      const currentConfig = configManager.value;
-
-      // 更新全局配置
-      const newConfig = {
-        ...currentConfig,
-        global: {
-          ...(currentConfig.global || {}),
-          httpProxy: proxyUrl,
-        },
-      };
-
-      configManager.updateConfig(newConfig as any);
-      return this.proxyIsValid;
+    ipcMain.on("lite_tools.proxy.check", () => {
+      this.checkProxy(this.targetProxyUrl, false);
     });
   }
 
@@ -108,15 +88,24 @@ class ProxyManager {
     }
   }
 
-  private sendToSettingsWindow(channel: string, ...args: any[]): void {
-    if (settingsWindow && !settingsWindow.isDestroyed()) {
-      settingsWindow.webContents.send(channel, ...args);
-    }
+  private sendWindowMessage(content: string, type: "default" | "error" | "success", duration: number = 6000): void {
+    if (!settingsWindow || !settingsWindow.webContents) return;
+    this.clearWindowMessage();
+    settingsWindow.webContents.send("lite_tools.toast", {
+      content,
+      type,
+      duration,
+    });
   }
 
-  private async checkProxy(proxyUrl?: string): Promise<boolean> {
+  private clearWindowMessage(): void {
+    if (!settingsWindow || !settingsWindow.webContents) return;
+    settingsWindow.webContents.send("lite_tools.clearToast");
+  }
+
+  private async checkProxy(proxyUrl?: string, mute = true): Promise<boolean> {
     const testDispatcher = proxyUrl ? new ProxyAgent(proxyUrl) : new Agent();
-    const testType = proxyUrl ? `代理 (${proxyUrl})` : "直连";
+    const testType = proxyUrl ? proxyUrl : "直连";
 
     log(`开始测试网络: ${testType}`);
 
@@ -133,28 +122,18 @@ class ProxyManager {
 
       if (res.status === 204) {
         log(`${testType} 测试通过`);
-        this.sendToSettingsWindow("lite_tools.updateProxyStatus", {
-          success: true,
-          message: "代理有效",
-        });
+        !mute && this.sendWindowMessage(`代理 ${testType} 有效`, "success");
         return true;
       } else {
         log(`${testType} 请求失败`, res.status);
-        this.sendToSettingsWindow("lite_tools.updateProxyStatus", {
-          success: false,
-          message: `请求失败 ${res.status}`,
-        });
+        !mute && this.sendWindowMessage(`代理 ${testType} 无效`, "error");
         return false;
       }
     } catch (err: any) {
       clearTimeout(timeoutId);
       const isTimeout = err.name === "AbortError";
       log(`${testType} 异常`, err);
-
-      this.sendToSettingsWindow("lite_tools.updateProxyStatus", {
-        success: false,
-        message: isTimeout ? "请求超时" : `请求失败: ${err.message || err}`,
-      });
+      !mute && this.sendWindowMessage(isTimeout ? "请求超时" : `请求失败`, "error");
       return false;
     }
   }
