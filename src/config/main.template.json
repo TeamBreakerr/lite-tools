@@ -12,6 +12,8 @@
     "sendAsPic": false,
     "iconOnLeft": false,
     "telegramBotToken": "",
+    "ffmpegPath": "",
+    "tgsToGifPath": "",
     "recentStickers": {
       "enabled": false,
       "limit": 3
