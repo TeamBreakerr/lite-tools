@@ -353,13 +353,19 @@ class TgStickerDownloader {
     });
   }
 
-  private sendWindowMessage(message: string, type: "default" | "error" | "success", duration: number = 6000): void {
+  private sendWindowMessage(content: string, type: "default" | "error" | "success", duration: number = 6000): void {
     if (!settingsWindow || !settingsWindow.webContents) return;
-    settingsWindow.webContents.send("LiteLoader.lite_tools.onDownloadTgStickerEvent", {
-      message,
+    this.clearWindowMessage();
+    settingsWindow.webContents.send("lite_tools.toast", {
+      content,
       type,
       duration,
     });
+  }
+
+  private clearWindowMessage(): void {
+    if (!settingsWindow || !settingsWindow.webContents) return;
+    settingsWindow.webContents.send("lite_tools.clearToast");
   }
 }
 
