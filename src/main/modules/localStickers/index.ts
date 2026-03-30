@@ -4,6 +4,7 @@ import chokidar from "chokidar";
 import { createLogger } from "@/main/utils/createLogger";
 import { globalBroadcast } from "@/main/utils/globalBroadcast";
 import { stickerPacksManager } from "./stickerPacksManager";
+import { tgStickerDownloader } from "@/main/modules/localStickers/tgStickerDownloader";
 import { createThrottledDispatcher } from "@/common/createThrottledDispatcher";
 import { configManager } from "@/main/modules/configManager";
 
@@ -55,6 +56,10 @@ class LocalStickers {
     ipcMain.on("lite_tools.stickerPacksManager.deleteSticker", (_, stickerPath) => {
       this.stickerPacksManager.onEvent("unlink", stickerPath);
       this.notifyStickerStoreUpdated();
+    });
+
+    ipcMain.on("lite_tools.stickerPacksManager.downloadTgSticker", (_, tgStickerUrl: string) => {
+      tgStickerDownloader.getTgSticker(tgStickerUrl);
     });
   }
 
