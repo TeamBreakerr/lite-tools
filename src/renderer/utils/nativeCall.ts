@@ -1,12 +1,3 @@
-import { createLogger } from "@/renderer/utils/createLogger";
-
-const log = createLogger("nativeCall");
-
-/**
- *
- * @param {Array} message 消息链
- * @returns
- */
 async function convertMessage(message: any) {
   switch (message.type) {
     case "text":
@@ -33,7 +24,7 @@ async function convertMessage(message: any) {
           cmdType: "invoke",
           payload: [path],
         },
-        true
+        true,
       );
       const copyFile = (await lite_tools.nativeCall(
         {
@@ -46,14 +37,13 @@ async function convertMessage(message: any) {
           payload: [
             {
               sourcePath: path,
-              elementSubType: 1,
+              elementSubType: message.picSubType,
             },
             null,
           ],
         },
-        true
+        true,
       )) as any;
-      log("复制路径", copyFile);
       const fileType = (await lite_tools.nativeCall(
         {
           type: "request",
@@ -64,7 +54,7 @@ async function convertMessage(message: any) {
           cmdType: "invoke",
           payload: [copyFile.newPath],
         },
-        true
+        true,
       )) as any;
       const imageSize = (await lite_tools.nativeCall(
         {
@@ -74,22 +64,11 @@ async function convertMessage(message: any) {
         {
           cmdName: "getImageSizeFromPath",
           cmdType: "invoke",
-          payload: [copyFile.newPath],
+          payload: [path],
         },
-        true
+        true,
       )) as any;
-      lite_tools.nativeCall(
-        {
-          type: "request",
-          eventName: "FileApi",
-        },
-        {
-          cmdName: "getFileMd5",
-          cmdType: "invoke",
-          payload: [copyFile.newPath],
-        }
-      );
-      const fileSize = await lite_tools.nativeCall(
+      const fileSize = (await lite_tools.nativeCall(
         {
           type: "request",
           eventName: "FileApi",
@@ -97,32 +76,34 @@ async function convertMessage(message: any) {
         {
           cmdName: "getFileSize",
           cmdType: "invoke",
-          payload: [copyFile.newPath],
+          payload: [path],
         },
-        true
-      );
+        true,
+      )) as number;
+
+      const fileName = copyFile.newPath.replace(/\\/g, "/").split("/").pop()!;
 
       const picElement = {
         md5HexStr: copyFile.md5,
         picWidth: imageSize.width,
         picHeight: imageSize.height,
-        fileName: getFileName(copyFile.newPath),
-        fileSize: fileSize,
+        fileName,
+        fileSize: `${fileSize}`,
         original: true,
-        picType: fileType.ext === "gif" ? 2000 : 1000,
         picSubType: message.picSubType,
         sourcePath: copyFile.newPath,
+        thumbPath: null,
+        picType: fileType.ext === "gif" ? 2000 : 1000,
         fileUuid: "",
         fileSubId: "",
         thumbFileSize: 0,
-        thumbPath: undefined,
-        summary: "",
+        summary: message.summary || "",
       };
       const messageChannel = {
         elementType: 2,
         elementId: "",
-        extBufForUI: new Uint8Array(),
         picElement,
+        extBufForUI: new Uint8Array(),
       };
       return messageChannel;
     }
@@ -131,21 +112,8 @@ async function convertMessage(message: any) {
   }
 }
 
-function getFileName(path: string) {
-  if (typeof path !== "string") return "";
-  // 去掉末尾的斜杠或反斜杠
-  const trimmed = path.replace(/[\/\\]+$/, "");
-  if (trimmed === "") return "";
-  // 找最后一个分隔符的位置
-  const idx = Math.max(trimmed.lastIndexOf("/"), trimmed.lastIndexOf("\\"));
-  const name = idx === -1 ? trimmed : trimmed.slice(idx + 1);
-  // Windows 驱动器根如 "C:" 也不是文件名
-  if (/^[A-Za-z]:$/.test(name)) return "";
-  return name;
-}
-
 async function sendMessage(peer: Peer, messages: any[]) {
-  log("发送消息", peer, messages);
+  const msgElements = await Promise.all(messages.map((message) => convertMessage(message)));
   lite_tools.nativeCall(
     {
       eventName: "ntApi",
@@ -158,17 +126,16 @@ async function sendMessage(peer: Peer, messages: any[]) {
         {
           msgId: "0",
           peer,
-          msgElements: await Promise.all(messages.map((message) => convertMessage(message))),
+          msgElements,
           msgAttributeInfos: new Map(),
         },
         null,
       ],
-    }
+    },
   );
 }
 
 function forwardMessage(srcpeer: Peer, dstpeer: Peer, msgIds: any) {
-  log("转发消息", srcpeer, dstpeer, msgIds);
   lite_tools.nativeCall(
     {
       type: "request",
@@ -187,7 +154,7 @@ function forwardMessage(srcpeer: Peer, dstpeer: Peer, msgIds: any) {
         },
         null,
       ],
-    }
+    },
   );
 }
 
@@ -210,7 +177,7 @@ function getUserInfo(uid: string) {
         null,
       ],
     },
-    ["nodeIKernelProfileListener/onProfileDetailInfoChanged", "nodeIKernelProfileListener/onProfileSimpleChanged"]
+    ["nodeIKernelProfileListener/onProfileDetailInfoChanged", "nodeIKernelProfileListener/onProfileSimpleChanged"],
   );
 }
 
@@ -230,7 +197,7 @@ function getMembersAvatar(uids: string[]) {
         },
       ],
     },
-    true
+    true,
   );
 }
 
@@ -250,7 +217,7 @@ function getGroupsAvatar(groupCodes: string[]) {
         },
       ],
     },
-    true
+    true,
   );
 }
 
@@ -276,7 +243,7 @@ function goMainWindowScene(sceneData: any) {
           },
         },
       ],
-    }
+    },
   );
 }
 
@@ -296,7 +263,7 @@ function getGroupInfo(groupCode: string) {
         },
         null,
       ],
-    }
+    },
   );
 }
 
@@ -316,13 +283,10 @@ function activeChatAndReturnPreview(peer: Peer) {
         },
         null,
       ],
-    }
+    },
   );
 }
 
-/**
- * 获取记录的账号 - 登录界面选择账号列表
- */
 function getLoginList() {
   return lite_tools.nativeCall(
     {
@@ -333,13 +297,10 @@ function getLoginList() {
       cmdName: "nodeIKernelLoginService/getLoginList",
       cmdType: "invoke",
       payload: [null, null],
-    }
+    },
   );
 }
 
-/**
- * 获取当前登录账号信息
- */
 function getAuthData() {
   return lite_tools.nativeCall(
     {
@@ -350,15 +311,10 @@ function getAuthData() {
       cmdName: "fetchAuthData",
       cmdType: "invoke",
       payload: [],
-    }
+    },
   );
 }
 
-/**
- * 移除账号登录信息
- * @param {String} uin 账号uin
- * @returns
- */
 function resetLoginInfo(uin: string) {
   return lite_tools.nativeCall(
     {
@@ -374,7 +330,21 @@ function resetLoginInfo(uin: string) {
         },
         null,
       ],
-    }
+    },
+  );
+}
+
+function openFolder(path: string) {
+  return lite_tools.nativeCall(
+    {
+      type: "request",
+      eventName: "FileApi",
+    },
+    {
+      cmdName: "openFolder",
+      cmdType: "invoke",
+      payload: [path],
+    },
   );
 }
 
@@ -390,4 +360,5 @@ export {
   activeChatAndReturnPreview,
   getLoginList,
   resetLoginInfo,
+  openFolder,
 };

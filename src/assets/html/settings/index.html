@@ -324,10 +324,10 @@
       </li>
     </ul>
   </div>
-  <!-- 背景功能 -->
-  <div class="wrap background">
+  <!-- 本地贴纸 -->
+  <div class="wrap local-stickers">
     <div class="vertical-list-item title">
-      <h2>背景调整</h2>
+      <h2>本地贴纸</h2>
       <svg class="icon is-fold" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M21 8L12 17L3 8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
       </svg>
@@ -336,7 +336,236 @@
       <hr class="horizontal-dividing-line" />
       <li class="vertical-list-item">
         <div>
-          <h2>自定义背景</h2>
+          <h2>启用</h2>
+        </div>
+        <div class="q-switch" data-config="localStickers.enabled">
+          <span class="q-switch__handle"></span>
+        </div>
+      </li>
+      <li class="select-path vertical-list-item">
+        <input
+          placeholder="请选择文件夹"
+          readonly
+          data-clear
+          title="移除路径"
+          class="select-file input-text text_color"
+          type="text"
+          spellcheck="false"
+          data-config="localStickers.path"
+        />
+        <div class="ops-btns">
+          <button
+            class="q-button q-button--small q-button--secondary select-file"
+            data-config="localStickers.path"
+            data-choose="folder"
+          >
+            选择
+          </button>
+        </div>
+      </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>移动入口到左侧</h2>
+        </div>
+        <div class="q-switch" data-config="localStickers.iconOnLeft">
+          <span class="q-switch__handle"></span>
+        </div>
+      </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>下载Telegram贴纸</h2>
+        </div>
+      </li>
+      <li class="sub-item vertical-list-item">
+        <div>
+          <h2>填写贴纸下载链接</h2>
+        </div>
+      </li>
+      <li class="sub-item vertical-list-item">
+        <input
+          placeholder="填写贴纸下载链接"
+          class="input-text text_color tg-sticker-download-url"
+          type="text"
+          spellcheck="false"
+        />
+        <div class="ops-btns">
+          <button class="q-button q-button--small q-button--secondary tg-sticker-download-btn">下载</button>
+        </div>
+      </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="sub-item vertical-list-item">
+        <div>
+          <h2>Telegram Bot Token</h2>
+          <span class="secondary-text"
+            >在此处申请 <span class="link" data-href="https://t.me/BotFather" target="_blank">BotFather</span></span
+          >
+        </div>
+      </li>
+      <li class="sub-item vertical-list-item">
+        <input
+          placeholder="Input Telegram Bot Token"
+          class="input-text text_color"
+          type="text"
+          spellcheck="false"
+          data-config="localStickers.telegramBotToken"
+        />
+      </li>
+      <hr class="horizontal-dividing-line" />
+
+      <li class="sub-item vertical-list-item">
+        <div>
+          <h2>ffmpeg 路径</h2>
+          <span class="secondary-text"
+            >在此处下载 <span class="link" data-href="https://ffmpeg.org/download.html" target="_blank">FFmpeg</span></span
+          >
+        </div>
+      </li>
+      <li class="sub-item vertical-list-item">
+        <input
+          placeholder="请选择文件"
+          readonly
+          data-clear
+          title="移除路径"
+          class="select-file input-text text_color"
+          type="text"
+          spellcheck="false"
+          data-config="localStickers.ffmpegPath"
+        />
+        <div class="ops-btns">
+          <button
+            class="q-button q-button--small q-button--secondary select-file"
+            data-config="localStickers.ffmpegPath"
+            data-choose="file"
+            data-file-ext="*"
+          >
+            选择
+          </button>
+        </div>
+      </li>
+      <hr class="horizontal-dividing-line" />
+
+      <li class="sub-item vertical-list-item">
+        <div>
+          <h2>tgsToGif 路径</h2>
+          <span class="secondary-text"
+            >在此处下载 <span class="link" data-href="https://github.com/jiongjiongJOJO/tgs_to_gif/releases/latest" target="_blank">tgsToGif</span></span
+          >
+        </div>
+      </li>
+      <li class="sub-item vertical-list-item">
+        <input
+          placeholder="请选择文件"
+          readonly
+          data-clear
+          title="移除路径"
+          class="select-file input-text text_color"
+          type="text"
+          spellcheck="false"
+          data-config="localStickers.tgsToGifPath"
+        />
+        <div class="ops-btns">
+          <button
+            class="q-button q-button--small q-button--secondary select-file"
+            data-config="localStickers.tgsToGifPath"
+            data-choose="file"
+            data-file-ext="*"
+          >
+            选择
+          </button>
+        </div>
+      </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="sub-item vertical-list-item">
+        <div>
+          <h2>代理地址</h2>
+          <span class="secondary-text">仅支持http</span>
+        </div>
+      </li>
+      <li class="sub-item vertical-list-item">
+        <input
+          placeholder="Input Telegram Bot Token"
+          class="input-text text_color"
+          type="text"
+          spellcheck="false"
+          data-config="global.httpProxy"
+        />
+        <div class="ops-btns">
+          <button class="q-button q-button--small q-button--secondary check-proxy-btn">检测</button>
+        </div>
+      </li>
+
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>每行贴纸数量</h2>
+        </div>
+        <div class="slot-input-box">
+          <input
+            placeholder="6"
+            class="slot-input text_color"
+            data-config="localStickers.stickersPerRow"
+            type="number"
+            spellcheck="false"
+          />
+        </div>
+      </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>窗口宽度</h2>
+        </div>
+        <div class="slot-input-box">
+          <input
+            placeholder="350"
+            class="slot-input text_color"
+            data-config="localStickers.panelWidth"
+            type="number"
+            spellcheck="false"
+          />
+        </div>
+      </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>窗口高度</h2>
+        </div>
+        <div class="slot-input-box">
+          <input
+            placeholder="420"
+            class="slot-input text_color"
+            data-config="localStickers.panelHeight"
+            type="number"
+            spellcheck="false"
+          />
+        </div>
+      </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>以图片形式发送</h2>
+          <span class="secondary-text"> </span>
+        </div>
+        <div class="q-switch" data-config="localStickers.sendAsPic">
+          <span class="q-switch__handle"></span>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <!-- 背景功能 -->
+  <div class="wrap background">
+    <div class="vertical-list-item title">
+      <h2>自定义背景</h2>
+      <svg class="icon is-fold" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 8L12 17L3 8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
+      </svg>
+    </div>
+    <ul class="hidden">
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>启用</h2>
           <span class="secondary-text">
             仅支持单张图片/视频<br />
             使用前需要启用官方 <strong>极简白</strong> 主题
@@ -587,6 +816,6 @@
     </ul>
   </div>
   <h1 class="version">
-    当前版本<span class="link tag-version" data-href="https://github.com/xiyuesaves/lite_tools/tree/v4">v0.0.0</span>
+    当前版本<span class="link tag-version" data-href="https://github.com/xiyuesaves/lite-tools/tree/alpha/v5">v0.0.0</span>
   </h1>
 </lite-tools>

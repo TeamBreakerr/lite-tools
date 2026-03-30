@@ -62,7 +62,7 @@ const builds: { config: BuildOptions; watchHtml?: string }[] = [
     config: {
       ...baseConfig,
       platform: "browser",
-      target: "esnext",
+      target: "es2022",
       format: "cjs",
       tsconfig: "src/renderer/tsconfig.json",
       entryPoints: ["src/renderer/index.qwq.ts"],
@@ -75,7 +75,7 @@ const builds: { config: BuildOptions; watchHtml?: string }[] = [
     config: {
       ...baseConfig,
       platform: "browser",
-      target: "esnext",
+      target: "es2022",
       format: "esm",
       tsconfig: "src/renderer/tsconfig.json",
       entryPoints: ["src/renderer/index.ll.ts"],
@@ -101,7 +101,7 @@ const builds: { config: BuildOptions; watchHtml?: string }[] = [
     config: {
       ...baseConfig,
       platform: "browser",
-      target: "esnext",
+      target: "es2022",
       format: "iife",
       tsconfig: "src/renderer/tsconfig.json",
       entryPoints: ["src/renderer/pages/recallMsgViewer.ts"],

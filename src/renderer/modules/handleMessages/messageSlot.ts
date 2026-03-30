@@ -17,7 +17,7 @@ function insertSlot(messageEl: MessageElement, msgRecord: any) {
     msgRecord.elements.some(
       (element: any) =>
         embedElementType.includes(element.elementType) ||
-        (element.elementType === ElementType.faceElement && [1, 2].includes(element.faceElement.faceType))
+        (element.elementType === ElementType.faceElement && [1, 2].includes(element.faceElement.faceType)),
     )
   ) {
     messageEl.lt_slot = slot;
@@ -35,17 +35,17 @@ function insertSlot(messageEl: MessageElement, msgRecord: any) {
     slot.classList.add("embed-image");
     messageEl.querySelector(".message-content.mix-message__inner .image.pic-element")?.appendChild(slot);
     slot.updatePosition = async () => {
-      const { value: size } = await waitForInstance(
+      const { value: size }: { value: { width: number; height: number } } = await waitForInstance(
         messageEl.querySelector<HTMLElement>(".message-content.mix-message__inner .image.pic-element")!,
-        "proxy.size"
+        "proxy.size",
       );
       slot.classList.add("f-show");
       const { width, height } = size;
       const maxSize = Math.max(width, height, 150);
       const faceScale = 150 / maxSize;
       const faceWidth = width * faceScale;
-      const _width = isFace ? Math.min(150, faceWidth) : width;
-      if (_width <= slot.offsetWidth + 30) {
+      const finalWidth = isFace ? Math.min(150, faceWidth) : width;
+      if (finalWidth <= slot.offsetWidth + 30) {
         slot.classList.remove("embed-image");
         slot.classList.add("outside");
         if (!messageEl.querySelector(".content-status.no-copy")) {

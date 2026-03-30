@@ -70,11 +70,47 @@ async function initSettings(view: HTMLDivElement, config: Config) {
   initInput(view, config);
   // 初始化按钮
   initButton(view, config);
+  // 初始化tg贴纸下载
+  initTgStickerDownload(view, config);
+  // 初始化代理设置
+  initProxy(view, config);
+  // 初始化链接
+  initLink(view, config);
   // debug
   view.querySelector("button.open-debug")?.addEventListener("click", () => {
     lite_tools.openDevWindow();
   });
   log("初始化设置页面完成");
+}
+
+// 初始化链接
+function initLink(view: HTMLDivElement, config: Config) {
+  view.querySelectorAll(".link").forEach((el) => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      const href = el.getAttribute("data-href");
+      if (href) {
+        lite_tools.openExternal(href);
+      }
+    });
+  });
+}
+
+// 初始化代理设置
+function initProxy(view: HTMLDivElement, config: Config) {
+  const btn = view.querySelector<HTMLButtonElement>(".check-proxy-btn");
+  btn?.addEventListener("click", () => {
+    lite_tools.checkProxy();
+  });
+}
+
+// 初始化tg贴纸下载
+function initTgStickerDownload(view: HTMLDivElement, config: Config) {
+  const btn = view.querySelector<HTMLButtonElement>(".tg-sticker-download-btn")!;
+  btn.addEventListener("click", () => {
+    const url = view.querySelector<HTMLInputElement>(".tg-sticker-download-url")!.value;
+    lite_tools.downloadTgSticker(url);
+  });
 }
 
 // 初始化按钮
@@ -122,7 +158,7 @@ function initButton(view: HTMLDivElement, config: Config) {
           const filePaths = normalizePathsSimple(result.filePaths);
           log("选中的路径:", configPath, filePaths);
 
-          if (chooseType === "file") {
+          if (chooseType === "file" || chooseType === "folder") {
             setValueByPath(config, configPath, filePaths[0]);
             configStore.setConfig(config);
             dispatchEvent(view, configPath, filePaths[0]);
@@ -151,6 +187,7 @@ function initInput(view: HTMLDivElement, config: Config) {
       return;
     }
     el.value = value;
+    const isNumber = el.getAttribute("type") === "number";
     view.addEventListener(configPath, (e) => {
       const event = e as CustomEvent<string>;
       el.value = event.detail;
@@ -165,7 +202,11 @@ function initInput(view: HTMLDivElement, config: Config) {
       }
     } else {
       el.addEventListener("change", () => {
-        setValueByPath(config, configPath, el.value);
+        let value: string | number = el.value;
+        if (isNumber) {
+          value = parseInt(value);
+        }
+        setValueByPath(config, configPath, value);
         configStore.setConfig(config);
         dispatchEvent(view, configPath, el.value);
       });

@@ -1,0 +1,262 @@
+import { StickerPanel } from "./components/stickerPanel";
+import { StickerMsg } from "./components/stickerMsg";
+import { StickerList } from "./components/stickerList";
+import { StickerBar, StickerBarItem } from "./components/stickerBar";
+import { StickerPack, StickerPackLabel, StickerItem } from "./components/stickerPack";
+import { StickerIcon } from "./components/stickerIcon";
+import { StickerFullViewer } from "./components/stickerFullViewer";
+import { StickerContainer } from "./components/stickerContainer";
+
+import { configStore } from "@/renderer/modules/configStore";
+import { waitForElement } from "@/renderer/utils/domWaitFor";
+import { observeMutations } from "@/renderer/utils/observeMutations";
+import { sendMessage } from "@/renderer/utils/nativeCall";
+import { aioStore } from "@/renderer/modules/aioStore";
+import { createLogger } from "@/renderer/utils/createLogger";
+import { ContextMenu, ContextMenuItem, ContextMenuType } from "@/renderer/components/contextMenu";
+import { toastManager } from "@/renderer/modules/toastManager";
+import { onComponentMount } from "@/renderer/modules/vueComponentTracker";
+
+import type { StickerPack as StickerPackType } from "@/common/types/localStickers";
+
+const log = createLogger("localStickers");
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "lt-sticker-store": StickerPanel;
+    "lt-sticker-msg": StickerMsg;
+    "lt-sticker-list": StickerList;
+    "lt-sticker-pack": StickerPack;
+    "lt-sticker-pack-name": StickerPackLabel;
+    "lt-sticker-item": StickerItem;
+    "lt-sticker-bar": StickerBar;
+    "lt-sticker-bar-item": StickerBarItem;
+    "lt-sticker-icon": StickerIcon;
+    "lt-sticker-full-viewer": StickerFullViewer;
+    "lt-context-menu": ContextMenu;
+    "lt-context-menu-item": ContextMenuItem;
+    "lt-sticker-container": StickerContainer;
+  }
+}
+
+let rawContextMenu: HTMLElement;
+let picPath: string;
+
+async function setupLocalStickers() {
+  await configStore.ready;
+  const injectPositionRight = ".chat-func-bar .func-bar-native.func-bar-shortcuts:last-child";
+  const injectPositionLeft = ".chat-func-bar .func-bar-native.func-bar-shortcuts:first-child";
+  const stickerContainer = document.createElement("lt-sticker-container");
+  const addToLocalStickerContextMenu = document.createElement("lt-context-menu-item") as ContextMenuItem;
+  addToLocalStickerContextMenu.showIcon = true;
+
+  document.addEventListener("mousedown", (e: MouseEvent) => {
+    if (e.button === 2) {
+      const messageEl = (e.target as HTMLElement).closest(".message");
+      if (messageEl) {
+        messageEl.__VUE__?.some((item) => {
+          const elements = item?.props?.msgRecord?.elements || [];
+          const targetElement = elements.find((el: any) => el.elementType === 11 || el.elementType === 2);
+          if (targetElement) {
+            if (targetElement.elementType === 11) {
+              picPath = targetElement.marketFaceElement?.staticFacePath as string;
+            } else if (targetElement.elementType === 2) {
+              picPath = targetElement.picElement?.sourcePath as string;
+            }
+            return true;
+          }
+          return false;
+        });
+      }
+    }
+  });
+
+  onComponentMount((component) => {
+    if (
+      configStore.value.localStickers.enabled &&
+      stickerContainer.stickerStore.status === "success" &&
+      component?.props?.icon === "expression_add"
+    ) {
+      addToLocalStickerContextMenu.item = buildStickerMenu(
+        stickerContainer.stickerStore.stickerPacks,
+        picPath,
+        () => rawContextMenu,
+      );
+
+      setTimeout(() => {
+        rawContextMenu = component.vnode.el.closest(".q-context-menu");
+      }, 100);
+
+      component.vnode.el
+        .closest(".q-context-menu-item")
+        .insertAdjacentElement("afterend", addToLocalStickerContextMenu);
+    }
+  });
+
+  const editor = (await waitForElement(".ck.ck-content.ck-editor__editable")) as any;
+
+  const ckeditorInstance = editor.ckeditorInstance;
+  const ckeditEditorModel = ckeditorInstance.model;
+
+  let offObserver: ReturnType<typeof observeMutations> | null = null;
+
+  const updateIconState = async () => {
+    const isEnabled = configStore.value.localStickers.enabled;
+
+    if (isEnabled) {
+      const target = await waitForElement(
+        configStore.value.localStickers.iconOnLeft ? injectPositionLeft : injectPositionRight,
+      );
+      if (target) {
+        target.insertAdjacentElement("afterbegin", stickerContainer);
+        offObserver?.();
+        offObserver = observeMutations(target, updateIconState, {
+          childList: true,
+        });
+      }
+    } else {
+      stickerContainer?.remove();
+      offObserver?.();
+    }
+  };
+  updateIconState();
+  configStore.onChange(updateIconState);
+
+  stickerContainer.addEventListener("lt-select-sticker", (e) => {
+    ckeditEditorModel.change((writer: any) => {
+      const picSubType = configStore.value.localStickers.sendAsPic ? 0 : 1;
+      const selection = ckeditEditorModel.document.selection;
+      const position = selection.getFirstPosition();
+      const writerEl = writer.createElement("msg-img", {
+        data: JSON.stringify({ type: "pic", src: e.detail.path, picSubType, summary: "" }),
+      });
+      writer.insert(writerEl, position);
+      writer.setSelection(writer.createPositionAt(writerEl, "after"));
+      log("插入表情", e.detail.path);
+    });
+  });
+
+  stickerContainer.addEventListener("lt-send-sticker", (e) => {
+    const picSubType = configStore.value.localStickers.sendAsPic ? 0 : 1;
+    sendMessage(aioStore.getPeer(), [{ type: "image", path: e.detail.path, picSubType, summary: "" }]);
+    log("发送表情", e.detail.path);
+  });
+}
+
+function buildStickerMenu(packs: StickerPackType[], sourceFilePath: string, getRawContextMenu: any): ContextMenuType {
+  // 内部使用的临时类型，多了一个 path 用于构建树时去重和查找
+  type TempMenuNode = ContextMenuType & { path: string };
+  const treeChildren: TempMenuNode[] = [];
+
+  const rootPathStr = configStore.value.localStickers.path.replace(/\\/g, "/").replace(/\/$/, "");
+
+  for (const pack of packs) {
+    const packPath = pack.dirPath.replace(/\\/g, "/");
+    const nodeChain: { label: string; path: string; isLeaf: boolean }[] = [];
+
+    if (packPath.startsWith(rootPathStr)) {
+      const relativePart = packPath.slice(rootPathStr.length).replace(/^\//, "");
+      const relSegments = relativePart.split("/").filter(Boolean);
+
+      if (relSegments.length > 0) {
+        const firstLevelPath = `${rootPathStr}/${relSegments[0]}`;
+        const isFirstLevelLeaf = relSegments.length === 1;
+
+        nodeChain.push({
+          label: isFirstLevelLeaf ? pack.label : relSegments[0],
+          path: firstLevelPath,
+          isLeaf: isFirstLevelLeaf,
+        });
+
+        let currentPath = firstLevelPath;
+        for (let i = 1; i < relSegments.length; i++) {
+          currentPath = `${currentPath}/${relSegments[i]}`;
+          const isLeaf = i === relSegments.length - 1;
+          nodeChain.push({
+            label: isLeaf ? pack.label : relSegments[i],
+            path: currentPath,
+            isLeaf,
+          });
+        }
+      } else {
+        nodeChain.push({ label: pack.label, path: rootPathStr, isLeaf: true });
+      }
+    } else {
+      nodeChain.push({ label: pack.label, path: packPath, isLeaf: true });
+    }
+
+    // 2. 组装菜单树并绑定 Callback
+    let currentLevel = treeChildren;
+    for (let i = 0; i < nodeChain.length; i++) {
+      const { label, path, isLeaf } = nodeChain[i];
+      let existingNode = currentLevel.find((node) => node.path === path);
+
+      if (!existingNode) {
+        existingNode = { label, path };
+
+        // 如果是叶子节点，绑定复制文件的回调
+        if (isLeaf) {
+          existingNode.callback = async (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            console.log(`添加到贴纸集: ${label}`);
+            // patha: sourceFilePath, pathb: packPath (目标文件夹)
+            const result = await lite_tools.copyFile(sourceFilePath, packPath);
+            if (result.success) {
+              toastManager.show("添加成功", "success", 3000);
+            } else {
+              toastManager.show(`添加失败：${result.error}`, "error", 3000);
+            }
+            getRawContextMenu()?.remove();
+          };
+        }
+
+        currentLevel.push(existingNode);
+      } else if (isLeaf) {
+        // 强制更新已存在的叶子节点
+        existingNode.label = label;
+        existingNode.callback = async (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          log(`添加到贴纸集: ${label}`);
+          const result = await lite_tools.copyFile(sourceFilePath, packPath);
+          if (result.success) {
+            toastManager.show("添加成功", "success", 3000);
+          } else {
+            toastManager.show(`添加失败：${result.error}`, "error", 3000);
+          }
+          getRawContextMenu()?.remove();
+        };
+      }
+
+      if (i < nodeChain.length - 1) {
+        if (!existingNode.children) {
+          existingNode.children = [];
+        }
+        currentLevel = existingNode.children as TempMenuNode[];
+      }
+    }
+  }
+
+  // 3. 返回最终符合你要求的根节点对象
+  return {
+    icon: StickerIcon.ICON,
+    label: "添加到贴纸集",
+    children: treeChildren,
+  };
+}
+
+export {
+  StickerPanel,
+  StickerMsg,
+  StickerList,
+  StickerBar,
+  StickerPack,
+  StickerItem,
+  StickerIcon,
+  StickerFullViewer,
+  StickerContainer,
+  ContextMenu,
+  ContextMenuItem,
+  setupLocalStickers,
+};
