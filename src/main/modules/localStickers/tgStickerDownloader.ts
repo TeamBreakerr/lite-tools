@@ -56,16 +56,6 @@ class TgStickerDownloader {
     return configManager.value.localStickers.ffmpegPath || "ffmpeg";
   }
 
-  public initIpc(): void {
-    ipcMain.on("LiteLoader.lite_tools.downloadTgSticker", (_, url: string) => {
-      // setPauseWatch(true);
-      this.getTgSticker(url).finally(() => {
-        // setPauseWatch(false);
-        // folderUpdate();
-      });
-    });
-  }
-
   public async getTgSticker(url: string): Promise<void> {
     if (!url.startsWith("https://t.me/addstickers/")) {
       this.sendWindowMessage(`输入地址不是 TG 贴纸包`, "error");
@@ -74,6 +64,8 @@ class TgStickerDownloader {
 
     try {
       const stickerName = url.split("/")[4];
+      this.sendWindowMessage(`准备下载 ${stickerName}`, "default", 60 * 60 * 1000);
+      
       const res = await fetch(
         `https://api.telegram.org/bot${configManager.value.localStickers.telegramBotToken}/getStickerSet?name=${stickerName}`,
       );
