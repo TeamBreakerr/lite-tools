@@ -8,6 +8,7 @@ import { setupIpcInterceptor } from "@/main/modules/ipcInterceptor";
 import { localStickers } from "@/main/modules/localStickers";
 import { wallpaperService } from "@/main/modules/wallpaper";
 import { setupDevWindow } from "@/main/modules/devWindow";
+import { proxyManager } from "@/main/modules/proxyManager";
 import type { BrowserWindow } from "electron";
 
 const log = createLogger("lt_main");
@@ -31,6 +32,7 @@ function setupMain(uid: string) {
     setupDevWindow();
     wallpaperService.setup();
     localStickers.setup();
+    proxyManager.setup();
   } catch (err) {
     log("初始化出错", err);
   }
