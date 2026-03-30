@@ -29,6 +29,8 @@ const exposeFunctions = {
   updateStickerPackConfig: (dirPath: string, key: string, value: string) =>
     ipcRenderer.send("lite_tools.stickerPacksManager.updatePackConfig", dirPath, key, value),
   deleteSticker: (stickerPath: string) => ipcRenderer.send("lite_tools.stickerPacksManager.deleteSticker", stickerPath),
+  downloadTgSticker: (tgStickerUrl: string) =>
+    ipcRenderer.send("lite_tools.stickerPacksManager.downloadTgSticker", tgStickerUrl),
 
   // 通用操作接口
   copyFile: (sourceFilePath: string, targetFilePath: string) =>
@@ -58,6 +60,10 @@ const exposeFunctions = {
   onToast: (callback: (toast: Toast) => void) =>
     ipcRenderer.on("lite_tools.toast", (_, toast: Toast) => callback(toast)),
   clearToast: (callback: () => void) => ipcRenderer.on("lite_tools.clearToast", callback),
+
+  // 应用代理
+  checkProxy: () => ipcRenderer.send("lite_tools.proxy.check"),
+
   // debug
   openDevWindow: () => ipcRenderer.send("lite_tools.openDevWindow"),
   // 原生接口调用
