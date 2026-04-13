@@ -8,7 +8,7 @@ import { configManager } from "@/main/modules/configManager";
 import { settingsWindow } from "@/main/utils/windowTracker";
 import { proxyManager, fetch } from "@/main/modules/proxyManager";
 import { createLogger } from "@/main/utils/createLogger";
-import { stickerPacksManager } from "./stickerPacksManager";
+import { localStickers } from "./index";
 
 import type {
   StickerConfig,
@@ -53,10 +53,10 @@ class TgStickerDownloader {
         throw new Error("不支持的贴纸包类型");
       }
 
-      const stickerData = {
-        title: data.result.title,
-        name: data.result.name,
-        icon: null,
+      const stickerConfig: StickerConfig = {
+        label: data.result.title,
+        index: 0,
+        icon: undefined,
         url,
       };
 
@@ -113,8 +113,9 @@ class TgStickerDownloader {
         const downloadFailedNum = resolves.flat().filter((success) => !success).length;
 
         const folderPath = join(configManager.value.localStickers.path, data.result.name);
-        const stickerDataPath = join(folderPath, "sticker.json");
-        writeFileSync(stickerDataPath, JSON.stringify(stickerData, null, 2));
+        const stickerConfigPath = join(folderPath, "sticker.json");
+        writeFileSync(stickerConfigPath, JSON.stringify(stickerConfig, null, 2));
+        localStickers.notifyStickerStoreUpdated();
 
         if (downloadFailedNum === 0) {
           this.sendWindowMessage(`${data.result.title} 下载完成`, "success");
