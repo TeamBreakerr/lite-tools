@@ -10,34 +10,14 @@ import { proxyManager, fetch } from "@/main/modules/proxyManager";
 import { createLogger } from "@/main/utils/createLogger";
 import { stickerPacksManager } from "./stickerPacksManager";
 
+import type {
+  StickerConfig,
+  TgStickerItem,
+  TgStickerSetResponse,
+  TgFileResponse,
+} from "@/common/types/localStickers";
+
 const log = createLogger("getTgSticker");
-
-export interface TgStickerItem {
-  file_id: string;
-  file_unique_id: string;
-  is_animated: boolean;
-  is_video: boolean;
-}
-
-export interface TgStickerSetResult {
-  title: string;
-  name: string;
-  sticker_type: string;
-  stickers: TgStickerItem[];
-}
-
-export interface TgStickerSetResponse {
-  ok: boolean;
-  result: TgStickerSetResult;
-  description?: string;
-}
-
-export interface TgFileResponse {
-  ok: boolean;
-  result: {
-    file_path: string;
-  };
-}
 
 class TgStickerDownloader {
   private readonly MAX_CONCURRENT_DOWNLOADS = 8;

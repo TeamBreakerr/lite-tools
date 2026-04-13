@@ -5,21 +5,6 @@ import type { StickerPack } from "@/common/types/localStickers";
 // 定义支持的图片后缀
 const SUPPORTED_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp"]);
 
-// 定义内部使用的存储结构：Sticker 列表改为 Set<string>
-interface InternalStickerPack {
-  label: string;
-  index: number;
-  icon?: string;
-  dirPath: string;
-  stickerPaths: Set<string>; // 内部只存路径
-}
-
-interface StickerConfig {
-  label: string;
-  index: number;
-  icon?: string;
-}
-
 class StickerPacksManager {
   private stickerPacks: Map<string, InternalStickerPack> = new Map();
 
