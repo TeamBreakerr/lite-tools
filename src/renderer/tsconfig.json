@@ -10,7 +10,7 @@
     "rootDir": "./",
     "outDir": "../../build/renderer",
     "lib": ["ESNext", "DOM"],
-    "types": ["@qwqnt/types"]
+    "types": ["electron", "@qwqnt/types/renderer"]
   },
   "references": [
     {

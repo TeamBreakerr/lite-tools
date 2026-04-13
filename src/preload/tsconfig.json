@@ -7,7 +7,7 @@
     "rootDir": "./",
     "outDir": "../../build/preload",
     "lib": ["ESNext", "DOM"],
-    "types": ["node", "electron", "@qwqnt/types"]
+    "types": ["node", "electron", "@qwqnt/types/preload"]
   },
   "references": [
     {

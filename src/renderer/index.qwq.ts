@@ -1,4 +1,4 @@
-import packageJson from "package.json";
+import packageJson from "root/package.json";
 import { initSettingView } from "@/renderer/pages/settings";
 import { main } from "@/renderer/index";
 import { qwqSetupVueComponentTracker } from "@/renderer/modules/vueComponentTracker";
