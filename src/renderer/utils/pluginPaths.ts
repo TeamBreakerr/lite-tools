@@ -1,6 +1,6 @@
 import { isqwq, isll } from "@/renderer/utils/loaderInspector";
 import { join } from "@/renderer/utils/pathUtils";
-import packageJson from "package.json";
+import packageJson from "root/package.json";
 
 let configPath: string;
 let dataPath: string;

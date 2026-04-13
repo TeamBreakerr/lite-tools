@@ -1,5 +1,5 @@
 import path from "node:path";
-import packageJson from "package.json";
+import packageJson from "root/package.json";
 
 let CONFIG_DIR: string;
 let DATA_DIR: string;

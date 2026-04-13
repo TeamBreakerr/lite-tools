@@ -1,4 +1,4 @@
-import packageJson from "package.json";
+import packageJson from "root/package.json";
 
 const isqwq = "qwqnt" in globalThis && !!qwqnt.framework?.plugins?.[packageJson.name];
 const isll = "LiteLoader" in globalThis && !!LiteLoader.plugins?.[packageJson.name];
