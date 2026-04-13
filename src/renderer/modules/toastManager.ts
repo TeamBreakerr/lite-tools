@@ -1,4 +1,4 @@
-import { importTextAsset } from "@/renderer/utils/importAsset.js";
+import { importTextAsset } from "@/renderer/utils/importAsset";
 
 // 导入路径保持不变
 import taostContentPath from "@/assets/html/toast/toastContentEl.html";

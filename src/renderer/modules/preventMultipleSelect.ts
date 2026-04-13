@@ -1,4 +1,4 @@
-import { configStore } from "@/renderer/modules/configStore.js";
+import { configStore } from "@/renderer/modules/configStore";
 
 let listenTarget = false;
 let interception = false;

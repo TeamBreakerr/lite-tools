@@ -1,19 +1,16 @@
 import { Readable } from "stream";
 import { join } from "path";
-import { ipcMain } from "electron";
 import { writeFileSync, mkdirSync } from "fs";
 import { spawn } from "child_process";
 import zlib from "zlib";
 
-// 假设以下是你项目中的自定义模块，这里保留原始引用路径
-import { configManager } from "@/main/modules/configManager.js";
-import { settingsWindow } from "@/main/utils/windowTracker.js";
-import { proxyManager, fetch } from "@/main/modules/proxyManager.js";
-import { createLogger } from "@/main/utils/createLogger.js";
+import { configManager } from "@/main/modules/configManager";
+import { settingsWindow } from "@/main/utils/windowTracker";
+import { proxyManager, fetch } from "@/main/modules/proxyManager";
+import { createLogger } from "@/main/utils/createLogger";
+import { stickerPacksManager } from "./stickerPacksManager";
 
 const log = createLogger("getTgSticker");
-
-// ================= 类型定义 =================
 
 export interface TgStickerItem {
   file_id: string;
@@ -42,16 +39,11 @@ export interface TgFileResponse {
   };
 }
 
-// ================= 单例核心类 =================
-
 class TgStickerDownloader {
   private readonly MAX_CONCURRENT_DOWNLOADS = 8;
 
   constructor() {}
 
-  /**
-   * 获取 FFmpeg 的可执行路径，如果没有配置则默认使用系统环境变量中的 ffmpeg
-   */
   private getFfmpegPath(): string {
     return configManager.value.localStickers.ffmpegPath || "ffmpeg";
   }
@@ -65,7 +57,7 @@ class TgStickerDownloader {
     try {
       const stickerName = url.split("/")[4];
       this.sendWindowMessage(`准备下载 ${stickerName}`, "default", 60 * 60 * 1000);
-      
+
       const res = await fetch(
         `https://api.telegram.org/bot${configManager.value.localStickers.telegramBotToken}/getStickerSet?name=${stickerName}`,
       );
@@ -210,8 +202,6 @@ class TgStickerDownloader {
     }
   }
 
-  // ================= 格式转换工具方法 (原生 Spawn 实现) =================
-
   private convertWebpToPng(buffer: Buffer, outputPath: string): Promise<boolean> {
     return new Promise((resolve) => {
       // ffmpeg -i pipe:0 -y outputPath
@@ -316,8 +306,6 @@ class TgStickerDownloader {
       inputStream.pipe(convertStdin.stdin);
     });
   }
-
-  // ================= 辅助方法 =================
 
   private checkVp9Support(): Promise<boolean> {
     return new Promise((resolve) => {
