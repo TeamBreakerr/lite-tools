@@ -4,17 +4,11 @@ import { ToastContainer } from "./components/toastContainer";
 
 import type { ToastIconType } from "@/common/types/toastManager";
 
-type ToastManagerRef = ToastManager;
-
 declare global {
   interface HTMLElementTagNameMap {
     "lt-toast-icon": ToastIcon;
     "lt-toast-item": ToastItem;
     "lt-toast-container": ToastContainer;
-  }
-
-  interface Window {
-    t?: ToastManagerRef;
   }
 }
 
@@ -27,7 +21,6 @@ class ToastManager {
     this.getOrCreateContainer();
     this.bindGlobalEvents();
     this.isReady = true;
-    window.t = this;
   }
 
   private getOrCreateContainer(): ToastContainer {

@@ -1,4 +1,4 @@
-import { LitElement, css, html } from "lit";
+import { LitElement, PropertyValues, css, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
 import type { ToastIconType } from "@/common/types/toastManager";
@@ -52,7 +52,7 @@ export class ToastItem extends LitElement {
       .lt-toast-content {
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         height: auto;
         background-color: var(--lt-toast-bg);
         box-shadow:
@@ -62,24 +62,28 @@ export class ToastItem extends LitElement {
         box-sizing: border-box;
         padding: 14px 16px;
         max-width: 100%;
+        min-width: 0;
 
         .lt-toast-text {
           overflow: hidden;
           text-overflow: ellipsis;
+          white-space: nowrap;
           font-size: 14px;
           line-height: 1.5;
           display: block;
+          flex: 1;
+          min-width: 0;
           max-width: 100%;
         }
       }
     }
   `;
 
-  connectedCallback() {
-    super.connectedCallback();
-
+  protected firstUpdated(_changedProperties: PropertyValues): void {
     requestAnimationFrame(() => {
-      this.isMounted = true;
+      requestAnimationFrame(() => {
+        this.isMounted = true;
+      });
     });
   }
 
@@ -111,9 +115,6 @@ export class ToastItem extends LitElement {
     }
   }
 
-  /**
-   * 请求关闭：通知 container 把 visible 改为 false
-   */
   private requestClose() {
     this.dispatchEvent(
       new CustomEvent("request-close", {
@@ -124,9 +125,6 @@ export class ToastItem extends LitElement {
     );
   }
 
-  /**
-   * 过渡结束后，如果当前是隐藏状态，则通知 container 真正删除
-   */
   private handleTransitionEnd(event: TransitionEvent) {
     if (event.target !== event.currentTarget) return;
     if (event.propertyName !== "opacity") return;
