@@ -7,6 +7,21 @@ type Sticker = {
 
 type Stickers = Sticker[];
 
+type StickerConfig = {
+  label: string;
+  index: number;
+  icon?: string;
+  url?: string;
+};
+
+type InternalStickerPack = {
+  label: string;
+  index: number;
+  icon?: string;
+  dirPath: string;
+  stickerPaths: Set<string>; // 内部只存路径
+};
+
 type StickerPack = {
   label: string;
   icon?: Path;
@@ -33,4 +48,44 @@ type StickerStore =
       msg: string;
     };
 
-export type { Path, Sticker, Stickers, StickerPack, StickerStore, StickerPathItem };
+type TgStickerItem = {
+  file_id: string;
+  file_unique_id: string;
+  is_animated: boolean;
+  is_video: boolean;
+};
+
+type TgStickerSetResult = {
+  title: string;
+  name: string;
+  sticker_type: string;
+  stickers: TgStickerItem[];
+};
+
+type TgStickerSetResponse = {
+  ok: boolean;
+  result: TgStickerSetResult;
+  description?: string;
+};
+
+type TgFileResponse = {
+  ok: boolean;
+  result: {
+    file_path: string;
+  };
+};
+
+export type {
+  Path,
+  Sticker,
+  Stickers,
+  StickerPack,
+  StickerStore,
+  StickerPathItem,
+  StickerConfig,
+  InternalStickerPack,
+  TgStickerItem,
+  TgStickerSetResult,
+  TgStickerSetResponse,
+  TgFileResponse,
+};

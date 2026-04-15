@@ -22,7 +22,7 @@ class LocalStickers {
 
   constructor() {}
 
-  private notifyStickerStoreUpdated = createThrottledDispatcher(() => {
+  public notifyStickerStoreUpdated = createThrottledDispatcher(() => {
     if (!this.initializedReady) return; // 避免因节流导致的 offListener 后状态被覆盖
     const stickerStore = this.createStickerStoreResult("success", this.stickerPacksManager.getPackList());
     if (stickerStore.stickerPacks?.length) {
