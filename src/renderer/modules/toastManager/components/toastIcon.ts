@@ -12,13 +12,13 @@ export class ToastIcon extends LitElement {
     :host {
       margin-right: 8px;
       display: block;
-      width: 16px;
-      height: 16px;
+      width: 20px;
+      height: 20px;
     }
     i {
       display: inline-block;
-      width: 16px;
-      height: 16px;
+      width: 20px;
+      height: 20px;
     }
 
     i[data-type="default"] {
