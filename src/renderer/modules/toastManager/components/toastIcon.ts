@@ -9,12 +9,16 @@ export class ToastIcon extends LitElement {
   type: ToastIconType = "default";
 
   static styles = css`
+    :host {
+      margin-right: 8px;
+      display: block;
+      width: 16px;
+      height: 16px;
+    }
     i {
       display: inline-block;
       width: 16px;
       height: 16px;
-      flex-shrink: 0;
-      margin-right: 8px;
     }
 
     i[data-type="default"] {

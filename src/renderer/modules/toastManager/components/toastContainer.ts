@@ -28,21 +28,20 @@ export class ToastContainer extends LitElement {
       --lt-toast-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
       position: fixed;
       top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 5000;
-      pointer-events: none;
+      left: 0;
+      z-index: 9999;
       width: 100vw;
+      height: auto;
+      pointer-events: none;
+      display: block;
     }
 
     .lt-toast {
       display: flex;
-      left: 0;
-      right: 0;
-      top: 0;
       align-items: center;
       flex-direction: column;
       width: 100%;
+      height: auto;
     }
   `;
 

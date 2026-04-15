@@ -28,7 +28,6 @@ export class ToastItem extends LitElement {
   static styles = css`
     :host {
       display: block;
-      pointer-events: none;
     }
 
     .lt-toast-item {
@@ -41,37 +40,38 @@ export class ToastItem extends LitElement {
       transition: 500ms;
       position: relative;
       width: 100%;
-    }
-
-    .lt-toast-item.show {
-      opacity: 1;
-      height: var(--lt-toast-item-height);
-      transform: translateY(0) scale(1);
-    }
-
-    .lt-toast-content {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: auto;
-      background-color: var(--lt-toast-bg);
-      box-shadow:
-        var(--lt-toast-shadow),
-        inset 0 0 0 1.5px var(--lt-border-standard);
-      border-radius: 12px;
       box-sizing: border-box;
-      padding: 14px 16px;
-      max-width: calc(100% - var(--lt-toast-margin) * 2);
-    }
+      padding: 0 8px;
 
-    .lt-toast-text {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      word-break: break-word;
-      white-space: pre-wrap;
-      font-size: 14px;
-      line-height: 1.5;
-      flex-shrink: 0;
+      &.show {
+        opacity: 1;
+        height: var(--lt-toast-item-height);
+        transform: translateY(0) scale(1);
+      }
+
+      .lt-toast-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: auto;
+        background-color: var(--lt-toast-bg);
+        box-shadow:
+          var(--lt-toast-shadow),
+          inset 0 0 0 1.5px var(--lt-border-standard);
+        border-radius: 12px;
+        box-sizing: border-box;
+        padding: 14px 16px;
+        max-width: 100%;
+
+        .lt-toast-text {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          font-size: 14px;
+          line-height: 1.5;
+          display: block;
+          max-width: 100%;
+        }
+      }
     }
   `;
 
