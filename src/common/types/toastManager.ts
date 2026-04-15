@@ -1,5 +1,5 @@
 // 类型定义
-type ToastType = "success" | "error" | "default" | "none";
-type Toast = { type: ToastType; content: string; duration: number };
+type ToastIconType = "default" | "error" | "success";
+type Toast = { type: ToastIconType; content: string; duration: number };
 
-export type { ToastType, Toast };
+export type { ToastIconType, Toast };
