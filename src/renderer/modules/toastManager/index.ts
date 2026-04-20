@@ -19,7 +19,7 @@ class ToastManager {
 
   public async setup(): Promise<void> {
     this.getOrCreateContainer();
-    this.bindGlobalEvents();
+    this.bindEvents();
     this.isReady = true;
   }
 
@@ -54,7 +54,7 @@ class ToastManager {
     container.clear();
   }
 
-  private bindGlobalEvents(): void {
+  private bindEvents(): void {
     if (this.hasBoundEvents) return;
     this.hasBoundEvents = true;
 
