@@ -19,7 +19,6 @@ class CkeditorManager {
         if (!configStore.value.message.removeReplyAt || isCleaning) return;
 
         if (!root) return;
-        log("root",root);
 
         const curReplyElement = root.getChildren().find((block: any) => block.is?.("element", "msg-reply"));
         if (replyElement === curReplyElement) return;
@@ -28,6 +27,7 @@ class CkeditorManager {
         model.enqueueChange("transparent", (writer: any) => {
           try {
             const currentRoot: any = doc.getRoot();
+
             if (!currentRoot) return;
 
             const targets = {
@@ -49,7 +49,6 @@ class CkeditorManager {
                 }
               }
             }
-            log("targets", targets);
 
             const textNode = targets.next;
 
@@ -68,22 +67,26 @@ class CkeditorManager {
 
             if (targets.at && targets.at.root) {
               writer.remove(writer.createRangeOn(targets.at));
+              const text = writer.createText("\u200B");
+              writer.insert(text, currentRoot.getChild(currentRoot.childCount - 1));
+              setTimeout(() => {
+                model.enqueueChange("transparent", (writer: any) => {
+                  writer.remove(text);
+                });
+              });
             }
-
-            writer.setSelection(writer.createPositionAt(currentRoot, "end"));
           } finally {
             isCleaning = false;
           }
         });
       } catch (err) {
+        log("出错", err);
         isCleaning = false;
-        log(err);
       }
     });
   }
 
   private async getCkeditorInstance() {
-    log("await getCkeditorInstance");
     const ckeditorEl: any = await waitForElement(".ck.ck-content.ck-editor__editable");
     const ckeditorInstance = ckeditorEl?.ckeditorInstance;
     if (!ckeditorInstance) throw new Error("Ckeditor instance not found");
