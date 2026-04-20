@@ -56,7 +56,7 @@ export class ToastContainer extends LitElement {
       visible: true,
     };
 
-    this.toastList = [...this.toastList, item];
+    this.toastList = [item, ...this.toastList];
   }
 
   public clear() {
