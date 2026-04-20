@@ -7,6 +7,7 @@ import { setupHandleMessages } from "@/renderer/modules/handleMessages";
 import { waitForInstance } from "@/renderer/utils/domWaitFor";
 import { wallpaperManager } from "@/renderer/modules/wallpaperManager";
 import { setupLocalStickers } from "@/renderer/modules/localStickers";
+import { ckeditorManager } from "@/renderer/modules/ckeditorManager";
 
 const log = createLogger("chat");
 
@@ -25,6 +26,7 @@ async function setupChatPage() {
   updateRecallConfig(configStore.value);
   updateInterface(configStore.value);
   wallpaperManager.setup();
+  ckeditorManager.setup();
   aioStore.onChange(() => {
     updateTopFuncBar();
     updateChatFuncBar();

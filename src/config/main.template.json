@@ -47,6 +47,7 @@
   "message": {
     "miniArkToWebArk": false,
     "marketFaceToPicElement": false,
+    "removeReplyAt": false,
     "repeatMessage": {
       "enabled": false,
       "doubleClick": false
