@@ -218,7 +218,7 @@ export class RecallMsgViewer extends LitElement {
     return repeat(
       this.messages,
       (message) => `${message.msgId}-${message.lt_recall?.recallTime || message.msgTime}`,
-      (message) => html`<lt-recall-message-item .message=${message}></lt-recall-message-item>`,
+      (message) => html`<lt-recall-message-item .message=${message as any}></lt-recall-message-item>`,
     );
   }
 
