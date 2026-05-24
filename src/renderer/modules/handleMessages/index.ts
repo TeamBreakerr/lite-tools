@@ -22,11 +22,26 @@ let aioData: any;
 async function setupHandleMessages() {
   await configStore.ready;
   log("注册事件");
+
+  // 高版本自带+1按钮，如果启用了复读功能则隐藏自带的按钮
+  if (configStore.value.message.repeatMessage.enabled) {
+    document.body.classList.add("repeat-message");
+  } else {
+    document.body.classList.remove("repeat-message");
+  }
+  configStore.onChange((config) => {
+    if (config.message.repeatMessage.enabled) {
+      document.body.classList.add("repeat-message");
+    } else {
+      document.body.classList.remove("repeat-message");
+    }
+  });
+
   onComponentMount(handleMessages);
   initRecallMessageListener(enhanceMessage);
   const { instance, value: msgList } = await waitForInstance(
     ".container-content .container .aio .group-chat",
-    "proxy.curMsgListData"
+    "proxy.curMsgListData",
   );
   aioData = instance.proxy;
 
