@@ -3,6 +3,7 @@ import { checkChatType } from "@/common/checkChatType";
 import { createLogger } from "@/renderer/utils/createLogger";
 import { waitForInstance } from "@/renderer/utils/domWaitFor";
 import { configStore } from "@/renderer/modules/configStore";
+import { waitForElement } from "@/renderer/utils/domWaitFor";
 
 import { initRecallMessageListener, insertRecallTag } from "./messageRecall";
 import { mergeMessage } from "./mergeMessage";
@@ -11,7 +12,7 @@ import { insertSlot } from "./messageSlot";
 import { insertTime } from "./insertTime";
 import { insertRepeatBtn } from "./insertRepeatBtn";
 
-import type { MessageElement } from "./type";
+import type { MessageElement, SlotElement } from "./type";
 
 const log = createLogger("handleMessages");
 
@@ -36,7 +37,7 @@ async function setupHandleMessages() {
       document.body.classList.remove("repeat-message");
     }
   });
-
+  observerElement();
   onComponentMount(handleMessages);
   initRecallMessageListener(enhanceMessage);
   const { instance, value: msgList } = await waitForInstance(
@@ -76,10 +77,19 @@ function handleMessages(component: any) {
   }
 }
 
-function enhanceMessage(component: any) {
+const awaitInsert = new Map();
+
+async function enhanceMessage(component: any) {
   const messageEl = component.vnode.el as MessageElement;
   const msgRecord = component.props.msgRecord;
-  const slot = insertSlot(messageEl, msgRecord);
+  let slot = insertSlot(messageEl, msgRecord);
+
+  if (slot === false) {
+    const { promise, resolve } = Promise.withResolvers<SlotElement>();
+    awaitInsert.set(msgRecord.msgId, { resolve, messageEl, msgRecord });
+    slot = await promise;
+  }
+
   if (!slot) {
     return;
   }
@@ -94,6 +104,32 @@ function enhanceMessage(component: any) {
     if (configStore.value.message.repeatMessage.enabled) {
       insertRepeatBtn(slot, msgRecord, messageEl);
     }
+  });
+}
+
+async function observerElement() {
+  const target = await waitForElement(".chat-msg-area__vlist");
+  const observer = new MutationObserver((mutationsList) => {
+    for (let mutation of mutationsList) {
+      if (mutation.type === "childList") {
+        const target = mutation.target as HTMLElement;
+        const mlItem = target.closest(".ml-item");
+        if (!mlItem) return;
+        const msgId = mlItem.id;
+        const inserted = awaitInsert.get(msgId);
+        if (inserted) {
+          const slot = insertSlot(inserted.messageEl, inserted.msgRecord);
+          if (slot) {
+            awaitInsert.delete(msgId);
+            inserted.resolve(slot);
+          }
+        }
+      }
+    }
+  });
+  observer.observe(target, {
+    childList: true,
+    subtree: true,
   });
 }
 
