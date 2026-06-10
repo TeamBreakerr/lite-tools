@@ -7,7 +7,7 @@ import type { MessageElement, SlotElement } from "./type";
 const embedElementType = [ElementType.textElement, ElementType.replyElement];
 const ignoreElementType = [ElementType.grayTipElement];
 
-const log = createLogger("messageSlot");
+const log = createLogger("messageSlot",true);
 function insertSlot(messageEl: MessageElement, msgRecord: any) {
   if (messageEl.lt_slot && messageEl.lt_slot.isConnected) {
     return messageEl.lt_slot;
