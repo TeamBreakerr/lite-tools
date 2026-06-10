@@ -1,5 +1,3 @@
-# 鉴于两个加载器均已归档，该项目也将停止开发，各位有缘再见。
-
 <p align=center>
   <img width="160" alt="icon" height="160" src="./icon.png" />
 </p>
