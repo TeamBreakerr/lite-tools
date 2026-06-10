@@ -205,6 +205,12 @@
   }
 }
 
+.repeat-message{
+  .plus-one-btn{
+    display: none !important;
+  }
+}
+
 // 移除空的链接信息元素和给链接信息块添加间距
 .message:has(.lt-slot.embed) {
   .link-info {

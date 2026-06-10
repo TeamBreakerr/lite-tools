@@ -12,7 +12,7 @@ let closeChatObserver: ReturnType<typeof observeMutations> | null = null;
 async function updateTopFuncBar() {
   await configStore.ready;
   const funcs = Array.from(document.querySelectorAll<HTMLElement>(".panel-header__action .func-bar-native>div")).filter(
-    (item) => item.style.display !== "none"
+    (item) => item.style.display !== "none",
   );
   log("updateTopFuncBar", funcs);
   if (configStore.value.topFuncBar.length > 1) {
@@ -24,7 +24,10 @@ async function updateTopFuncBar() {
   function initTopFuncBar(funcs: HTMLElement[]) {
     funcs.forEach((element) => {
       const id = element.id;
-      const name = element.querySelector(".icon-item")!.getAttribute("aria-label")!;
+      let name = element.querySelector(".icon-item")!.getAttribute("aria-label")!;
+      if (!name) {
+        name = element.closest(".bar-icon")!.getAttribute("aria-label")!;
+      }
       topFuncMap.set(id, {
         name,
         id,
@@ -50,7 +53,7 @@ async function updateTopFuncBar() {
     document.querySelector(".panel-header__action .func-bar-native")!,
     () => {
       const funcs = Array.from(
-        document.querySelectorAll<HTMLElement>(".panel-header__action .func-bar-native>div")
+        document.querySelectorAll<HTMLElement>(".panel-header__action .func-bar-native>div"),
       ).filter((item) => item.style.display !== "none");
       initTopFuncBar(funcs);
       hiddenFuncBtn(funcs, configStore.value.topFuncBar);
@@ -61,7 +64,7 @@ async function updateTopFuncBar() {
       subtree: true,
       childList: true,
       autoDisconnect: 1000,
-    }
+    },
   );
 
   hiddenFuncBtn(funcs, configStore.value.topFuncBar);
@@ -70,7 +73,7 @@ async function updateTopFuncBar() {
 async function updateChatFuncBar() {
   await configStore.ready;
   const funcs = Array.from(document.querySelectorAll<HTMLElement>(".chat-func-bar .func-bar-native>div")).filter(
-    (item) => item.style.display !== "none"
+    (item) => item.style.display !== "none",
   );
   log("updateChatFuncBar", funcs);
   if (configStore.value.chatFuncBar.length > 1) {
@@ -108,7 +111,7 @@ async function updateChatFuncBar() {
     document.querySelector(".chat-func-bar .func-bar-native:first-child")!,
     () => {
       const funcs = Array.from(document.querySelectorAll<HTMLElement>(".chat-func-bar .func-bar-native>div")).filter(
-        (item) => item.style.display !== "none"
+        (item) => item.style.display !== "none",
       );
       initChatFuncBar(funcs);
       hiddenFuncBtn(funcs, configStore.value.chatFuncBar);
@@ -119,7 +122,7 @@ async function updateChatFuncBar() {
       subtree: true,
       childList: true,
       autoDisconnect: 1000,
-    }
+    },
   );
 
   hiddenFuncBtn(funcs, configStore.value.chatFuncBar);
