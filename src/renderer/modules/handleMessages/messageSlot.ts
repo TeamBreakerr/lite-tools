@@ -67,7 +67,7 @@ function insertSlot(messageEl: MessageElement, msgRecord: any) {
         messageEl.querySelector(".content-status.no-copy")?.appendChild(slot);
       }
       log("完成图片尺寸计算");
-      // slot.classList.remove("f-show");
+      slot.classList.remove("f-show");
     };
     return slot.isConnected ? slot : false;
   } else if (!msgRecord.elements.some((item: any) => ignoreElementType.includes(item.elementType))) {
