@@ -1,4 +1,4 @@
-import { build, context, BuildOptions } from "esbuild";
+import { build, context, BuildOptions, Plugin } from "esbuild";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from "node:fs";
 import { basename, join, extname, dirname } from "node:path";
 import { execSync } from "node:child_process";
@@ -12,6 +12,35 @@ const isAlpha = process.argv.includes("--alpha");
 const SCSS_SRC_DIR = "./src/renderer/scss";
 const OUT_CSS_DIR = "./dist/css";
 const packageJson = JSON.parse(readFileSync("package.json", "utf-8"));
+const BUILD_TIME_BANNER_RE = /^\/\/ Build time: .*\r?\n/;
+
+function formatBuildTime(date = new Date()) {
+  const pad = (value: number) => value.toString().padStart(2, "0");
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hour = pad(date.getHours());
+  const minute = pad(date.getMinutes());
+  const second = pad(date.getSeconds());
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+}
+
+function createBuildTimeBannerPlugin(): Plugin {
+  return {
+    name: "build-time-banner",
+    setup(build) {
+      build.onEnd((result) => {
+        if (result.errors.length) return;
+
+        const outfile = build.initialOptions.outfile;
+        if (!outfile || extname(outfile) !== ".js" || !existsSync(outfile)) return;
+
+        const code = readFileSync(outfile, "utf-8").replace(BUILD_TIME_BANNER_RE, "");
+        writeFileSync(outfile, `// Build time: ${formatBuildTime()}\n${code}`, "utf-8");
+      });
+    },
+  };
+}
 
 // 通用基础配置
 const baseConfig: BuildOptions = {
@@ -27,6 +56,7 @@ const baseConfig: BuildOptions = {
     __VERSION__: `"${packageJson.version}"`,
     __BUILD_DATE__: `"${new Date().toLocaleDateString("zh-CN", { hour12: false })}"`,
   },
+  plugins: [createBuildTimeBannerPlugin()],
 };
 
 // 构建目标列表
