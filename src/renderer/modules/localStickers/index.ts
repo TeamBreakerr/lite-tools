@@ -8,7 +8,7 @@ import { StickerFullViewer } from "./components/stickerFullViewer";
 import { StickerContainer } from "./components/stickerContainer";
 
 import { configStore } from "@/renderer/modules/configStore";
-import { waitForElement } from "@/renderer/utils/domWaitFor";
+import { waitForElement, waitForInstance } from "@/renderer/utils/domWaitFor";
 import { observeMutations } from "@/renderer/utils/observeMutations";
 import { sendMessage } from "@/renderer/utils/nativeCall";
 import { aioStore } from "@/renderer/modules/aioStore";
@@ -44,8 +44,11 @@ let picPath: string;
 
 async function setupLocalStickers() {
   await configStore.ready;
-  const injectPositionRight = ".chat-func-bar .func-bar-native.func-bar-shortcuts:last-child";
-  const injectPositionLeft = ".chat-func-bar .func-bar-native.func-bar-shortcuts:first-child";
+  const injectPositionRight = ".chat-func-bar>.func-bar-native.func-bar-shortcuts:last-child,#func-bar-shortcuts-right";
+  const injectPositionLeft =
+    ".chat-func-bar>.func-bar-native.func-bar-shortcuts:first-child,.chat-func-bar>.chat-func-bar__left";
+  log("初始化");
+
   const stickerContainer = document.createElement("lt-sticker-container");
   const addToLocalStickerContextMenu = document.createElement("lt-context-menu-item") as ContextMenuItem;
   addToLocalStickerContextMenu.showIcon = true;
@@ -93,10 +96,30 @@ async function setupLocalStickers() {
     }
   });
 
-  const editor = (await waitForElement(".ck.ck-content.ck-editor__editable")) as any;
+  // const editor = (await waitForElement(".ck.ck-content.ck-editor__editable")) as any;
 
-  const ckeditorInstance = editor.ckeditorInstance;
-  const ckeditEditorModel = ckeditorInstance.model;
+  // const ckeditorInstance = editor.ckeditorInstance;
+  // const ckeditEditorModel = ckeditorInstance.model;
+
+  let editorModel: "ckeditor" | "proseMirror" = "ckeditor";
+  let ckeditorInstance: any;
+  let ckeditEditorModel: any;
+  let proseMirror: any;
+
+  const editor = (await Promise.any([
+    waitForElement(".ck.ck-content.ck-editor__editable"),
+    waitForInstance(".qq-msg-editor", "proxy.getEditor"),
+  ])) as any;
+  log("editor", editor);
+  if (editor.ckeditorInstance) {
+    editorModel = "ckeditor";
+    ckeditorInstance = editor.ckeditorInstance;
+    ckeditEditorModel = ckeditorInstance.model;
+  } else {
+    editorModel = "proseMirror";
+    proseMirror = editor.value().editor;
+    log(proseMirror);
+  }
 
   let offObserver: ReturnType<typeof observeMutations> | null = null;
 
@@ -123,17 +146,39 @@ async function setupLocalStickers() {
   configStore.onChange(updateIconState);
 
   stickerContainer.addEventListener("lt-select-sticker", (e) => {
-    ckeditEditorModel.change((writer: any) => {
-      const picSubType = configStore.value.localStickers.sendAsPic ? 0 : 1;
-      const selection = ckeditEditorModel.document.selection;
-      const position = selection.getFirstPosition();
-      const writerEl = writer.createElement("msg-img", {
-        data: JSON.stringify({ type: "pic", src: e.detail.path, picSubType, summary: "" }),
+    const picSubType = configStore.value.localStickers.sendAsPic ? 0 : 1;
+    log("插入表情", e.detail.path);
+    if (editorModel === "ckeditor") {
+      ckeditEditorModel.change((writer: any) => {
+        const selection = ckeditEditorModel.document.selection;
+        const position = selection.getFirstPosition();
+        const writerEl = writer.createElement("msg-img", {
+          data: JSON.stringify({ type: "pic", src: e.detail.path, picSubType, summary: "" }),
+        });
+        writer.insert(writerEl, position);
+        writer.setSelection(writer.createPositionAt(writerEl, "after"));
       });
-      writer.insert(writerEl, position);
-      writer.setSelection(writer.createPositionAt(writerEl, "after"));
-      log("插入表情", e.detail.path);
-    });
+    } else if (editorModel === "proseMirror") {
+      log(proseMirror)
+      const view = proseMirror.view;
+      const state = view.state;
+      const schema = proseMirror.schemaInstance;
+      const tr = state.tr;
+      const picNode = schema.nodeFromJSON({
+        type: "msgPic",
+        attrs: {
+          item: {
+            type: "pic",
+            src: e.detail.path,
+            picSubType,
+            thumbUrl: "",
+          },
+        },
+      });
+      tr.insert(state.selection.head, picNode);
+      view.dispatch(tr);
+      view.focus();
+    }
   });
 
   stickerContainer.addEventListener("lt-send-sticker", (e) => {
