@@ -7,8 +7,10 @@ import type { MessageElement, SlotElement } from "./type";
 const embedElementType = [ElementType.textElement, ElementType.replyElement];
 const ignoreElementType = [ElementType.grayTipElement];
 
-const log = createLogger("messageSlot",true);
+const log = createLogger("messageSlot");
 function insertSlot(messageEl: MessageElement, msgRecord: any) {
+  log(messageEl.outerHTML);
+  const isNew = !!messageEl.querySelector(".message-native");
   if (messageEl.lt_slot && messageEl.lt_slot.isConnected) {
     return messageEl.lt_slot;
   }
@@ -24,7 +26,7 @@ function insertSlot(messageEl: MessageElement, msgRecord: any) {
     messageEl.lt_slot = slot;
     slot.classList.add("embed");
     messageEl.querySelector(".message-content:is(.mix-message__inner,.reply-message__inner)")?.appendChild(slot);
-    return slot.isConnected ? slot : false;
+    return isNew ? (slot.isConnected ? slot : false) : slot;
   } else if (
     msgRecord.elements.length === 1 &&
     msgRecord.elements[0].elementType === ElementType.picElement &&
@@ -37,17 +39,24 @@ function insertSlot(messageEl: MessageElement, msgRecord: any) {
     messageEl.querySelector(".message-content.mix-message__inner .pic-element")?.appendChild(slot);
     slot.updatePosition = async () => {
       log("开始计算尺寸");
-
-      const img = (await waitForElement(
-        `[id="${msgRecord.msgId}"] .message-content.mix-message__inner .pic-element img`,
-      )) as HTMLImageElement;
-      log("img", img);
       let size = { width: 0, height: 0 };
-      if (img?.width > 0) {
-        log("img", img?.width);
-        size = { width: img.width, height: img.height };
+      if (messageEl.querySelector(".message-native")) {
+        const img = (await waitForElement(
+          `[id="${msgRecord.msgId}"] .message-content.mix-message__inner .pic-element img`,
+        )) as HTMLImageElement;
+        log("img", img);
+        if (img?.width > 0) {
+          log("img", img?.width);
+          size = { width: img.width, height: img.height };
+        } else {
+          log("图片未加载");
+        }
       } else {
-        log("图片未加载");
+        const { value: vsize }: { value: { width: number; height: number } } = await waitForInstance(
+          messageEl.querySelector<HTMLElement>(".message-content.mix-message__inner .image.pic-element")!,
+          "proxy.size",
+        );
+        size = vsize;
       }
 
       slot.classList.add("f-show");
@@ -69,7 +78,7 @@ function insertSlot(messageEl: MessageElement, msgRecord: any) {
       log("完成图片尺寸计算");
       slot.classList.remove("f-show");
     };
-    return slot.isConnected ? slot : false;
+    return isNew ? (slot.isConnected ? slot : false) : slot;
   } else if (!msgRecord.elements.some((item: any) => ignoreElementType.includes(item.elementType))) {
     messageEl.lt_slot = slot;
     slot.classList.add("outside");
@@ -79,7 +88,7 @@ function insertSlot(messageEl: MessageElement, msgRecord: any) {
       messageEl.querySelector(".message-content__wrapper")?.insertAdjacentElement("afterend", div);
     }
     messageEl.querySelector(".content-status.no-copy")?.appendChild(slot);
-    return slot.isConnected ? slot : false;
+    return isNew ? (slot.isConnected ? slot : false) : slot;
   }
   log("not-insert-slot", slot.isConnected, msgRecord);
   return null;

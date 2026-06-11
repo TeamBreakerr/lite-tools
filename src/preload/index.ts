@@ -31,6 +31,7 @@ const exposeFunctions = {
   deleteSticker: (stickerPath: string) => ipcRenderer.send("lite_tools.stickerPacksManager.deleteSticker", stickerPath),
   downloadTgSticker: (tgStickerUrl: string) =>
     ipcRenderer.send("lite_tools.stickerPacksManager.downloadTgSticker", tgStickerUrl),
+  updateRecentStickers: (stickerPath: string) => ipcRenderer.send("lite_tools.updateRecentStickers", stickerPath),
 
   // 通用操作接口
   copyFile: (sourceFilePath: string, targetFilePath: string) =>

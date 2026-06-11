@@ -68,7 +68,11 @@ function handleMessages(component: any) {
     }
     // 插入插槽
     if (enabledSlot()) {
-      enhanceMessage(component);
+      if (component.vnode.el.querySelector(".message-native")) {
+        enhanceMessageSync(component);
+      } else {
+        enhanceMessage(component);
+      }
     }
     // 图片遮罩
     if (1) {
@@ -79,7 +83,7 @@ function handleMessages(component: any) {
 
 const awaitInsert = new Map();
 
-async function enhanceMessage(component: any) {
+async function enhanceMessageSync(component: any) {
   const messageEl = component.vnode.el as MessageElement;
   const msgRecord = component.props.msgRecord;
   let slot = insertSlot(messageEl, msgRecord);
@@ -95,6 +99,29 @@ async function enhanceMessage(component: any) {
   }
   if (configStore.value.message.showSendTime.enabled) {
     insertTime(slot, msgRecord);
+  }
+  if (configStore.value.message.preventRecall.enabled) {
+    insertRecallTag(slot, msgRecord);
+  }
+
+  Promise.resolve(slot.updatePosition?.()).then(() => {
+    if (configStore.value.message.repeatMessage.enabled) {
+      insertRepeatBtn(slot, msgRecord, messageEl);
+    }
+  });
+}
+
+function enhanceMessage(component: any) {
+  const messageEl = component.vnode.el as MessageElement;
+  const msgRecord = component.props.msgRecord;
+  let slot = insertSlot(messageEl, msgRecord);
+  log(slot)
+  if (!slot) {
+    return;
+  }
+  if (configStore.value.message.showSendTime.enabled) {
+    insertTime(slot, msgRecord);
+    log("插入时间");
   }
   if (configStore.value.message.preventRecall.enabled) {
     insertRecallTag(slot, msgRecord);
