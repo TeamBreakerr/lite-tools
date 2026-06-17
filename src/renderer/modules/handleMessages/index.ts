@@ -137,20 +137,29 @@ function enhanceMessage(component: any) {
 async function observerElement() {
   const target = await waitForElement(".chat-msg-area__vlist");
   const observer = new MutationObserver((mutationsList) => {
+    if (!target.isConnected) {
+      return;
+    }
+    const affectedTasks = new Set<any>();
     for (let mutation of mutationsList) {
       if (mutation.type === "childList") {
         const target = mutation.target as HTMLElement;
-        const mlItem = target.closest(".ml-item");
-        if (!mlItem) return;
-        const msgId = mlItem.id;
-        const inserted = awaitInsert.get(msgId);
-        if (inserted) {
-          const slot = insertSlot(inserted.messageEl, inserted.msgRecord);
-          if (slot) {
-            awaitInsert.delete(msgId);
-            inserted.resolve(slot);
+        if (!target?.isConnected) continue;
+        const mlItem = target.closest<HTMLElement>(".ml-item");
+        if (mlItem) {
+          const inserted = awaitInsert.get(mlItem.id);
+          if (inserted) {
+            affectedTasks.add(inserted);
           }
         }
+      }
+    }
+
+    for (let inserted of affectedTasks) {
+      const slot = insertSlot(inserted.messageEl, inserted.msgRecord);
+      if (slot) {
+        awaitInsert.delete(inserted.msgRecord.msgId);
+        inserted.resolve(slot);
       }
     }
   });
