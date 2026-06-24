@@ -3,6 +3,7 @@ import { createLogger } from "@/renderer/utils/createLogger";
 import { configStore } from "@/renderer/modules/configStore";
 import { isll } from "@/renderer/utils/loaderInspector";
 import { normalizePathsSimple } from "@/common/normalizePathsSimple";
+import type { StickerPack, StickerStore } from "@/common/types/localStickers";
 import { styleManager } from "@/renderer/modules/styleManager";
 import { pluginPath } from "@/renderer/utils/pluginPaths";
 import { join, resolvePath } from "@/renderer/utils/pathUtils";
@@ -14,6 +15,7 @@ type OptionItem = {
 };
 
 const log = createLogger("settings");
+const STICKER_SORT_ITEM_SELECTOR = ".drag-list-item";
 
 async function initSettingView(view: HTMLDivElement) {
   styleManager.inject("settings");
@@ -76,6 +78,8 @@ async function initSettings(view: HTMLDivElement, config: Config) {
   initProxy(view, config);
   // 初始化链接
   initLink(view, config);
+  // 初始化本地贴纸排序
+  initLocalTagSortOptimized(view);
   // debug
   view.querySelector("button.open-debug")?.addEventListener("click", () => {
     lite_tools.openDevWindow();
@@ -83,7 +87,233 @@ async function initSettings(view: HTMLDivElement, config: Config) {
   log("初始化设置页面完成");
 }
 
-// 初始化链接
+async function initLocalTagSortOptimized(view: HTMLDivElement) {
+  const stickerDragList = view.querySelector<HTMLUListElement>(".stickers-sort ul");
+  if (!stickerDragList) return;
+
+  let draggedItem: HTMLLIElement | null = null;
+  const transparentDragImage = createTransparentDragImage();
+  let dragStartOrder: string[] = [];
+
+  const getItems = () => Array.from(stickerDragList.querySelectorAll<HTMLLIElement>(STICKER_SORT_ITEM_SELECTOR));
+
+  const getCurrentOrder = () =>
+    getItems()
+      .map((item) => item.dataset.dirPath)
+      .filter((dirPath): dirPath is string => Boolean(dirPath));
+
+  const renderStickerStore = (stickerStore: StickerStore) => {
+    stickerDragList.replaceChildren(createDividerElement());
+
+    if (stickerStore.status !== "success") {
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    sortStickerPacks(stickerStore.stickerPacks).forEach((stickerPack) => {
+      fragment.append(createStickerSortItem(stickerPack));
+    });
+    stickerDragList.append(fragment);
+  };
+
+  const moveDraggedItem = (target: HTMLLIElement | null) => {
+    if (!draggedItem) return;
+
+    const currentNextSibling = draggedItem.nextElementSibling;
+    if (target === draggedItem || target === currentNextSibling || (!target && !currentNextSibling)) {
+      return;
+    }
+
+    const previousRects = new Map(getItems().map((item) => [item, item.getBoundingClientRect()] as const));
+
+    if (target) {
+      stickerDragList.insertBefore(draggedItem, target);
+    } else {
+      stickerDragList.append(draggedItem);
+    }
+
+    playStickerSortAnimation(getItems(), previousRects, draggedItem);
+  };
+
+  const persistStickerOrder = () => {
+    const nextOrder = getCurrentOrder();
+    if (nextOrder.length === 0 || dragStartOrder.join("|") === nextOrder.join("|")) {
+      return;
+    }
+
+    getItems().forEach((item, index) => {
+      const dirPath = item.dataset.dirPath;
+      if (!dirPath) return;
+
+      const previousIndex = Number(item.dataset.index ?? index);
+      item.dataset.index = String(index);
+      if (previousIndex !== index) {
+        lite_tools.updateStickerPackConfig(dirPath, "index", index);
+      }
+    });
+  };
+
+  renderStickerStore(await lite_tools.getStickerStore());
+
+  lite_tools.onStickerStoreUpdated(renderStickerStore);
+
+  stickerDragList.addEventListener("dragstart", (event) => {
+    const target = (event.target as HTMLElement).closest<HTMLLIElement>(STICKER_SORT_ITEM_SELECTOR);
+    if (!target) return;
+
+    draggedItem = target;
+    dragStartOrder = getCurrentOrder();
+    stickerDragList.classList.add("drag-sorting");
+
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.dropEffect = "move";
+      event.dataTransfer.setData("text/plain", target.dataset.dirPath ?? "");
+      event.dataTransfer.setDragImage(transparentDragImage, 0, 0);
+    }
+
+    requestAnimationFrame(() => {
+      if (draggedItem === target) {
+        target.classList.add("dragging");
+      }
+    });
+  });
+
+  stickerDragList.addEventListener("dragenter", (event) => {
+    if (!draggedItem) return;
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = "move";
+    }
+  });
+
+  stickerDragList.addEventListener("dragover", (event) => {
+    if (!draggedItem) return;
+
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = "move";
+    }
+
+    moveDraggedItem(getStickerSortInsertTarget(stickerDragList, event.clientY, draggedItem));
+  });
+
+  stickerDragList.addEventListener("drop", (event) => {
+    event.preventDefault();
+  });
+
+  stickerDragList.addEventListener("dragend", (event) => {
+    const target = (event.target as HTMLElement).closest<HTMLLIElement>(STICKER_SORT_ITEM_SELECTOR);
+    if (target) {
+      target.classList.remove("dragging");
+    }
+    draggedItem?.classList.remove("dragging");
+
+    stickerDragList.classList.remove("drag-sorting");
+    persistStickerOrder();
+    draggedItem = null;
+    dragStartOrder = [];
+  });
+}
+
+function createDividerElement() {
+  const divider = document.createElement("hr");
+  divider.className = "horizontal-dividing-line";
+  return divider;
+}
+
+function createStickerSortItem(stickerPack: StickerPack) {
+  const item = document.createElement("li");
+  item.className = "drag-list-item";
+  item.draggable = true;
+  item.dataset.dirPath = stickerPack.dirPath;
+  item.dataset.index = String(stickerPack.index);
+
+  const content = document.createElement("div");
+  const title = document.createElement("h2");
+  title.textContent = `${stickerPack.label} (${stickerPack.stickers.length})`;
+
+  content.append(title);
+  item.append(content);
+
+  return item;
+}
+
+function createTransparentDragImage() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1;
+  canvas.height = 1;
+  return canvas;
+}
+
+function sortStickerPacks(stickerPacks: StickerPack[]) {
+  return [...stickerPacks].sort((a, b) => {
+    if (a.index !== b.index) {
+      return a.index - b.index;
+    }
+
+    const labelCompare = a.label.localeCompare(b.label);
+    if (labelCompare !== 0) {
+      return labelCompare;
+    }
+
+    return a.dirPath.localeCompare(b.dirPath);
+  });
+}
+
+function getStickerSortInsertTarget(
+  stickerDragList: HTMLUListElement,
+  clientY: number,
+  draggedItem: HTMLLIElement,
+): HTMLLIElement | null {
+  const items = Array.from(stickerDragList.querySelectorAll<HTMLLIElement>(STICKER_SORT_ITEM_SELECTOR)).filter(
+    (item) => item !== draggedItem,
+  );
+
+  let closestItem: HTMLLIElement | null = null;
+  let closestOffset = Number.NEGATIVE_INFINITY;
+
+  items.forEach((item) => {
+    const rect = item.getBoundingClientRect();
+    const offset = clientY - rect.top - rect.height / 2;
+
+    if (offset < 0 && offset > closestOffset) {
+      closestOffset = offset;
+      closestItem = item;
+    }
+  });
+
+  return closestItem;
+}
+
+function playStickerSortAnimation(
+  items: HTMLLIElement[],
+  previousRects: Map<HTMLLIElement, DOMRect>,
+  draggedItem: HTMLLIElement,
+) {
+  items.forEach((item) => {
+    if (item === draggedItem) return;
+
+    const previousRect = previousRects.get(item);
+    if (!previousRect) return;
+
+    const nextRect = item.getBoundingClientRect();
+    const deltaX = previousRect.left - nextRect.left;
+    const deltaY = previousRect.top - nextRect.top;
+
+    if (deltaX === 0 && deltaY === 0) return;
+
+    item.style.transition = "none";
+    item.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+    item.getBoundingClientRect();
+
+    requestAnimationFrame(() => {
+      item.style.transition = "";
+      item.style.transform = "";
+    });
+  });
+}
+
 function initLink(view: HTMLDivElement, config: Config) {
   view.querySelectorAll(".link").forEach((el) => {
     el.addEventListener("click", (e) => {

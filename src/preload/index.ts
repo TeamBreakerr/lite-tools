@@ -26,7 +26,7 @@ const exposeFunctions = {
     };
   },
   getStickerStore: (): Promise<StickerStore> => ipcRenderer.invoke("lite_tools.stickerStore.get"),
-  updateStickerPackConfig: (dirPath: string, key: string, value: string) =>
+  updateStickerPackConfig: (dirPath: string, key: string, value: string | number) =>
     ipcRenderer.send("lite_tools.stickerPacksManager.updatePackConfig", dirPath, key, value),
   deleteSticker: (stickerPath: string) => ipcRenderer.send("lite_tools.stickerPacksManager.deleteSticker", stickerPath),
   downloadTgSticker: (tgStickerUrl: string) =>
