@@ -39,7 +39,7 @@ body:
   - type: input
     id: env-LiteLoaderQQNT-ver
     attributes:
-      label: LiteLoaderQQNT 版本
+      label: 加载器 版本
     validations:
       required: true
 
