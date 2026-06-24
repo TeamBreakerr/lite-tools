@@ -383,132 +383,141 @@
         </div>
       </li>
       <hr class="horizontal-dividing-line" />
-      <li class="vertical-list-item">
-        <div>
+
+      <div class="wrap download-tg-sticker">
+        <div class="vertical-list-item title">
           <h2>下载Telegram贴纸</h2>
+          <svg class="icon is-fold" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 8L12 17L3 8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
+          </svg>
         </div>
-      </li>
-      <li class="sub-item vertical-list-item">
-        <div>
-          <h2>填写贴纸下载链接</h2>
-        </div>
-      </li>
-      <li class="sub-item vertical-list-item">
-        <input
-          placeholder="填写贴纸下载链接"
-          class="input-text text_color tg-sticker-download-url"
-          type="text"
-          spellcheck="false"
-        />
-        <div class="ops-btns">
-          <button class="q-button q-button--small q-button--secondary tg-sticker-download-btn">下载</button>
-        </div>
-      </li>
-      <hr class="horizontal-dividing-line" />
-      <li class="sub-item vertical-list-item">
-        <div>
-          <h2>Telegram Bot Token</h2>
-          <span class="secondary-text"
-            >在此处申请 <span class="link" data-href="https://t.me/BotFather" target="_blank">BotFather</span></span
-          >
-        </div>
-      </li>
-      <li class="sub-item vertical-list-item">
-        <input
-          placeholder="Input Telegram Bot Token"
-          class="input-text text_color"
-          type="text"
-          spellcheck="false"
-          data-config="localStickers.telegramBotToken"
-        />
-      </li>
-      <hr class="horizontal-dividing-line" />
+        <ul class="hidden">
+          <hr class="horizontal-dividing-line" />
+          <li class="vertical-list-item">
+            <div>
+              <h2>填写贴纸下载链接</h2>
+            </div>
+          </li>
+          <li class="select-path vertical-list-item">
+            <input
+              placeholder="填写贴纸下载链接"
+              class="input-text text_color tg-sticker-download-url"
+              type="text"
+              spellcheck="false"
+            />
+            <div class="ops-btns">
+              <button class="q-button q-button--small q-button--secondary tg-sticker-download-btn">下载</button>
+            </div>
+          </li>
+          <hr class="horizontal-dividing-line" />
+          <li class="vertical-list-item">
+            <div>
+              <h2>Telegram Bot Token</h2>
+              <span class="secondary-text"
+                >在此处申请 <span class="link" data-href="https://t.me/BotFather" target="_blank">BotFather</span></span
+              >
+            </div>
+          </li>
+          <li class="select-path vertical-list-item">
+            <input
+              placeholder="Input Telegram Bot Token"
+              class="input-text text_color"
+              type="text"
+              spellcheck="false"
+              data-config="localStickers.telegramBotToken"
+            />
+          </li>
+          <hr class="horizontal-dividing-line" />
 
-      <li class="sub-item vertical-list-item">
-        <div>
-          <h2>ffmpeg 路径</h2>
-          <span class="secondary-text"
-            >在此处下载
-            <span class="link" data-href="https://ffmpeg.org/download.html" target="_blank">FFmpeg</span></span
-          >
-        </div>
-      </li>
-      <li class="sub-item vertical-list-item">
-        <input
-          placeholder="请选择文件"
-          readonly
-          data-clear
-          title="移除路径"
-          class="select-file input-text text_color"
-          type="text"
-          spellcheck="false"
-          data-config="localStickers.ffmpegPath"
-        />
-        <div class="ops-btns">
-          <button
-            class="q-button q-button--small q-button--secondary select-file"
-            data-config="localStickers.ffmpegPath"
-            data-choose="file"
-            data-file-ext="*"
-          >
-            选择
-          </button>
-        </div>
-      </li>
-      <hr class="horizontal-dividing-line" />
-
-      <li class="sub-item vertical-list-item">
-        <div>
-          <h2>tgsToGif 路径</h2>
-          <span class="secondary-text"
-            >在此处下载
-            <span class="link" data-href="https://github.com/jiongjiongJOJO/tgs_to_gif/releases/latest" target="_blank"
-              >tgsToGif</span
-            ></span
-          >
-        </div>
-      </li>
-      <li class="sub-item vertical-list-item">
-        <input
-          placeholder="请选择文件"
-          readonly
-          data-clear
-          title="移除路径"
-          class="select-file input-text text_color"
-          type="text"
-          spellcheck="false"
-          data-config="localStickers.tgsToGifPath"
-        />
-        <div class="ops-btns">
-          <button
-            class="q-button q-button--small q-button--secondary select-file"
-            data-config="localStickers.tgsToGifPath"
-            data-choose="file"
-            data-file-ext="*"
-          >
-            选择
-          </button>
-        </div>
-      </li>
-      <hr class="horizontal-dividing-line" />
-      <li class="sub-item vertical-list-item">
-        <div>
-          <h2>代理地址</h2>
-          <span class="secondary-text">仅支持http</span>
-        </div>
-      </li>
-      <li class="sub-item vertical-list-item">
-        <input
-          placeholder="http://127.0.0.1:7890"
-          class="input-text text_color"
-          type="text"
-          spellcheck="false"
-          data-config="global.httpProxy"
-        />
-        <div class="ops-btns">
-          <button class="q-button q-button--small q-button--secondary check-proxy-btn">检测</button>
-        </div>
-      </li>
+          <li class="vertical-list-item">
+            <div>
+              <h2>ffmpeg 路径</h2>
+              <span class="secondary-text"
+                >在此处下载
+                <span class="link" data-href="https://ffmpeg.org/download.html" target="_blank">FFmpeg</span></span
+              >
+            </div>
+          </li>
+          <li class="select-path vertical-list-item">
+            <input
+              placeholder="请选择文件"
+              readonly
+              data-clear
+              title="移除路径"
+              class="select-file input-text text_color"
+              type="text"
+              spellcheck="false"
+              data-config="localStickers.ffmpegPath"
+            />
+            <div class="ops-btns">
+              <button
+                class="q-button q-button--small q-button--secondary select-file"
+                data-config="localStickers.ffmpegPath"
+                data-choose="file"
+                data-file-ext="*"
+              >
+                选择
+              </button>
+            </div>
+          </li>
+          <hr class="horizontal-dividing-line" />
+          <li class="vertical-list-item">
+            <div>
+              <h2>tgsToGif 路径</h2>
+              <span class="secondary-text"
+                >在此处下载
+                <span
+                  class="link"
+                  data-href="https://github.com/jiongjiongJOJO/tgs_to_gif/releases/latest"
+                  target="_blank"
+                  >tgsToGif</span
+                ></span
+              >
+            </div>
+          </li>
+          <li class="select-path vertical-list-item">
+            <input
+              placeholder="请选择文件"
+              readonly
+              data-clear
+              title="移除路径"
+              class="select-file input-text text_color"
+              type="text"
+              spellcheck="false"
+              data-config="localStickers.tgsToGifPath"
+            />
+            <div class="ops-btns">
+              <button
+                class="q-button q-button--small q-button--secondary select-file"
+                data-config="localStickers.tgsToGifPath"
+                data-choose="file"
+                data-file-ext="*"
+              >
+                选择
+              </button>
+            </div>
+          </li>
+          <hr class="horizontal-dividing-line" />
+          <li class="vertical-list-item">
+            <div>
+              <h2>代理地址</h2>
+              <span class="secondary-text">仅支持http</span>
+            </div>
+          </li>
+          <li class="select-path vertical-list-item">
+            <input
+              placeholder="http://127.0.0.1:7890"
+              class="input-text text_color"
+              type="text"
+              spellcheck="false"
+              data-config="global.httpProxy"
+            />
+            <div class="ops-btns">
+              <button class="q-button q-button--small q-button--secondary check-proxy-btn">检测</button>
+            </div>
+          </li>
+        </ul>
+      </div>
 
       <hr class="horizontal-dividing-line" />
       <li class="vertical-list-item">

@@ -277,8 +277,8 @@ function initWrap(view: HTMLDivElement) {
   view.querySelectorAll(".wrap .vertical-list-item.title").forEach((el) => {
     el.addEventListener("click", () => {
       const wrap = el.parentElement!;
-      wrap.querySelector(".icon")!.classList.toggle("is-fold");
-      wrap.querySelector("ul")!.classList.toggle("hidden");
+      wrap.querySelector(".icon")?.classList.toggle("is-fold");
+      wrap.querySelector("ul")?.classList.toggle("hidden");
     });
   });
 }
