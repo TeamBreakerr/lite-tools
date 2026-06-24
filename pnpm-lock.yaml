@@ -16,8 +16,8 @@ importers:
         version: 7.24.5
     devDependencies:
       '@qwqnt/types':
-        specifier: github:QwQ-002/types
-        version: git+https://git@github.com:QwQ-002/types.git#dbf148cedce0fa64bd1bab015e2f4cd2a0bbb037
+        specifier: git+https://github.com/qwqnt-community/types.git
+        version: git+https://git@github.com:qwqnt-community/types.git#dbf148cedce0fa64bd1bab015e2f4cd2a0bbb037
       '@types/adm-zip':
         specifier: ^0.5.7
         version: 0.5.7
@@ -316,8 +316,8 @@ packages:
     resolution: {integrity: sha512-dfUnCxiN9H4ap84DvD2ubjw+3vUNpstxa0TneY/Paat8a3R4uQZDLSvWjmznAY/DoahqTHl9V46HF/Zs3F29pg==}
     engines: {node: '>= 10.0.0'}
 
-  '@qwqnt/types@git+https://git@github.com:QwQ-002/types.git#dbf148cedce0fa64bd1bab015e2f4cd2a0bbb037':
-    resolution: {commit: dbf148cedce0fa64bd1bab015e2f4cd2a0bbb037, repo: git@github.com:QwQ-002/types.git, type: git}
+  '@qwqnt/types@git+https://git@github.com:qwqnt-community/types.git#dbf148cedce0fa64bd1bab015e2f4cd2a0bbb037':
+    resolution: {commit: dbf148cedce0fa64bd1bab015e2f4cd2a0bbb037, repo: git@github.com:qwqnt-community/types.git, type: git}
     version: 0.0.0
 
   '@sindresorhus/is@4.6.0':
@@ -899,7 +899,7 @@ snapshots:
       '@parcel/watcher-win32-x64': 2.5.1
     optional: true
 
-  '@qwqnt/types@git+https://git@github.com:QwQ-002/types.git#dbf148cedce0fa64bd1bab015e2f4cd2a0bbb037': {}
+  '@qwqnt/types@git+https://git@github.com:qwqnt-community/types.git#dbf148cedce0fa64bd1bab015e2f4cd2a0bbb037': {}
 
   '@sindresorhus/is@4.6.0': {}
 
