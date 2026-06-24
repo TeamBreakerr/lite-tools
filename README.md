@@ -16,6 +16,10 @@ LiteLoaderQQNT / QwQNT 插件 - 轻量工具箱
 
 ## 安装方法
 
+### 安装依赖
+
+该版本需要安装 [ipc-interceptor](https://github.com/qwqnt-community/qwqnt-ipc-interceptor) 前置依赖插件
+
 ### 从 Releases 安装
 
 - 下载 [Releases](https://github.com/xiyuesaves/LiteLoaderQQNT-lite_tools/releases) 中对应版本的压缩包
