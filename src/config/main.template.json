@@ -34,8 +34,8 @@
       "enabled": false,
       "removeOverlay": false,
       "path": "",
-      "opacity": "50",
-      "containerOpacity": "50",
+      "opacity": 50,
+      "containerOpacity": 50,
       "blur": {
         "message": false,
         "chatInputArea": false,
