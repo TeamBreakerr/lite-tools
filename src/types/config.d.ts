@@ -17,7 +17,7 @@ type Wallpaper = {
   imagePath: string;
   objectFit: ObjectFit;
   coverArea: CoverArea;
-  opacity: `${number}`;
+  opacity: number;
 };
 
 type ExtendedConfig = Omit<BaseConfig, "chatFuncBar" | "topFuncBar"> & {
