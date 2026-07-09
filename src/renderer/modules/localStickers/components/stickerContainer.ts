@@ -142,6 +142,7 @@ export class StickerContainer extends LitElement {
     const path = e.composedPath() as HTMLElement[];
     const stickerItem = path.find((item) => item instanceof StickerItem);
     const stickerPackLabel = path.find((item) => item instanceof StickerPackLabel);
+    const sitckerPack = path.find((item) => item instanceof StickerPack);
 
     const container = path.find((item) => item instanceof StickerContainer);
     if (!container) return;
@@ -165,27 +166,31 @@ export class StickerContainer extends LitElement {
             this.closeContextMenu();
           },
         },
-        {
-          label: "设为图标",
-          callback: () => {
-            const iconName = stickerItem.sticker.path.split("/").pop()!;
-            lite_tools.updateStickerPackConfig(stickerPack.stickerPack.dirPath, "icon", iconName);
-            this.closeContextMenu();
-          },
-        },
-        {
-          label: "删除",
-          type: "danger",
-          callback: () => {
-            this.closeContextMenu();
-            lite_tools.deleteSticker(stickerItem.sticker.path);
-          },
-        },
       ];
+      if (sitckerPack!.stickerPack.index >= 0) {
+        this.contextMenu.menuList.push(
+          {
+            label: "设为图标",
+            callback: () => {
+              const iconName = stickerItem.sticker.path.split("/").pop()!;
+              lite_tools.updateStickerPackConfig(stickerPack.stickerPack.dirPath, "icon", iconName);
+              this.closeContextMenu();
+            },
+          },
+          {
+            label: "删除",
+            type: "danger",
+            callback: () => {
+              this.closeContextMenu();
+              lite_tools.deleteSticker(stickerItem.sticker.path);
+            },
+          },
+        );
+      }
     }
 
     // 右键点击贴纸标题
-    if (stickerPackLabel) {
+    if (stickerPackLabel && sitckerPack!.stickerPack.index >= 0) {
       this.contextMenu.show = true;
       this.contextMenu.position = { x: e.clientX, y: e.clientY };
       this.contextMenu.menuList = [
