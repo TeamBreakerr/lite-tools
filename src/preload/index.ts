@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { RecallMsgId } from "@/common/types/preventRecall";
 import type { WallpaperData } from "@/common/types/wallpaper";
 import type { Toast } from "@/common/types/toastManager";
-import type { StickerStore } from "@/common/types/localStickers";
+import type { StickerStore, Sticker } from "@/common/types/localStickers";
 
 const exposeFunctions = {
   // 配置相关
@@ -31,7 +31,7 @@ const exposeFunctions = {
   deleteSticker: (stickerPath: string) => ipcRenderer.send("lite_tools.stickerPacksManager.deleteSticker", stickerPath),
   downloadTgSticker: (tgStickerUrl: string) =>
     ipcRenderer.send("lite_tools.stickerPacksManager.downloadTgSticker", tgStickerUrl),
-  updateRecentStickers: (stickerPath: string) => ipcRenderer.send("lite_tools.updateRecentStickers", stickerPath),
+  updateRecentStickers: (sticker: Sticker) => ipcRenderer.send("lite_tools.stickerStore.updateRecentStickers", sticker),
 
   // 通用操作接口
   copyFile: (sourceFilePath: string, targetFilePath: string) =>
