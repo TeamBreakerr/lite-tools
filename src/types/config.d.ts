@@ -28,10 +28,23 @@ type ExtendedConfig = Omit<BaseConfig, "chatFuncBar" | "topFuncBar"> & {
   };
 };
 
+type ObjectPaths<T> = T extends object
+  ? {
+      [K in keyof T & string]: T[K] extends any[]
+        ? K
+        : T[K] extends Record<string, any>
+          ? K | `${K}.${ObjectPaths<T[K]>}`
+          : K;
+    }[keyof T & string]
+  : never;
+
+type _ConfigPath = ObjectPaths<ExtendedConfig>;
+
 declare global {
   type Config = ExtendedConfig;
   type FuncBar = FuncBar;
   type BaseConfig = _BaseConfig;
+  type ConfigPath = _ConfigPath;
 }
 
 export {};
