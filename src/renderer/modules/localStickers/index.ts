@@ -146,6 +146,9 @@ async function setupLocalStickers() {
   configStore.onChange(updateIconState);
 
   stickerContainer.addEventListener("lt-select-sticker", (e) => {
+    if (configStore.value.localStickers.recentStickers.enabled) {
+      lite_tools.updateRecentStickers(e.detail);
+    }
     const picSubType = configStore.value.localStickers.sendAsPic ? 0 : 1;
     log("插入表情", e.detail.path);
     if (editorModel === "ckeditor") {
@@ -159,7 +162,7 @@ async function setupLocalStickers() {
         writer.setSelection(writer.createPositionAt(writerEl, "after"));
       });
     } else if (editorModel === "proseMirror") {
-      log(proseMirror)
+      log(proseMirror);
       const view = proseMirror.view;
       const state = view.state;
       const schema = proseMirror.schemaInstance;
@@ -182,6 +185,9 @@ async function setupLocalStickers() {
   });
 
   stickerContainer.addEventListener("lt-send-sticker", (e) => {
+    if (configStore.value.localStickers.recentStickers.enabled) {
+      lite_tools.updateRecentStickers(e.detail);
+    }
     const picSubType = configStore.value.localStickers.sendAsPic ? 0 : 1;
     sendMessage(aioStore.getPeer(), [{ type: "image", path: e.detail.path, picSubType, summary: "" }]);
     log("发送表情", e.detail.path);
@@ -196,6 +202,8 @@ function buildStickerMenu(packs: StickerPackType[], sourceFilePath: string, getR
   const rootPathStr = configStore.value.localStickers.path.replace(/\\/g, "/").replace(/\/$/, "");
 
   for (const pack of packs) {
+    // 过滤掉特殊贴纸包，如常用贴纸
+    if (pack.index < 0) continue;
     const packPath = pack.dirPath.replace(/\\/g, "/");
     const nodeChain: { label: string; path: string; isLeaf: boolean }[] = [];
 
