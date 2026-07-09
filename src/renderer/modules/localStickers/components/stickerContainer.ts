@@ -14,7 +14,7 @@ import type { StickerStore } from "@/common/types/localStickers";
 import "./stickerIcon";
 
 interface LtStickerEvent extends CustomEvent {
-  detail: { path: string; name: string };
+  detail: { path: string; label: string };
 }
 
 declare global {
