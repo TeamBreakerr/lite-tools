@@ -19,6 +19,7 @@ class ConfigManager {
   private readyPromise: Promise<void>;
   private resolveReady: () => void;
   private userConfigRegistry: UserConfigRegistry;
+  private _lastUpdatedConfigs: string[] = [];
 
   constructor() {
     const { promise, resolve } = Promise.withResolvers<void>();
@@ -103,7 +104,32 @@ class ConfigManager {
     }
   }
 
-  setup(uid: string) {
+  private calculateChangedKeys(oldObj: any, newObj: any, prefix = ""): string[] {
+    const changedKeys: string[] = [];
+
+    for (const key in newObj) {
+      const oldVal = oldObj ? oldObj[key] : undefined;
+      const newVal = newObj[key];
+      const currentPath = prefix ? `${prefix}.${key}` : key;
+
+      if (typeof newVal === "object" && newVal !== null && !Array.isArray(newVal)) {
+        if (typeof oldVal !== "object" || oldVal === null) {
+          changedKeys.push(currentPath);
+        } else {
+          const nestedChanges = this.calculateChangedKeys(oldVal, newVal, currentPath);
+          changedKeys.push(...nestedChanges);
+        }
+      } else {
+        if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+          changedKeys.push(currentPath);
+        }
+      }
+    }
+
+    return changedKeys;
+  }
+
+  public setup(uid: string) {
     try {
       const userConfigPath = this.userConfigRegistry.resolve(uid);
       this.userUid = uid;
@@ -121,7 +147,9 @@ class ConfigManager {
     }
   }
 
-  updateConfig(newConfig: Config) {
+  public updateConfig(newConfig: Config) {
+    this._lastUpdatedConfigs = this.calculateChangedKeys(this.config, newConfig);
+
     Object.assign(this.config, newConfig);
     fs.writeFileSync(this.currentConfigPath, JSON.stringify(this.config, null, 2), "utf-8");
     for (const listener of this.updateListeners) {
@@ -130,12 +158,12 @@ class ConfigManager {
     globalBroadcast("lite_tools.configChanged", this.config);
   }
 
-  onConfigUpdate(listener: ConfigListener) {
+  public onConfigUpdate(listener: ConfigListener) {
     this.updateListeners.add(listener);
     return () => this.offConfigUpdate(listener);
   }
 
-  offConfigUpdate(listener: ConfigListener) {
+  public offConfigUpdate(listener: ConfigListener) {
     this.updateListeners.delete(listener);
   }
 
@@ -149,6 +177,10 @@ class ConfigManager {
 
   get uid() {
     return this.userUid;
+  }
+  
+  get lastUpdatedConfigs(): ReadonlyArray<string> {
+    return this._lastUpdatedConfigs;
   }
 }
 
