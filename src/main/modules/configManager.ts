@@ -19,7 +19,7 @@ class ConfigManager {
   private readyPromise: Promise<void>;
   private resolveReady: () => void;
   private userConfigRegistry: UserConfigRegistry;
-  private _lastUpdatedConfigs: string[] = [];
+  private _lastUpdatedConfigs: ConfigPath[] = [];
 
   constructor() {
     const { promise, resolve } = Promise.withResolvers<void>();
@@ -133,14 +133,14 @@ class ConfigManager {
     try {
       const userConfigPath = this.userConfigRegistry.resolve(uid);
       this.userUid = uid;
-      this.config = this.loadConfig(userConfigPath);
+      this.config = this.loadConfig(userConfigPath) as Config;
       this.currentConfigPath = userConfigPath;
       this.isInitialized = true;
       this.isUserSpecific = true;
       this.resolveReady();
     } catch (err) {
       this.userUid = uid;
-      this.config = this.loadConfig(this.defaultConfigPath);
+      this.config = this.loadConfig(this.defaultConfigPath) as Config;
       this.currentConfigPath = this.defaultConfigPath;
       this.isInitialized = true;
       this.resolveReady();
@@ -148,7 +148,7 @@ class ConfigManager {
   }
 
   public updateConfig(newConfig: Config) {
-    this._lastUpdatedConfigs = this.calculateChangedKeys(this.config, newConfig);
+    this._lastUpdatedConfigs = this.calculateChangedKeys(this.config, newConfig) as ConfigPath[];
 
     Object.assign(this.config, newConfig);
     fs.writeFileSync(this.currentConfigPath, JSON.stringify(this.config, null, 2), "utf-8");
@@ -178,8 +178,8 @@ class ConfigManager {
   get uid() {
     return this.userUid;
   }
-  
-  get lastUpdatedConfigs(): ReadonlyArray<string> {
+
+  get lastUpdatedConfigs(): ReadonlyArray<ConfigPath> {
     return this._lastUpdatedConfigs;
   }
 }
