@@ -4,12 +4,13 @@ import chokidar from "chokidar";
 import { createLogger } from "@/main/utils/createLogger";
 import { globalBroadcast } from "@/main/utils/globalBroadcast";
 import { stickerPacksManager } from "./stickerPacksManager";
-import { tgStickerDownloader } from "@/main/modules/localStickers/tgStickerDownloader";
+import { tgStickerDownloader } from "./tgStickerDownloader";
+import { recentStickersManager } from "./recentStickersManager";
 import { createThrottledDispatcher } from "@/common/createThrottledDispatcher";
 import { configManager } from "@/main/modules/configManager";
 
 import type { FSWatcher } from "chokidar";
-import type { StickerStore, StickerPack, StickerPathItem } from "@/common/types/localStickers";
+import type { StickerStore, StickerPack, StickerPathItem, Sticker } from "@/common/types/localStickers";
 
 const log = createLogger("localStickers");
 
@@ -18,14 +19,21 @@ class LocalStickers {
   private watcher: FSWatcher | null = null;
   private currentListeningPath = "";
   private stickerStore = this.createStickerStoreResult("info", "初始化中...");
-  private stickerPacksManager = stickerPacksManager;
 
   constructor() {}
 
   public notifyStickerStoreUpdated = createThrottledDispatcher(() => {
     if (!this.initializedReady) return; // 避免因节流导致的 offListener 后状态被覆盖
-    const stickerStore = this.createStickerStoreResult("success", this.stickerPacksManager.getPackList());
+    const stickerStore = this.createStickerStoreResult("success", stickerPacksManager.getPackList());
     if (stickerStore.stickerPacks?.length) {
+      // 插入常用贴纸
+      if (configManager.value.localStickers.recentStickers.enabled) {
+        log("插入常用贴纸集");
+        const recentStickers = recentStickersManager.getRecentStickers();
+        if (recentStickers.stickers.length) {
+          stickerStore.stickerPacks.unshift(recentStickers);
+        }
+      }
       this.stickerStore = stickerStore;
     } else {
       this.stickerStore = this.createStickerStoreResult("failed", "路径下没有贴纸");
@@ -50,22 +58,34 @@ class LocalStickers {
       return this.stickerStore;
     });
     ipcMain.on("lite_tools.stickerPacksManager.updatePackConfig", (_, path, key, value) => {
-      this.stickerPacksManager.updatePackConfig(path, key, value);
+      stickerPacksManager.updatePackConfig(path, key, value);
       this.notifyStickerStoreUpdated();
     });
     ipcMain.on("lite_tools.stickerPacksManager.deleteSticker", (_, stickerPath) => {
-      this.stickerPacksManager.onEvent("unlink", stickerPath);
+      recentStickersManager.deleteSticker(stickerPath);
+      stickerPacksManager.onEvent("unlink", stickerPath);
       this.notifyStickerStoreUpdated();
     });
-
     ipcMain.on("lite_tools.stickerPacksManager.downloadTgSticker", (_, tgStickerUrl: string) => {
       tgStickerDownloader.getTgSticker(tgStickerUrl);
+    });
+    ipcMain.on("lite_tools.stickerStore.updateRecentStickers", (_, sticker: Sticker) => {
+      recentStickersManager.updateRecentStickers(sticker);
+      this.notifyStickerStoreUpdated();
     });
   }
 
   private async update(config: Config) {
     if (config.localStickers.enabled) {
       await this.addListener(config.localStickers.path);
+      const some: Set<ConfigPath> = new Set([
+        "localStickers.recentStickers.enabled",
+        "localStickers.recentStickers.limit",
+        "localStickers.stickersPerRow",
+      ]);
+      if (configManager.lastUpdatedConfigs.some((key) => some.has(key))) {
+        this.notifyStickerStoreUpdated();
+      }
     } else {
       await this.offListener();
       this.stickerStore = this.createStickerStoreResult("failed", "功能未启用");
@@ -86,7 +106,7 @@ class LocalStickers {
     await this.offListener();
 
     // 更新 rootPath
-    this.stickerPacksManager.rootPath = targetPath;
+    stickerPacksManager.rootPath = targetPath;
 
     if (!targetPath) {
       this.stickerStore = this.createStickerStoreResult("failed", "请选择目录");
@@ -104,6 +124,8 @@ class LocalStickers {
         this.currentListeningPath = "";
         return;
       }
+
+      recentStickersManager.setRootPath(targetPath);
 
       this.currentListeningPath = targetPath;
       this.stickerStore = this.createStickerStoreResult("info", "扫描表情中...");
@@ -127,7 +149,11 @@ class LocalStickers {
           log("文件变化", event, path);
         }
 
-        this.stickerPacksManager.onEvent(event, path);
+        stickerPacksManager.onEvent(event, path);
+
+        if (event === "unlink") {
+          recentStickersManager.deleteSticker(path);
+        }
 
         if (this.initializedReady) {
           this.notifyStickerStoreUpdated();
@@ -160,7 +186,7 @@ class LocalStickers {
 
     // 重置 stickerStore
     this.stickerStore = this.createStickerStoreResult("failed", "监听已关闭");
-    this.stickerPacksManager.clear();
+    stickerPacksManager.clear();
 
     await oldWatcher?.close();
   }
