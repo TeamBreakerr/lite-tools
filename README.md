@@ -14,11 +14,21 @@ LiteLoaderQQNT / QwQNT 插件 - 轻量工具箱
 > [!TIP]
 > 当前分支仍在持续开发中，功能和兼容性请以实际 Release、设置页和提交记录为准。
 
+
+### 依赖
+
+根据你使用的加载器，需要先安装对应的前置依赖插件
+
+#### qwqnt
+
+- [qwqnt-hako](https://github.com/qwqnt-community/qwqnt-hako)
+- [ipc-interceptor](https://github.com/qwqnt-community/qwqnt-ipc-interceptor)
+
+#### LiteLoaderQQNT
+
+- [ipc-interceptor](https://github.com/qwqnt-community/qwqnt-ipc-interceptor)
+
 ## 安装方法
-
-### 安装依赖
-
-该版本需要安装 [ipc-interceptor](https://github.com/qwqnt-community/qwqnt-ipc-interceptor) 前置依赖插件
 
 ### 从 Releases 安装
 
