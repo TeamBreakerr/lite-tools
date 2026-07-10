@@ -7,10 +7,6 @@ import { qwqSetupVueComponentTracker } from "@/renderer/modules/vueComponentTrac
 qwqSetupVueComponentTracker();
 main();
 
-RendererEvents.onSettingsWindowCreated(async () => {
-  const view = await PluginSettings.renderer.registerPluginSettings(packageJson);
-  initSettingView(view);
-});
 // 异步加载脚本时可能会错过上面的事件
 if (__DEV__) {
   (async () => {
@@ -20,4 +16,9 @@ if (__DEV__) {
       initSettingView(view);
     }
   })();
+} else {
+  RendererEvents.onSettingsWindowCreated(async () => {
+    const view = await PluginSettings.renderer.registerPluginSettings(packageJson);
+    initSettingView(view);
+  });
 }
