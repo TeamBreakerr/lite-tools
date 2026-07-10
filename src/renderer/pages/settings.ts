@@ -258,7 +258,7 @@ function sortStickerPacks(stickerPacks: StickerPack[]) {
     }
 
     return a.dirPath.localeCompare(b.dirPath);
-  });
+  }).filter(item => item.index >= 0)
 }
 
 function getStickerSortInsertTarget(
