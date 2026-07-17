@@ -7,7 +7,7 @@ import { waitForElement } from "@/renderer/utils/domWaitFor";
 
 import { initRecallMessageListener, insertRecallTag } from "./messageRecall";
 import { mergeMessage } from "./mergeMessage";
-import { messageImageMask } from "./messageImageMask";
+import { setupRevealMask, revealMask } from "./revealMask";
 import { insertSlot } from "./messageSlot";
 import { insertTime } from "./insertTime";
 import { insertRepeatBtn } from "./insertRepeatBtn";
@@ -38,6 +38,7 @@ async function setupHandleMessages() {
     }
   });
   observerElement();
+  setupRevealMask();
   onComponentMount(handleMessages);
   initRecallMessageListener(enhanceMessage);
   const { instance, value: msgList } = await waitForInstance(
@@ -62,21 +63,22 @@ function handleMessages(component: any) {
   if (component?.vnode?.el && component?.props?.msgRecord && !processedInstances.has(component)) {
     if (!checkChatType(component.props.msgRecord) || !component.vnode.el?.classList?.contains?.("message")) return;
     processedInstances.add(component);
+    const isNewVersion = !!component.vnode.el.querySelector(".message-native");
     // 消息合并-有卡顿
     if (0) {
       mergeMessage(aioData, component);
     }
     // 插入插槽
     if (enabledSlot()) {
-      if (component.vnode.el.querySelector(".message-native")) {
+      if (isNewVersion) {
         enhanceMessageSync(component);
       } else {
         enhanceMessage(component);
       }
     }
     // 图片遮罩
-    if (1) {
-      messageImageMask(component);
+    if (configStore.value.message.revealMask.enabled) {
+      revealMask(component, isNewVersion);
     }
   }
 }
@@ -115,7 +117,7 @@ function enhanceMessage(component: any) {
   const messageEl = component.vnode.el as MessageElement;
   const msgRecord = component.props.msgRecord;
   let slot = insertSlot(messageEl, msgRecord);
-  log(slot)
+  log(slot);
   if (!slot) {
     return;
   }
