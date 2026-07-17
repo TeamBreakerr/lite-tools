@@ -106,12 +106,17 @@ export class RevealMAsk extends LitElement {
   @state()
   private url: string = resource.url;
 
+  @state()
+  private target?: HTMLElement;
+
   constructor() {
     super();
     resource.subscribe((url: string) => (this.url = url));
   }
 
   private handleClick = (e: MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
     this.style.setProperty("--mask-x", `${e.offsetX}px`);
     this.style.setProperty("--mask-y", `${e.offsetY}px`);
     // this.removeAttribute("reveal");
@@ -120,16 +125,17 @@ export class RevealMAsk extends LitElement {
     this.addEventListener("animationend", () => {
       this.remove();
     });
+    this.target?.blur();
     this.removeEventListener("click", this.handleClick);
   };
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.addEventListener("click", this.handleClick);
-  }
+  public setupTarget = (target: HTMLElement) => {
+    this.target = target;
+    this.target.addEventListener("click", this.handleClick);
+  };
 
   disconnectedCallback() {
-    this.removeEventListener("click", this.handleClick);
+    this.target?.removeEventListener("click", this.handleClick);
     super.disconnectedCallback();
   }
 
