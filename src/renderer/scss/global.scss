@@ -45,6 +45,7 @@
 // 插槽样式
 .lt-slot {
   user-select: none;
+  -webkit-user-drag: none;
   // 图片插槽
   &.embed-image {
     position: absolute;
@@ -54,7 +55,8 @@
     overflow: hidden;
     font-size: 12px;
     line-height: 14px;
-    user-select: none;
+    pointer-events: none;
+    z-index: 10;
     &.f-show {
       .lt-time {
         display: block !important;
@@ -95,6 +97,7 @@
     line-height: 11px;
     width: auto;
     user-select: none;
+    pointer-events: none;
     .lt-spacer {
       display: flex;
       align-items: center;
@@ -205,8 +208,8 @@
   }
 }
 
-.repeat-message{
-  .plus-one-btn{
+.repeat-message {
+  .plus-one-btn {
     display: none !important;
   }
 }
