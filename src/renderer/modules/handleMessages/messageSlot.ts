@@ -9,7 +9,6 @@ const ignoreElementType = [ElementType.grayTipElement];
 
 const log = createLogger("messageSlot");
 function insertSlot(messageEl: MessageElement, msgRecord: any) {
-  log(messageEl.outerHTML);
   const isNew = !!messageEl.querySelector(".message-native");
   if (messageEl.lt_slot && messageEl.lt_slot.isConnected) {
     return messageEl.lt_slot;
