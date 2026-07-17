@@ -419,3 +419,19 @@
   container-type: inline-size;
   container-name: group-chat;
 }
+
+// 图片遮罩需要独立设置圆角尺寸
+.ml-item:has(reveal-mask) {
+  .mix-message__container {
+    --mask-border-radius: 4px;
+    &.mix-message__container--pic {
+      --mask-border-radius: 12px;
+    }
+  }
+  .image:focus:after {
+    background: unset !important;
+  }
+  .reply-content {
+    position: relative;
+  }
+}

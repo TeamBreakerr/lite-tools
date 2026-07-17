@@ -31,7 +31,12 @@ export class RevealMAsk extends LitElement {
         height: 100%;
         z-index: 1;
         backdrop-filter: blur(32px);
+        background-color: rgba(0, 0, 0, 0.13);
+        border-radius: var(--mask-border-radius);
         user-select: none;
+        -webkit-user-drag: none;
+        overflow: hidden;
+        pointer-events: none;
 
         --mask-x: 50%;
         --mask-y: 50%;
@@ -46,8 +51,8 @@ export class RevealMAsk extends LitElement {
           var(--reveal-center) var(--reveal-diffusion),
           var(--reveal-edge) calc(var(--reveal-diffusion) + var(--reveal-offset))
         );
-        /* 
-        background: radial-gradient(
+
+        /* background: radial-gradient(
           circle 2000px at var(--mask-x) var(--mask-y),
           var(--reveal-center) var(--reveal-diffusion),
           var(--reveal-edge) calc(var(--reveal-diffusion) + var(--reveal-offset))
@@ -73,6 +78,7 @@ export class RevealMAsk extends LitElement {
       }
 
       .mask {
+        pointer-events: none;
         will-change: transform;
         position: absolute;
         left: 0;
@@ -83,6 +89,7 @@ export class RevealMAsk extends LitElement {
         animation: loop 16s linear infinite;
       }
       .reverse-mask {
+        pointer-events: none;
         content: "";
         position: absolute;
         background: red;
