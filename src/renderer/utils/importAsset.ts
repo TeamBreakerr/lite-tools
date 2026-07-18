@@ -11,4 +11,8 @@ async function importTextAsset(path: string, fileName: string) {
   return await (await fetch(resolvePath(join(pluginPath, "dist", path, fileName)))).text();
 }
 
-export { importHtmlAsset, importTextAsset };
+async function importBlobAsset(path: string, fileName: string) {
+  return await (await fetch(resolvePath(join(pluginPath, "dist", path, fileName)))).blob();
+}
+
+export { importHtmlAsset, importTextAsset, importBlobAsset };

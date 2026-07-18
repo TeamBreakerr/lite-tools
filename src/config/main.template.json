@@ -74,6 +74,12 @@
         "light": "#ff6666",
         "dark": "#c70000"
       }
+    },
+    "revealMask": {
+      "enabled": false,
+      "users": "",
+      "includeSticker": false,
+      "allUsers": false
     }
   },
   "sideBar": {

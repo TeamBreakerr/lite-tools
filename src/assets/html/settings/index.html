@@ -217,6 +217,43 @@
           </div>
         </div>
       </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item">
+        <div>
+          <h2>图片遮罩</h2>
+          <span class="secondary-text">匹配到的群和用户的图片将会被添加磨砂遮罩，多个对象用","分隔</span>
+        </div>
+        <div class="q-switch" data-config="message.revealMask.enabled">
+          <span class="q-switch__handle"></span>
+        </div>
+      </li>
+      <li class="select-path vertical-list-item">
+        <input
+          placeholder="填写群和用户ID"
+          class="input-text text_color"
+          type="text"
+          spellcheck="false"
+          data-config="message.revealMask.users"
+        />
+      </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item sub-item">
+        <div>
+          <h2>包括表情</h2>
+        </div>
+        <div class="q-switch" data-config="message.revealMask.includeSticker">
+          <span class="q-switch__handle"></span>
+        </div>
+      </li>
+      <hr class="horizontal-dividing-line" />
+      <li class="vertical-list-item sub-item">
+        <div>
+          <h2>所有用户</h2>
+        </div>
+        <div class="q-switch" data-config="message.revealMask.allUsers">
+          <span class="q-switch__handle"></span>
+        </div>
+      </li>
     </ul>
   </div>
   <!-- 阻止撤回 -->

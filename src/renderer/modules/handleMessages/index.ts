@@ -7,10 +7,11 @@ import { waitForElement } from "@/renderer/utils/domWaitFor";
 
 import { initRecallMessageListener, insertRecallTag } from "./messageRecall";
 import { mergeMessage } from "./mergeMessage";
-import { messageImageMask } from "./messageImageMask";
+import { setupRevealMask, revealMask } from "./revealMask";
 import { insertSlot } from "./messageSlot";
 import { insertTime } from "./insertTime";
 import { insertRepeatBtn } from "./insertRepeatBtn";
+import { chatObserverManager } from "./chatObserverManager";
 
 import type { MessageElement, SlotElement } from "./type";
 
@@ -37,7 +38,11 @@ async function setupHandleMessages() {
       document.body.classList.remove("repeat-message");
     }
   });
-  observerElement();
+
+  chatObserverManager.start();
+
+  // observerElement();
+  setupRevealMask();
   onComponentMount(handleMessages);
   initRecallMessageListener(enhanceMessage);
   const { instance, value: msgList } = await waitForInstance(
@@ -62,26 +67,27 @@ function handleMessages(component: any) {
   if (component?.vnode?.el && component?.props?.msgRecord && !processedInstances.has(component)) {
     if (!checkChatType(component.props.msgRecord) || !component.vnode.el?.classList?.contains?.("message")) return;
     processedInstances.add(component);
+    const isNewVersion = !!component.vnode.el.querySelector(".message-native");
     // 消息合并-有卡顿
     if (0) {
       mergeMessage(aioData, component);
     }
     // 插入插槽
     if (enabledSlot()) {
-      if (component.vnode.el.querySelector(".message-native")) {
+      if (isNewVersion) {
         enhanceMessageSync(component);
       } else {
         enhanceMessage(component);
       }
     }
     // 图片遮罩
-    if (1) {
-      messageImageMask(component);
+    if (configStore.value.message.revealMask.enabled) {
+      revealMask(component, isNewVersion);
     }
   }
 }
 
-const awaitInsert = new Map();
+const awaitInsertSlot = new Map();
 
 async function enhanceMessageSync(component: any) {
   const messageEl = component.vnode.el as MessageElement;
@@ -90,7 +96,7 @@ async function enhanceMessageSync(component: any) {
 
   if (slot === false) {
     const { promise, resolve } = Promise.withResolvers<SlotElement>();
-    awaitInsert.set(msgRecord.msgId, { resolve, messageEl, msgRecord });
+    awaitInsertSlot.set(msgRecord.msgId, { resolve, messageEl, msgRecord });
     slot = await promise;
   }
 
@@ -115,7 +121,6 @@ function enhanceMessage(component: any) {
   const messageEl = component.vnode.el as MessageElement;
   const msgRecord = component.props.msgRecord;
   let slot = insertSlot(messageEl, msgRecord);
-  log(slot)
   if (!slot) {
     return;
   }
@@ -134,39 +139,22 @@ function enhanceMessage(component: any) {
   });
 }
 
-async function observerElement() {
-  const target = await waitForElement(".chat-msg-area__vlist");
-  const observer = new MutationObserver((mutationsList) => {
-    if (!target.isConnected) {
-      return;
-    }
-    const affectedTasks = new Set<any>();
-    for (let mutation of mutationsList) {
-      if (mutation.type === "childList") {
-        const target = mutation.target as HTMLElement;
-        if (!target?.isConnected) continue;
-        const mlItem = target.closest<HTMLElement>(".ml-item");
-        if (mlItem) {
-          const inserted = awaitInsert.get(mlItem.id);
-          if (inserted) {
-            affectedTasks.add(inserted);
-          }
+// 处理异步插入插槽
+chatObserverManager.addTask({
+  name: "InsertSlot",
+  selector: ".message",
+  handler: (elements) => {
+    elements.forEach((mlItem) => {
+      const inserted = awaitInsertSlot.get(mlItem.id);
+      if (inserted) {
+        const slot = insertSlot(inserted.messageEl, inserted.msgRecord);
+        if (slot) {
+          awaitInsertSlot.delete(inserted.msgRecord.msgId);
+          inserted.resolve(slot);
         }
       }
-    }
-
-    for (let inserted of affectedTasks) {
-      const slot = insertSlot(inserted.messageEl, inserted.msgRecord);
-      if (slot) {
-        awaitInsert.delete(inserted.msgRecord.msgId);
-        inserted.resolve(slot);
-      }
-    }
-  });
-  observer.observe(target, {
-    childList: true,
-    subtree: true,
-  });
-}
+    });
+  },
+});
 
 export { setupHandleMessages };
