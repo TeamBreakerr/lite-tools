@@ -144,6 +144,7 @@ export class RevealMAsk extends LitElement {
     // this.removeAttribute("reveal");
     // this.offsetHeight;
     this.setAttribute("reveal", "");
+    // this.target?.querySelector("img")?.style.setProperty("filter", "");
     this.addEventListener("animationend", () => {
       this.remove();
     });
@@ -154,11 +155,17 @@ export class RevealMAsk extends LitElement {
   public setupTarget = async (target: HTMLElement) => {
     this.target = target;
     this.target.addEventListener("click", this.handleClick);
+    // this.target.querySelector("img")?.style.setProperty("filter", "blur(32px)");
   };
 
   disconnectedCallback() {
     console.log("组件销毁");
-    this.target?.removeEventListener("click", this.handleClick);
+    if (this.target) {
+      this.target.removeEventListener("click", this.handleClick);
+      this.target.style.filter = "";
+      // this.target.querySelector("img")?.style.setProperty("filter", "");
+    }
+
     super.disconnectedCallback();
   }
 
