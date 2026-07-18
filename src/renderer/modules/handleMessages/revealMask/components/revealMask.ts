@@ -30,7 +30,7 @@ export class RevealMAsk extends LitElement {
         width: 100%;
         height: 100%;
         z-index: 1;
-        /* backdrop-filter: blur(32px); */
+        backdrop-filter: blur(32px);
         background-color: rgba(0, 0, 0, 0.13);
         border-radius: var(--mask-border-radius);
         user-select: none;
@@ -131,9 +131,6 @@ export class RevealMAsk extends LitElement {
   @state()
   private target?: HTMLElement;
 
-  @state()
-  private picUrl: string = "";
-
   constructor() {
     super();
     resource.subscribe((url: string) => (this.url = url));
@@ -157,37 +154,17 @@ export class RevealMAsk extends LitElement {
   public setupTarget = async (target: HTMLElement) => {
     this.target = target;
     this.target.addEventListener("click", this.handleClick);
-    const img = target.querySelector("img");
-    if (img) {
-      const canvas = document.createElement("canvas");
-      canvas.width = 16;
-      canvas.height = 16;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(img, 0, 0, 16, 16);
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) return;
-            this.picUrl = URL.createObjectURL(blob);
-          },
-          "image/jpeg",
-          0.4,
-        );
-      }
-    }
   };
 
   disconnectedCallback() {
     console.log("组件销毁");
-    URL.revokeObjectURL(this.picUrl);
     this.target?.removeEventListener("click", this.handleClick);
     super.disconnectedCallback();
   }
 
   render() {
     return html`<div style="--url: url(${this.url})" class="mask"></div>
-      <div style="--url: url(${this.url})" class="reverse-mask"></div>
-      ${this.picUrl ? html`<img class="filter-blur" .src=${this.picUrl} />` : html`<div class="backdrop-blur"></div>`}`;
+      <div style="--url: url(${this.url})" class="reverse-mask"></div>`;
   }
 }
 
