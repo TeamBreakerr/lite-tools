@@ -30,7 +30,7 @@ export class RevealMAsk extends LitElement {
         width: 100%;
         height: 100%;
         z-index: 1;
-        backdrop-filter: blur(32px);
+        /* backdrop-filter: blur(32px); */
         background-color: rgba(0, 0, 0, 0.13);
         border-radius: var(--mask-border-radius);
         user-select: none;
@@ -78,6 +78,7 @@ export class RevealMAsk extends LitElement {
       }
 
       .mask {
+        z-index: 11;
         pointer-events: none;
         will-change: transform;
         position: absolute;
@@ -89,16 +90,37 @@ export class RevealMAsk extends LitElement {
         animation: loop 16s linear infinite;
       }
       .reverse-mask {
+        z-index: 10;
         pointer-events: none;
         content: "";
         position: absolute;
-        background: red;
         right: 0;
         bottom: 0;
         width: 1024px;
         height: 1024px;
         background: var(--url);
         animation: reverseLoop 16s linear infinite;
+      }
+      .filter-blur {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        image-rendering: -webkit-optimize-contrast;
+        object-fit: fill;
+        object-position: center top;
+        text-indent: 100%;
+      }
+      .backdrop-blur {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        backdrop-filter: blur(32px);
       }
     `,
   ];
@@ -108,6 +130,9 @@ export class RevealMAsk extends LitElement {
 
   @state()
   private target?: HTMLElement;
+
+  @state()
+  private picUrl: string = "";
 
   constructor() {
     super();
@@ -129,19 +154,40 @@ export class RevealMAsk extends LitElement {
     this.removeEventListener("click", this.handleClick);
   };
 
-  public setupTarget = (target: HTMLElement) => {
+  public setupTarget = async (target: HTMLElement) => {
     this.target = target;
     this.target.addEventListener("click", this.handleClick);
+    const img = target.querySelector("img");
+    if (img) {
+      const canvas = document.createElement("canvas");
+      canvas.width = 16;
+      canvas.height = 16;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, 16, 16);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return;
+            this.picUrl = URL.createObjectURL(blob);
+          },
+          "image/jpeg",
+          0.4,
+        );
+      }
+    }
   };
 
   disconnectedCallback() {
+    console.log("组件销毁");
+    URL.revokeObjectURL(this.picUrl);
     this.target?.removeEventListener("click", this.handleClick);
     super.disconnectedCallback();
   }
 
   render() {
     return html`<div style="--url: url(${this.url})" class="mask"></div>
-      <div style="--url: url(${this.url})" class="reverse-mask"></div>`;
+      <div style="--url: url(${this.url})" class="reverse-mask"></div>
+      ${this.picUrl ? html`<img class="filter-blur" .src=${this.picUrl} />` : html`<div class="backdrop-blur"></div>`}`;
   }
 }
 
