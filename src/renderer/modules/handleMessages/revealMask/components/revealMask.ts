@@ -159,7 +159,6 @@ export class RevealMAsk extends LitElement {
   };
 
   disconnectedCallback() {
-    console.log("组件销毁");
     if (this.target) {
       this.target.removeEventListener("click", this.handleClick);
       this.target.style.filter = "";
