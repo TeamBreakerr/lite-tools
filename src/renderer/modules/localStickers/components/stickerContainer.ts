@@ -317,11 +317,14 @@ export class StickerContainer extends LitElement {
   };
 
   private mouseLeaveHandler = (e: MouseEvent) => {
-    this.mouseEnterInIcon = false;
-    setTimeout(() => {
-      if (this.mouseEnterInIcon) return;
-      this.showPanel = false;
-    }, 100);
+    const localStickers = configStore.value.localStickers;
+    if (localStickers.hoverShow) {
+      this.mouseEnterInIcon = false;
+      setTimeout(() => {
+        if (this.mouseEnterInIcon) return;
+        this.showPanel = false;
+      }, 100);
+    }
   };
 
   protected async firstUpdated(): Promise<void> {
