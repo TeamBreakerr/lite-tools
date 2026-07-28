@@ -291,7 +291,6 @@ function buildStickerMenu(packs: StickerPackType[], sourceFilePath: string, getR
     }
   }
 
-  // 3. 返回最终符合你要求的根节点对象
   return {
     icon: StickerIcon.ICON,
     label: "添加到贴纸集",

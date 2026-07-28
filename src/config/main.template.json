@@ -14,6 +14,7 @@
     "telegramBotToken": "",
     "ffmpegPath": "",
     "tgsToGifPath": "",
+    "hoverShow": false,
     "recentStickers": {
       "enabled": false,
       "limit": 3

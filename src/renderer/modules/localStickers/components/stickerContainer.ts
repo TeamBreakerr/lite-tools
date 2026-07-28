@@ -12,6 +12,7 @@ import type { StickerStore } from "@/common/types/localStickers";
 
 // 引入拆分后的 Icon 组件以确保注册
 import "./stickerIcon";
+import type { StickerIcon } from "./stickerIcon";
 
 interface LtStickerEvent extends CustomEvent {
   detail: { path: string; label: string };
@@ -104,6 +105,9 @@ export class StickerContainer extends LitElement {
   private showPanel = false;
 
   @state()
+  private mouseEnterInIcon = false;
+
+  @state()
   private ignoreClick = false;
 
   private get panelWidth() {
@@ -122,6 +126,9 @@ export class StickerContainer extends LitElement {
 
   @query("lt-context-menu", true)
   private contextMenu!: ContextMenu;
+
+  @query("lt-sticker-icon", true)
+  private stickerIcon!: StickerIcon;
 
   private longPressTimer?: ReturnType<typeof setTimeout>;
 
@@ -296,7 +303,25 @@ export class StickerContainer extends LitElement {
 
   private showPanelHandler = (e: MouseEvent) => {
     this.showPanel = !this.showPanel;
-    this.iconRect = (e.target as HTMLElement).getBoundingClientRect();
+    this.iconRect = this.stickerIcon.getBoundingClientRect();
+  };
+
+  private mouseEnterHandler = (e: MouseEvent) => {
+    const localStickers = configStore.value.localStickers;
+    if (localStickers.hoverShow) {
+      this.mouseEnterInIcon = true;
+      this.showPanel = true;
+      this.iconRect = this.stickerIcon.getBoundingClientRect();
+      log(e.target, this.iconRect);
+    }
+  };
+
+  private mouseLeaveHandler = (e: MouseEvent) => {
+    this.mouseEnterInIcon = false;
+    setTimeout(() => {
+      if (this.mouseEnterInIcon) return;
+      this.showPanel = false;
+    }, 100);
   };
 
   protected async firstUpdated(): Promise<void> {
@@ -370,11 +395,19 @@ export class StickerContainer extends LitElement {
               .stickersPerRow="${this.stickersPerRow}"
               .stickerStore="${this.stickerStore as any}"
               .showPanel="${this.showPanel}"
+              @mouseenter="${this.mouseEnterHandler}"
+              @mouseleave="${this.mouseLeaveHandler}"
             ></lt-sticker-panel>
           </div>`
         : ""}
 
-      <lt-sticker-icon .showPanel="${this.showPanel}" @click="${this.showPanelHandler}"> </lt-sticker-icon>
+      <lt-sticker-icon
+        .showPanel="${this.showPanel}"
+        @mouseenter="${this.mouseEnterHandler}"
+        @mouseleave="${this.mouseLeaveHandler}"
+        @click="${this.showPanelHandler}"
+      >
+      </lt-sticker-icon>
     `;
   }
 }
