@@ -13,7 +13,7 @@ import { getImageUrl } from "@/main/utils/getImageUrl";
 
 import type { RecallChatList, RecallMsgId } from "@/common/types/preventRecall";
 
-const log = createLogger("preventRecall", true);
+const log = createLogger("preventRecall");
 
 type MsgId = string;
 type Uid = string;

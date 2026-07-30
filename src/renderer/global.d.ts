@@ -7,8 +7,7 @@ declare global {
   interface Window {
     navigation: any;
     qwqnt: any;
-    lt_logs: () => void;
-    lt_errors: () => void;
+    ltlog: any;
   }
 
   interface Element {

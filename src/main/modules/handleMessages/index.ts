@@ -8,7 +8,7 @@ import { convertMiniArkToWebArk } from "./convertMiniArkToWebArk";
 import { convertMarketFaceToPic } from "./convertMarketFaceToPic";
 import { interceptMessageRecalls } from "./antiRecall";
 
-const log = createLogger("handleMessages", true);
+const log = createLogger("handleMessages");
 
 function handleMessages(...args: any[]) {
   try {

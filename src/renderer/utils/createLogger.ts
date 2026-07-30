@@ -1,6 +1,8 @@
 import { configStore } from "@/renderer/modules/configStore";
 
-const logList: { name: string; log: any[] }[] = [];
+let logList: { name: string; log: any[] }[] = [];
+let logMap: Map<string, any[]> = new Map();
+let filterKey: string = "";
 
 let config: Config | null = null;
 
@@ -10,6 +12,13 @@ const logsReady = (async () => {
   config = configStore.value;
 })();
 
+configStore.onChange((config) => {
+  if (!config.debug.console) {
+    logList = [];
+    logMap = new Map();
+  }
+});
+
 // 日志类
 class Logs {
   moduleName: string;
@@ -17,6 +26,7 @@ class Logs {
 
   constructor(moduleName: string) {
     this.moduleName = moduleName;
+    logMap.set(moduleName, []);
   }
 
   logToConsole = (...args: any[]) => {
@@ -26,7 +36,11 @@ class Logs {
     }
 
     if (config.debug.console) {
-      console.log(`[${this.moduleName}]`, ...args);
+      if (!filterKey) {
+        console.log(`[${this.moduleName}]`, ...args);
+      } else if (filterKey === this.moduleName) {
+        console.log(`[${this.moduleName}]`, ...args);
+      }
       this.saveToLogList(args);
     }
 
@@ -36,7 +50,11 @@ class Logs {
         return;
       }
       for (const logArgs of this.cachedLogs) {
-        console.log(`[${this.moduleName}]`, ...logArgs);
+        if (!filterKey) {
+          console.log(`[${this.moduleName}]`, ...args);
+        } else if (filterKey === this.moduleName) {
+          console.log(`[${this.moduleName}]`, ...args);
+        }
         this.saveToLogList(logArgs);
       }
       this.cachedLogs = [];
@@ -44,27 +62,55 @@ class Logs {
   };
 
   private saveToLogList(logData: any[]) {
+    logMap.get(this.moduleName)!.push(logData);
     logList.push({ name: this.moduleName, log: logData });
   }
 }
 
 // 全局函数
-window.lt_logs = () => {
-  logsReady.then(() => {
-    if (config?.debug.console) {
-      for (const el of logList) {
-        console.log(`[${el.name}]`, ...el.log);
+window.ltlog = {
+  all() {
+    logsReady.then(() => {
+      if (config?.debug.console) {
+        for (const el of logList) {
+          console.log(`[${el.name}]`, ...el.log);
+        }
+        console.log("[日志模块]", "log-end");
+      } else {
+        console.log("[日志模块]", "功能未启用");
       }
-      console.log("[日志模块]", "log-end");
+    });
+    return "log-end";
+  },
+  ls() {
+    if (config?.debug.console) {
+      Array.from(logMap.keys()).map((item) => {
+        console.log(`${item}(${logMap.get(item)?.length})`);
+      });
     } else {
-      console.log("[日志模块]", "当前没有启用debug");
+      console.log("[日志模块]", "功能未启用");
     }
-  });
+  },
+  filter: (key: string) => {
+    if (config?.debug.console) {
+      if (!logMap.has(key)) {
+        console.log(`不存在 ${key}`);
+      }
+      Array.from(logMap.get(key) || []).forEach((log) => console.log(`[${key}]`, log));
+    } else {
+      console.log("[日志模块]", "功能未启用");
+    }
+  },
+  setFilter(key: string) {
+    filterKey = key;
+    if (key) {
+      console.log(`日志过滤器已设置为 ${key}`);
+    } else {
+      console.log(`日志过滤器已关闭`);
+    }
+  },
 };
 
-export function createLogger(moduleName: string, mute = false) {
-  if (mute) {
-    return () => {};
-  }
+export function createLogger(moduleName: string) {
   return new Logs(moduleName).logToConsole;
 }

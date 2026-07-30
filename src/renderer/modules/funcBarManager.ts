@@ -2,7 +2,7 @@ import { configStore } from "@/renderer/modules/configStore";
 import { observeMutations } from "@/renderer/utils/observeMutations";
 import { createLogger } from "@/renderer/utils/createLogger";
 
-const log = createLogger("funcBarManager", true);
+const log = createLogger("funcBarManager");
 const topFuncMap = new Map() as Map<string, FuncBar>;
 const chatFuncMap = new Map() as Map<string, FuncBar>;
 

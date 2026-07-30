@@ -17,7 +17,7 @@ enum SidebarStatus {
 const SIDEBAR_GROUP_ID = "100073";
 
 function setupSideBar() {
-  const log = createLogger("sideBar", true);
+  const log = createLogger("sideBar");
   log("load");
   let isPendingInit = false;
   IpcInterceptor.onIpcReceiveEvents("nodeIKernelConfigMgrService/saveSideBarConfig", (meat, _, channel, payload) => {

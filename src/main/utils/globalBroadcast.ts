@@ -1,7 +1,7 @@
 import { BrowserWindow } from "electron";
 import { createLogger } from "@/main/utils/createLogger";
 
-const log = createLogger("globalBroadcast", true);
+const log = createLogger("globalBroadcast");
 
 let pendingBroadcasts: { channel: string; data: any[] }[] = [];
 let broadcastScheduled = false;

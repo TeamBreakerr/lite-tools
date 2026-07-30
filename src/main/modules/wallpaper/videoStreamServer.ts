@@ -3,7 +3,7 @@ import { createServer as createHttpServer } from "http";
 import fs from "fs";
 import { extname } from "path";
 import { createLogger } from "@/main/utils/createLogger";
-const log = createLogger("视频背景服务模块", true);
+const log = createLogger("视频背景服务模块");
 
 import type { AddressInfo } from "net";
 import type { IncomingMessage, ServerResponse } from "http";
