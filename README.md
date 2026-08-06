@@ -145,6 +145,10 @@ pnpm run build:alpha
 
 如果你是从 `v4` 迁移过来，看到某些旧功能消失，这是预期行为，不是 README 遗漏。
 
+## 致谢
+
+本项目使用了 [LLOneBot](https://github.com/LLOneBot) 的rkey接口
+
 ## 声明
 
 ### 一切开发旨在学习，请勿用于非法和商业用途
