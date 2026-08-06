@@ -3,4 +3,5 @@ dist
 build
 .vscode
 .VSCodeCounter
+.pnpm-store
 *.tsbuildinfo
