@@ -27,8 +27,8 @@ function handleMessages(...args: any[]) {
     if (onRecvMsg && checkChatType(args?.[2]?.payload?.msgList?.[0])) {
       processMessages(args[2].payload.msgList, webContentId, args);
     }
-    const onForwardMsg = findEvent(args, "nodeIKernelMsgListener/onAddSendMsg");
-    if (onForwardMsg && checkChatType(args?.[2]?.payload?.msgRecord)) {
+    const onAddSendMsg = findEvent(args, "nodeIKernelMsgListener/onAddSendMsg");
+    if (onAddSendMsg && checkChatType(args?.[2]?.payload?.msgRecord)) {
       processMessages([args[2].payload.msgRecord], webContentId, args);
     }
   } catch (err: any) {
