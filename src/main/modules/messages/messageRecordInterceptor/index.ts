@@ -8,9 +8,9 @@ import { convertMiniArkToWebArk } from "./convertMiniArkToWebArk";
 import { convertMarketFaceToPic } from "./convertMarketFaceToPic";
 import { interceptMessageRecalls } from "./antiRecall";
 
-const log = createLogger("handleMessages");
+const log = createLogger("messageRecordInterceptor");
 
-function handleMessages(...args: any[]) {
+function handleRecvMessages(...args: any[]) {
   try {
     const channel = args[0] as string;
     const webContentId = parseInt(channel.split("RM_IPCFROM_MAIN")[1]) || 2;
@@ -56,14 +56,15 @@ function processMessages(msgList: any[], webContentId: number, args: any[]) {
       log("执行 转换表情类型 ");
       convertMarketFaceToPic(msgList, webContentId);
     }
+
     log("处理结束", msgList);
   } catch (err: any) {
     log("出现错误", err.message, err?.stack);
   }
 }
 
-function setupHandleMessages() {
-  IpcInterceptor.interceptIpcSend(handleMessages);
+function setupMessageRecordInterceptor() {
+  IpcInterceptor.interceptIpcSend(handleRecvMessages);
 }
 
-export { setupHandleMessages };
+export { setupMessageRecordInterceptor };
