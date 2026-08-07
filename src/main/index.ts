@@ -1,6 +1,7 @@
 import { configManager } from "@/main/modules/configManager";
 import { createLogger } from "@/main/utils/createLogger";
 import { setupMessageRecordInterceptor } from "@/main/modules/messages/messageRecordInterceptor";
+import { setupSendMessageInterceptor } from "@/main/modules/messages/sendMessageInterceptor";
 import { setupIpcMain } from "@/main/modules/ipcRegistrar";
 import { setupSideBar } from "@/main/modules/sidebarManager";
 import { trackWindow } from "@/main/utils/windowTracker";
@@ -26,6 +27,7 @@ function setupMain(uid: string) {
   try {
     configManager.setup(uid);
     setupMessageRecordInterceptor();
+    setupSendMessageInterceptor();
     setupIpcMain();
     setupSideBar();
     setupIpcInterceptor();

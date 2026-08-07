@@ -48,6 +48,8 @@
   "message": {
     "miniArkToWebArk": false,
     "marketFaceToPicElement": false,
+    "videoFileToVideoMsg": false,
+    "largPicFileToPicMsg": false,
     "removeReplyAt": false,
     "repeatMessage": {
       "enabled": false,
