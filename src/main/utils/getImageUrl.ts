@@ -1,11 +1,10 @@
 import { configManager } from "@/main/modules/configManager";
 import { createLogger } from "@/main/utils/createLogger";
 
-// 1. 明确已知字段，告别 any
 type PicElement = {
   originImageUrl?: string;
   md5HexStr?: string;
-  [key: string]: any; // 保留扩展性
+  [key: string]: any;
 };
 
 type RkeyData = {
@@ -18,7 +17,6 @@ const IMAGE_HOST = "https://gchat.qpic.cn";
 const IMAGE_HOST_NT = "https://multimedia.nt.qq.com.cn";
 const log = createLogger("getImageUrl");
 
-// 2. 更清晰的缓存命名
 const cachedRkey = {
   private_rkey: "",
   group_rkey: "",
