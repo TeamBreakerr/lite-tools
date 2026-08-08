@@ -9,29 +9,46 @@ const log = createLogger("outgoingMessageInterceptor");
 
 function handleSendMessages(...args: any[]) {
   try {
-    const msgPayload = args?.[3]?.[1]?.[0];
+    const msgPayload = args?.[3]?.[1]?.payload?.[0];
     if (!msgPayload) return;
     log(msgPayload);
-    // const originMsgPayload = structuredClone(msgPayload);
     if (checkChatType(msgPayload.peer)) {
-      processMessages(msgPayload);
+      return processMessages(msgPayload);
     }
   } catch (err: any) {
     log("出现错误", err.message, err?.stack);
   }
 }
 
-function processMessages(msgPayload: any) {
+function processMessages(msgPayload: any): InterceptResult {
   try {
     const config = configManager.value;
     if (config.message.videoFileToVideoMsg) {
-      convertVideoFileToVideoMsg(msgPayload);
+      const isBlock = convertVideoFileToVideoMsg(msgPayload);
+      log("process convertVideoFileToVideoMsg", isBlock);
+      if (isBlock) {
+        return {
+          action: "block",
+        };
+      }
     }
     if (config.message.largPicFileToPicMsg) {
-      largPicFileToPicMsg(msgPayload);
+      const isBlock = largPicFileToPicMsg(msgPayload);
+      log("process largPicFileToPicMsg", isBlock);
+      if (isBlock) {
+        return {
+          action: "block",
+        };
+      }
     }
+    return {
+      action: "pass",
+    };
   } catch (err: any) {
     log("出现错误", err.message, err?.stack);
+    return {
+      action: "pass",
+    };
   }
 }
 
