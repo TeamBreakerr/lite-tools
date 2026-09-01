@@ -148,7 +148,7 @@
     }
   ],
   "global": {
-    "rkeyServerUrl": "https://rkey.furrycloud.top",
+    "rkeyServerUrl": "http://ss.xingzhige.com/music_card/rkey",
     "httpProxy": ""
   }
 }
