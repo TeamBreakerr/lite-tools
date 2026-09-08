@@ -15,15 +15,16 @@ async function setupChatPage() {
   log("await init");
   await configStore.ready;
   log("获取到配置", configStore.value);
+  updateRecallConfig(configStore.value);
+  setupHandleMessages();
+  configStore.onChange(updateRecallConfig);
   await aioStore.ready;
   log("initialized");
   setupPreventMutipleSelect("chat-msg-area");
-  setupHandleMessages();
   setupGoBackMainList();
   setupLocalStickers();
   updateTopFuncBar();
   updateChatFuncBar();
-  updateRecallConfig(configStore.value);
   updateInterface(configStore.value);
   wallpaperManager.setup();
   ckeditorManager.setup();
@@ -34,7 +35,6 @@ async function setupChatPage() {
   configStore.onChange((config) => {
     updateTopFuncBar();
     updateChatFuncBar();
-    updateRecallConfig(config);
     updateInterface(config);
   });
 }

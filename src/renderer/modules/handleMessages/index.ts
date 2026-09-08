@@ -1,12 +1,9 @@
 import { onComponentMount } from "@/renderer/modules/vueComponentTracker";
 import { checkChatType } from "@/common/checkChatType";
 import { createLogger } from "@/renderer/utils/createLogger";
-import { waitForInstance } from "@/renderer/utils/domWaitFor";
 import { configStore } from "@/renderer/modules/configStore";
-import { waitForElement } from "@/renderer/utils/domWaitFor";
 
-import { initRecallMessageListener, insertRecallTag } from "./messageRecall";
-import { mergeMessage } from "./mergeMessage";
+import { initRecallMessageListener, insertRecallTag, findMessageComponent, isRecalledMessage } from "./messageRecall";
 import { setupRevealMask, revealMask } from "./revealMask";
 import { insertSlot } from "./messageSlot";
 import { insertTime } from "./insertTime";
@@ -18,8 +15,6 @@ import type { MessageElement, SlotElement } from "./type";
 const log = createLogger("handleMessages");
 
 const processedInstances = new WeakSet<any>();
-
-let aioData: any;
 
 async function setupHandleMessages() {
   await configStore.ready;
@@ -45,17 +40,25 @@ async function setupHandleMessages() {
   setupRevealMask();
   onComponentMount(handleMessages);
   initRecallMessageListener(enhanceMessage);
-  const { instance, value: msgList } = await waitForInstance(
-    ".container-content .container .aio .group-chat",
-    "proxy.curMsgListData",
-  );
-  aioData = instance.proxy;
+  // Existing messages may have mounted before configuration became ready.
+  refreshMessageElements(Array.from(document.querySelectorAll<HTMLElement>(".message")));
+  chatObserverManager.addTask({
+    name: "RecallMessageTag",
+    selector: ".message",
+    handler: refreshMessageElements,
+  });
+}
 
-  for (const item of msgList) {
-    const el = document.getElementById(item.msgId)?.firstElementChild;
-    if (el && el?.__VUE__?.[0]) {
-      handleMessages(el.__VUE__[0]);
-    }
+function refreshMessageElements(elements: HTMLElement[]) {
+  for (const element of elements) {
+    const component = findMessageComponent(element);
+    if (!component) continue;
+    handleMessages(component);
+    if (
+      configStore.value.message.preventRecall.enabled &&
+      isRecalledMessage(component.props.msgRecord) &&
+      !component.vnode.el.querySelector(".lt-recall")
+    ) enhanceMessage(component);
   }
 }
 
@@ -68,10 +71,6 @@ function handleMessages(component: any) {
     if (!checkChatType(component.props.msgRecord) || !component.vnode.el?.classList?.contains?.("message")) return;
     processedInstances.add(component);
     const isNewVersion = !!component.vnode.el.querySelector(".message-native");
-    // 消息合并-有卡顿
-    if (0) {
-      mergeMessage(aioData, component);
-    }
     // 插入插槽
     if (enabledSlot()) {
       if (isNewVersion) {

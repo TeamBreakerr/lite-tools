@@ -17,14 +17,15 @@ const log = createLogger("main");
 async function setupMainPage() {
   log("await init");
   await configStore.ready;
+  updateRecallConfig(configStore.value);
+  setupHandleMessages();
+  configStore.onChange(updateRecallConfig);
   await aioStore.ready;
   const topSideBarhasChanged = createComparator(configStore.value.sideBar.top);
   setupPreventMutipleSelect("chat-msg-area");
   updateTopSideBar(configStore.value);
   updateBottomSideBar(configStore.value);
   updateInterface(configStore.value);
-  updateRecallConfig(configStore.value);
-  setupHandleMessages();
   setupIpcToBroadcast();
   setupGoBackMainList();
   setupLocalStickers();
@@ -43,7 +44,6 @@ async function setupMainPage() {
     updateBottomSideBar(config);
     updateTopFuncBar();
     updateChatFuncBar();
-    updateRecallConfig(config);
   });
   onComponentMount((component) => {
     if (configStore.value.interface.hiddenLockBtn && component?.vnode?.key === "锁定") {
